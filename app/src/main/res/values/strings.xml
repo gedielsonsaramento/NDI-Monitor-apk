@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">NDI Monitor</string>
+    <string name="video_monitor">Monitor de vídeo NDI</string>
+    <string name="starting">Iniciando monitor…</string>
+    <string name="open_sources">Abrir lista de fontes</string>
+    <string name="close">Fechar</string>
+    <string name="sources_title">Fontes NDI</string>
+    <string name="select_source_help">Selecione a origem de vídeo e áudio disponível na rede local.</string>
+    <string name="search_sources">Buscar fontes</string>
+    <string name="scan_again">Buscar novamente</string>
+    <string name="scanning">Buscando…</string>
+    <string name="searching_sources">Procurando fontes NDI na rede…</string>
+    <string name="no_sources">Nenhuma fonte encontrada. Confirme se os aparelhos estão na mesma rede.</string>
+    <string name="connecting_to">Conectando a %1$s…</string>
+    <string name="start_on_boot">Iniciar automaticamente com o Android</string>
+    <string name="ndi_attribution">Compatível com NDI®. NDI é marca registrada da Vizrt NDI AB. ndi.video</string>
+    <string name="ndi_sdk_missing">SDK NDI ausente. Consulte o GUIA_PASSO_A_PASSO.md do projeto.</string>
+    <plurals name="sources_found">
+        <item quantity="one">%d fonte encontrada</item>
+        <item quantity="other">%d fontes encontradas</item>
+    </plurals>
+</resources>

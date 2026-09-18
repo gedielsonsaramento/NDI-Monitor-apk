@@ -1,0 +1,37 @@
+# Configuracao local e caches de compilacao
+.gradle/
+.idea/
+.cxx/
+local.properties
+build/
+*.iml
+*.class
+tools/wrapper-build/
+.DS_Store
+Thumbs.db
+
+# Chaves, credenciais e configuracao privada de assinatura
+*.jks
+*.keystore
+*.p12
+*.pfx
+key.properties
+keystore.properties
+signing.properties
+secrets.properties
+.env
+.env.*
+keystore/
+keystores/
+
+# Aplicativos e pacotes gerados; nao publicar automaticamente
+*.apk
+*.aab
+*.apks
+*.zip
+
+# SDK NDI proprietario: manter somente as instrucoes de colocacao
+/app/src/main/cpp/include/*
+!/app/src/main/cpp/include/COLOQUE_OS_HEADERS_NDI_AQUI.txt
+/app/src/main/jniLibs/*/*
+!/app/src/main/jniLibs/*/COLOQUE_LIBNDI_SO_AQUI.txt

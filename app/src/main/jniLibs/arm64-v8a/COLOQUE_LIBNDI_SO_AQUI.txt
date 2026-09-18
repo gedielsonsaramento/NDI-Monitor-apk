@@ -1,0 +1,1 @@
+Copie aqui a libndi.so ARM64 do NDI SDK Android.

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="source_selected">#6600B7FF</color>
+    <color name="source_focused">#4400B7FF</color>
+</resources>

@@ -1,0 +1,2 @@
+Copie para esta pasta todos os arquivos .h da pasta include do NDI SDK Android.
+O arquivo principal esperado pelo projeto e: Processing.NDI.Lib.h

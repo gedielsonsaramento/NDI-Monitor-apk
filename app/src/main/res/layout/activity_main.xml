@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#000000">
+
+    <FrameLayout
+        android:id="@+id/video_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#000000">
+
+        <SurfaceView
+            android:id="@+id/video_surface"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:contentDescription="@string/video_monitor" />
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/status_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|start"
+        android:layout_margin="18dp"
+        android:background="@drawable/status_background"
+        android:paddingStart="14dp"
+        android:paddingTop="8dp"
+        android:paddingEnd="14dp"
+        android:paddingBottom="8dp"
+        android:text="@string/starting"
+        android:textColor="#FFFFFF"
+        android:textSize="14sp" />
+
+    <Button
+        android:id="@+id/menu_button"
+        android:layout_width="52dp"
+        android:layout_height="52dp"
+        android:layout_gravity="top|end"
+        android:layout_margin="14dp"
+        android:background="@drawable/round_button"
+        android:contentDescription="@string/open_sources"
+        android:text="☰"
+        android:textColor="#FFFFFF"
+        android:textSize="22sp" />
+
+    <LinearLayout
+        android:id="@+id/source_panel"
+        android:layout_width="360dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="end"
+        android:background="#F2161B20"
+        android:orientation="vertical"
+        android:padding="22dp"
+        android:visibility="visible">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/sources_title"
+                android:textColor="#FFFFFF"
+                android:textSize="23sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/close_panel_button"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@drawable/round_button"
+                android:contentDescription="@string/close"
+                android:text="×"
+                android:textColor="#FFFFFF"
+                android:textSize="24sp" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/select_source_help"
+            android:textColor="#B8FFFFFF"
+            android:textSize="14sp" />
+
+        <Button
+            android:id="@+id/scan_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:background="@drawable/primary_button"
+            android:text="@string/search_sources"
+            android:textAllCaps="false"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp" />
+
+        <ListView
+            android:id="@+id/source_list"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="12dp"
+            android:layout_weight="1"
+            android:divider="#2FFFFFFF"
+            android:dividerHeight="1dp"
+            android:listSelector="@drawable/list_selector" />
+
+        <Button
+            android:id="@+id/home_settings_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Definir tela inicial / sair do quiosque"
+            android:textAllCaps="false" />
+
+        <Button
+            android:id="@+id/android_settings_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Configurações do Android"
+            android:textAllCaps="false" />
+
+        <CheckBox
+            android:id="@+id/boot_checkbox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:buttonTint="#00B7FF"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:text="@string/start_on_boot"
+            android:textColor="#FFFFFF" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:autoLink="web"
+            android:gravity="center"
+            android:text="@string/ndi_attribution"
+            android:textColor="#80FFFFFF"
+            android:textSize="11sp" />
+    </LinearLayout>
+</FrameLayout>
