@@ -6,6 +6,10 @@ set(NDI_LIBRARY "${CMAKE_CURRENT_SOURCE_DIR}/../jniLibs/${ANDROID_ABI}/libndi.so
 
 add_library(ndimonitor SHARED ndi_bridge.cpp)
 target_include_directories(ndimonitor PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include")
+# Necessário também quando o NDK instalado é anterior ao r28.
+target_link_options(ndimonitor PRIVATE
+    "-Wl,-z,max-page-size=16384"
+    "-Wl,-z,common-page-size=16384")
 
 find_library(log-lib log)
 find_library(android-lib android)

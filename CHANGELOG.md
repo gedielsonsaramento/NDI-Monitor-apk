@@ -1,5 +1,15 @@
 # Alterações
 
+## Proposta 1.2.0 — preparação para celulares / Play (não publicada)
+
+- removidos tela inicial opcional, inicialização após boot e entrada no launcher de TV;
+- nome de produto provisório “Monitor de Retorno”, sem mudar o identificador de pacote;
+- atualizados compile/target SDK 36, Gradle 8.13 e AGP 8.13.2;
+- alinhamento ELF de 16 KB adicionado à biblioteca JNI; compatibilidade final deve ser verificada num AAB assinado e em dispositivo de 16 KB;
+- navegação Voltar migrada para callback nas versões recentes do Android (testes manuais ainda pendentes);
+- release bloqueada quando os arquivos locais do SDK e avisos de terceiros estiverem ausentes; disponibilizado botão para consultar esses avisos;
+- nenhum SDK ou binário adicionado ao repositório; licença e assinatura ainda exigem avaliação antes de publicar.
+
 ## Preparação para publicação no GitHub
 
 - preservada a licença MIT escolhida pelo mantenedor;

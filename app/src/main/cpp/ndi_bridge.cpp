@@ -164,7 +164,7 @@ void capture_loop(std::string source_name) {
     settings.color_format = NDIlib_recv_color_format_RGBX_RGBA;
     settings.bandwidth = NDIlib_recv_bandwidth_highest;
     settings.allow_video_fields = false;
-    settings.p_ndi_recv_name = "NDI Monitor Android";
+    settings.p_ndi_recv_name = "Monitor de Retorno Android";
 
     NDIlib_recv_instance_t receiver = NDIlib_recv_create_v3(&settings);
     if (!receiver) {
