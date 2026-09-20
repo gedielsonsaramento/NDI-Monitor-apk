@@ -8,13 +8,20 @@ $sdkRoot = (Resolve-Path $SdkDir).Path
 $projectRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $includeTarget = Join-Path $projectRoot "app\src\main\cpp\include"
 $jniTarget = Join-Path $projectRoot "app\src\main\jniLibs"
+$assetsTarget = Join-Path $projectRoot "app\src\main\assets"
 
 $mainHeader = Get-ChildItem -Path $sdkRoot -Recurse -File -Filter "Processing.NDI.Lib.h" | Select-Object -First 1
 if (-not $mainHeader) {
     throw "Processing.NDI.Lib.h nao foi encontrado em: $sdkRoot"
 }
+$licenseNotices = Get-ChildItem -Path $sdkRoot -Recurse -File -Filter "libndi_licenses.txt" | Select-Object -First 1
+if (-not $licenseNotices) {
+    throw "libndi_licenses.txt nao foi encontrado na pasta licenses do SDK informado."
+}
 
 New-Item -ItemType Directory -Force -Path $includeTarget | Out-Null
+New-Item -ItemType Directory -Force -Path $assetsTarget | Out-Null
+Copy-Item $licenseNotices.FullName (Join-Path $assetsTarget "libndi_licenses.txt") -Force
 Get-ChildItem -Path $mainHeader.Directory.FullName -File -Filter "*.h" |
     Copy-Item -Destination $includeTarget -Force
 

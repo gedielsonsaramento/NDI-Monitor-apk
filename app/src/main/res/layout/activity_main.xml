@@ -112,28 +112,18 @@
             android:listSelector="@drawable/list_selector" />
 
         <Button
-            android:id="@+id/home_settings_button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Definir tela inicial / sair do quiosque"
-            android:textAllCaps="false" />
-
-        <Button
             android:id="@+id/android_settings_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Configurações do Android"
             android:textAllCaps="false" />
 
-        <CheckBox
-            android:id="@+id/boot_checkbox"
+        <Button
+            android:id="@+id/third_party_notices_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:buttonTint="#00B7FF"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp"
-            android:text="@string/start_on_boot"
-            android:textColor="#FFFFFF" />
+            android:text="@string/third_party_notices"
+            android:textAllCaps="false" />
 
         <TextView
             android:layout_width="match_parent"
@@ -141,7 +131,7 @@
             android:autoLink="web"
             android:gravity="center"
             android:text="@string/ndi_attribution"
-            android:textColor="#80FFFFFF"
+            android:textColor="#B8FFFFFF"
             android:textSize="11sp" />
     </LinearLayout>
 </FrameLayout>

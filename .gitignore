@@ -35,3 +35,4 @@ keystores/
 !/app/src/main/cpp/include/COLOQUE_OS_HEADERS_NDI_AQUI.txt
 /app/src/main/jniLibs/*/*
 !/app/src/main/jniLibs/*/COLOQUE_LIBNDI_SO_AQUI.txt
+/app/src/main/assets/libndi_licenses.txt

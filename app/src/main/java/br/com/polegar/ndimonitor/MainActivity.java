@@ -1,6 +1,7 @@
 package br.com.polegar.ndimonitor;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ActivityNotFoundException;
@@ -13,6 +14,7 @@ import android.media.AudioManager;
 import android.media.AudioTrack;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.KeyEvent;
@@ -21,14 +23,19 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.window.OnBackInvokedCallback;
+import android.window.OnBackInvokedDispatcher;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -39,7 +46,6 @@ import java.util.concurrent.Executors;
 public class MainActivity extends Activity implements SurfaceHolder.Callback {
     public static final String PREFERENCES = "ndi_monitor_preferences";
     public static final String KEY_LAST_SOURCE = "last_source";
-    public static final String KEY_START_ON_BOOT = "start_on_boot";
 
     private final ExecutorService worker = Executors.newSingleThreadExecutor();
     private SharedPreferences preferences;
@@ -49,12 +55,12 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     private ListView sourceList;
     private TextView statusText;
     private Button scanButton;
-    private CheckBox bootCheckBox;
     private WifiManager.MulticastLock multicastLock;
     private AudioTrack audioTrack;
     private int audioSampleRate;
     private int audioChannels;
     private View menuButton;
+    private OnBackInvokedCallback backCallback;
     private final Handler controlsHandler = new Handler(Looper.getMainLooper());
     private final Runnable hideControls = () -> {
         if (sourcePanel.getVisibility() != View.VISIBLE) {
@@ -72,6 +78,11 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         enterImmersiveMode();
         setContentView(R.layout.activity_main);
+        if (Build.VERSION.SDK_INT >= 33) {
+            backCallback = this::toggleSourcePanel;
+            getOnBackInvokedDispatcher().registerOnBackInvokedCallback(
+                    OnBackInvokedDispatcher.PRIORITY_DEFAULT, backCallback);
+        }
 
         preferences = getSharedPreferences(PREFERENCES, MODE_PRIVATE);
         videoContainer = findViewById(R.id.video_container);
@@ -80,7 +91,6 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         sourceList = findViewById(R.id.source_list);
         statusText = findViewById(R.id.status_text);
         scanButton = findViewById(R.id.scan_button);
-        bootCheckBox = findViewById(R.id.boot_checkbox);
 
         videoSurface.getHolder().addCallback(this);
         menuButton = findViewById(R.id.menu_button);
@@ -89,13 +99,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         menuButton.setOnClickListener(v -> toggleSourcePanel());
         findViewById(R.id.close_panel_button).setOnClickListener(v -> closeSourcePanel());
         scanButton.setOnClickListener(v -> scanSources());
-        findViewById(R.id.home_settings_button).setOnClickListener(v -> openAndroidSettings(Settings.ACTION_HOME_SETTINGS));
         findViewById(R.id.android_settings_button).setOnClickListener(v -> openAndroidSettings(Settings.ACTION_SETTINGS));
-
-        boolean startOnBoot = preferences.getBoolean(KEY_START_ON_BOOT, true);
-        bootCheckBox.setChecked(startOnBoot);
-        bootCheckBox.setOnCheckedChangeListener((button, checked) ->
-                preferences.edit().putBoolean(KEY_START_ON_BOOT, checked).apply());
+        findViewById(R.id.third_party_notices_button).setOnClickListener(v -> showThirdPartyNotices());
 
         WifiManager wifiManager = (WifiManager) getApplicationContext()
                 .getSystemService(Context.WIFI_SERVICE);
@@ -142,6 +147,26 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         }
     }
 
+    private void showThirdPartyNotices() {
+        String notices;
+        try (InputStream input = getAssets().open("libndi_licenses.txt");
+             ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+            byte[] buffer = new byte[4096];
+            int length;
+            while ((length = input.read(buffer)) != -1) {
+                output.write(buffer, 0, length);
+            }
+            notices = new String(output.toByteArray(), StandardCharsets.UTF_8);
+        } catch (IOException unavailable) {
+            notices = getString(R.string.third_party_notices_unavailable);
+        }
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.third_party_notices)
+                .setMessage(notices)
+                .setPositiveButton(android.R.string.ok, null)
+                .show();
+    }
+
     private void toggleSourcePanel() {
         if (sourcePanel.getVisibility() == View.VISIBLE) {
             closeSourcePanel();
@@ -178,15 +203,16 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             }
             return true;
         }
-        if (sourcePanel.getVisibility() == View.VISIBLE && keyCode == KeyEvent.KEYCODE_BACK) {
-            closeSourcePanel();
-            return true;
-        }
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
-            toggleSourcePanel();
-            return true;
-        }
         return super.onKeyDown(keyCode, event);
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (sourcePanel.getVisibility() == View.VISIBLE) {
+            closeSourcePanel();
+        } else {
+            toggleSourcePanel();
+        }
     }
 
     private void scanSources() {
@@ -325,6 +351,9 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     @Override
     protected void onDestroy() {
         controlsHandler.removeCallbacksAndMessages(null);
+        if (Build.VERSION.SDK_INT >= 33 && backCallback != null) {
+            getOnBackInvokedDispatcher().unregisterOnBackInvokedCallback(backCallback);
+        }
         NativeBridge.disconnect();
         NativeBridge.setCallbackTarget(null);
         worker.shutdownNow();
