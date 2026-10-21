@@ -1,6 +1,8 @@
 package br.com.polegar.ndimonitor;
 
 import android.app.Activity;
+import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ActivityNotFoundException;
@@ -9,27 +11,35 @@ import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.media.AudioAttributes;
 import android.media.AudioFormat;
-import android.media.AudioManager;
 import android.media.AudioTrack;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.SystemClock;
+import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.WindowInsets;
+import android.window.OnBackInvokedCallback;
+import android.window.OnBackInvokedDispatcher;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import java.util.Arrays;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -41,20 +51,38 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     public static final String KEY_LAST_SOURCE = "last_source";
     public static final String KEY_START_ON_BOOT = "start_on_boot";
 
-    private final ExecutorService worker = Executors.newSingleThreadExecutor();
+    // Shared queues preserve connect/cleanup ordering across Activity recreation.
+    private static final ExecutorService CAPTURE_WORKER = Executors.newSingleThreadExecutor();
+    private static final ExecutorService DISCOVERY_WORKER = Executors.newSingleThreadExecutor();
+    private final SourceCatalog sourceCatalog = new SourceCatalog();
     private SharedPreferences preferences;
     private SurfaceView videoSurface;
     private FrameLayout videoContainer;
     private LinearLayout sourcePanel;
     private ListView sourceList;
     private TextView statusText;
-    private Button scanButton;
-    private CheckBox bootCheckBox;
+    private TextView sourceStatusText;
+    private View scanButton;
+    private ArrayAdapter<String> sourceAdapter;
+    private List<String> displayedSources = Collections.emptyList();
+    private AlertDialog settingsDialog;
+    private AlertDialog noticesDialog;
+    private boolean ndiAvailable;
+    private boolean activityVisible;
+    private volatile boolean destroyed;
+    private volatile int discoveryGeneration;
+    private long discoveryStartedAt;
+    private Runnable nextDiscoveryPoll;
+    private int videoWidth;
+    private int videoHeight;
     private WifiManager.MulticastLock multicastLock;
     private AudioTrack audioTrack;
     private int audioSampleRate;
     private int audioChannels;
     private View menuButton;
+    private int safeInsetLeft;
+    private int safeInsetRight;
+    private OnBackInvokedCallback backCallback;
     private final Handler controlsHandler = new Handler(Looper.getMainLooper());
     private final Runnable hideControls = () -> {
         if (sourcePanel.getVisibility() != View.VISIBLE) {
@@ -79,8 +107,28 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         sourcePanel = findViewById(R.id.source_panel);
         sourceList = findViewById(R.id.source_list);
         statusText = findViewById(R.id.status_text);
+        sourceStatusText = findViewById(R.id.source_status_text);
         scanButton = findViewById(R.id.scan_button);
-        bootCheckBox = findViewById(R.id.boot_checkbox);
+        sourceAdapter = new ArrayAdapter<>(this, R.layout.source_item, new ArrayList<>());
+        sourceList.setAdapter(sourceAdapter);
+        sourceList.setOnItemClickListener((parent, view, position, id) -> {
+            String source = sourceAdapter.getItem(position);
+            if (source != null) connectToSource(source);
+        });
+
+        View root = findViewById(R.id.root);
+        root.addOnLayoutChangeListener((view, left, top, right, bottom,
+                                       oldLeft, oldTop, oldRight, oldBottom) -> {
+            if (right - left != oldRight - oldLeft || bottom - top != oldBottom - oldTop) {
+                resizeSourcePanel(right - left);
+                fitVideoSurface(videoWidth, videoHeight);
+            }
+        });
+        root.setOnApplyWindowInsetsListener((view, insets) -> {
+            applyControlInsets(insets);
+            resizeSourcePanel(view.getWidth());
+            return insets;
+        });
 
         videoSurface.getHolder().addCallback(this);
         menuButton = findViewById(R.id.menu_button);
@@ -89,25 +137,27 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         menuButton.setOnClickListener(v -> toggleSourcePanel());
         findViewById(R.id.close_panel_button).setOnClickListener(v -> closeSourcePanel());
         scanButton.setOnClickListener(v -> scanSources());
-        findViewById(R.id.home_settings_button).setOnClickListener(v -> openAndroidSettings(Settings.ACTION_HOME_SETTINGS));
-        findViewById(R.id.android_settings_button).setOnClickListener(v -> openAndroidSettings(Settings.ACTION_SETTINGS));
-
-        boolean startOnBoot = preferences.getBoolean(KEY_START_ON_BOOT, true);
-        bootCheckBox.setChecked(startOnBoot);
-        bootCheckBox.setOnCheckedChangeListener((button, checked) ->
-                preferences.edit().putBoolean(KEY_START_ON_BOOT, checked).apply());
+        findViewById(R.id.monitor_settings_button).setOnClickListener(v -> showMonitorSettings());
+        menuButton.setVisibility(View.GONE);
+        statusText.setVisibility(View.GONE);
+        if (Build.VERSION.SDK_INT >= 33) {
+            backCallback = this::toggleSourcePanel;
+            getOnBackInvokedDispatcher().registerOnBackInvokedCallback(
+                    OnBackInvokedDispatcher.PRIORITY_DEFAULT, backCallback);
+        }
+        root.requestApplyInsets();
 
         WifiManager wifiManager = (WifiManager) getApplicationContext()
                 .getSystemService(Context.WIFI_SERVICE);
         if (wifiManager != null) {
             multicastLock = wifiManager.createMulticastLock("NDIMonitorDiscovery");
             multicastLock.setReferenceCounted(false);
-            multicastLock.acquire();
         }
 
         NativeBridge.setCallbackTarget(this);
-        if (!NativeBridge.isNdiAvailable()) {
-            statusText.setText(R.string.ndi_sdk_missing);
+        ndiAvailable = NativeBridge.isNdiAvailable();
+        if (!ndiAvailable) {
+            sourceStatusText.setText(R.string.ndi_sdk_missing);
             sourcePanel.setVisibility(View.VISIBLE);
             scanButton.setEnabled(false);
         } else {
@@ -115,8 +165,124 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             if (lastSource != null && !lastSource.isEmpty()) {
                 connectToSource(lastSource);
             }
-            scanSources();
         }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        activityVisible = true;
+        if (ndiAvailable && multicastLock != null && !multicastLock.isHeld()) {
+            multicastLock.acquire();
+        }
+        scanSources();
+    }
+
+    @Override
+    protected void onStop() {
+        activityVisible = false;
+        stopDiscoveryPolling();
+        DISCOVERY_WORKER.execute(NativeBridge::releaseDiscovery);
+        if (multicastLock != null && multicastLock.isHeld()) multicastLock.release();
+        super.onStop();
+    }
+
+    private void resizeSourcePanel(int availableWidth) {
+        availableWidth -= safeInsetLeft + safeInsetRight;
+        if (availableWidth <= 0) return;
+        int maximumWidth = getResources().getDimensionPixelSize(R.dimen.source_panel_width);
+        FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) sourcePanel.getLayoutParams();
+        int width = Math.min(availableWidth, maximumWidth);
+        if (params.width != width) {
+            params.width = width;
+            sourcePanel.setLayoutParams(params);
+        }
+    }
+
+    private void applyControlInsets(WindowInsets insets) {
+        int left, top, right, bottom;
+        if (Build.VERSION.SDK_INT >= 30) {
+            android.graphics.Insets safe = insets.getInsets(
+                    WindowInsets.Type.systemBars() | WindowInsets.Type.displayCutout());
+            left = safe.left;
+            top = safe.top;
+            right = safe.right;
+            bottom = safe.bottom;
+        } else {
+            left = insets.getSystemWindowInsetLeft();
+            top = insets.getSystemWindowInsetTop();
+            right = insets.getSystemWindowInsetRight();
+            bottom = insets.getSystemWindowInsetBottom();
+            if (Build.VERSION.SDK_INT >= 28 && insets.getDisplayCutout() != null) {
+                left = Math.max(left, insets.getDisplayCutout().getSafeInsetLeft());
+                top = Math.max(top, insets.getDisplayCutout().getSafeInsetTop());
+                right = Math.max(right, insets.getDisplayCutout().getSafeInsetRight());
+                bottom = Math.max(bottom, insets.getDisplayCutout().getSafeInsetBottom());
+            }
+        }
+        safeInsetLeft = left;
+        safeInsetRight = right;
+        FrameLayout.LayoutParams panel = (FrameLayout.LayoutParams) sourcePanel.getLayoutParams();
+        panel.setMargins(left, top, right, bottom);
+        sourcePanel.setLayoutParams(panel);
+        int margin = getResources().getDimensionPixelSize(R.dimen.overlay_margin);
+        FrameLayout.LayoutParams menu = (FrameLayout.LayoutParams) menuButton.getLayoutParams();
+        menu.setMargins(margin + left, margin + top, margin + right, margin + bottom);
+        menuButton.setLayoutParams(menu);
+        FrameLayout.LayoutParams status = (FrameLayout.LayoutParams) statusText.getLayoutParams();
+        status.setMargins(margin + left, margin + top, margin + right, margin + bottom);
+        statusText.setLayoutParams(status);
+    }
+
+    private void showMonitorSettings() {
+        if (settingsDialog != null && settingsDialog.isShowing()) return;
+        stopDiscoveryPolling();
+        View content = getLayoutInflater().inflate(R.layout.dialog_monitor_settings, null);
+        CheckBox bootCheckBox = content.findViewById(R.id.boot_checkbox);
+        bootCheckBox.setChecked(preferences.getBoolean(KEY_START_ON_BOOT, true));
+        bootCheckBox.setOnCheckedChangeListener((button, checked) ->
+                preferences.edit().putBoolean(KEY_START_ON_BOOT, checked).apply());
+        settingsDialog = new AlertDialog.Builder(this)
+                .setTitle(R.string.monitor_settings)
+                .setView(content)
+                .setPositiveButton(R.string.close, null)
+                .create();
+        content.findViewById(R.id.home_settings_button).setOnClickListener(v -> {
+            settingsDialog.dismiss();
+            openAndroidSettings(Settings.ACTION_HOME_SETTINGS);
+        });
+        content.findViewById(R.id.android_settings_button).setOnClickListener(v -> {
+            settingsDialog.dismiss();
+            openAndroidSettings(Settings.ACTION_SETTINGS);
+        });
+        content.findViewById(R.id.third_party_notices_button).setOnClickListener(v ->
+                showThirdPartyNotices());
+        settingsDialog.setOnDismissListener(dialog -> {
+            settingsDialog = null;
+            if (!destroyed) scanSources();
+        });
+        settingsDialog.show();
+    }
+
+    private void showThirdPartyNotices() {
+        if (noticesDialog != null && noticesDialog.isShowing()) return;
+        String notices;
+        try (InputStream input = getAssets().open("libndi_licenses.txt");
+             ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+            byte[] buffer = new byte[4096];
+            int count;
+            while ((count = input.read(buffer)) != -1) output.write(buffer, 0, count);
+            notices = new String(output.toByteArray(), StandardCharsets.UTF_8);
+        } catch (IOException unavailable) {
+            notices = getString(R.string.third_party_notices_unavailable);
+        }
+        noticesDialog = new AlertDialog.Builder(this)
+                .setTitle(R.string.third_party_notices)
+                .setMessage(notices)
+                .setPositiveButton(android.R.string.ok, null)
+                .create();
+        noticesDialog.setOnDismissListener(dialog -> noticesDialog = null);
+        noticesDialog.show();
     }
 
     private void enterImmersiveMode() {
@@ -148,17 +314,21 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         } else {
             controlsHandler.removeCallbacks(hideControls);
             sourcePanel.setVisibility(View.VISIBLE);
-            menuButton.setVisibility(View.VISIBLE);
-            statusText.setVisibility(View.VISIBLE);
+            menuButton.setVisibility(View.GONE);
+            statusText.setVisibility(View.GONE);
+            scanSources();
+            if (!displayedSources.isEmpty()) sourceList.requestFocus();
         }
     }
 
     private void closeSourcePanel() {
+        stopDiscoveryPolling();
         sourcePanel.setVisibility(View.GONE);
         hideControls.run();
     }
 
     private void showControls() {
+        if (sourcePanel.getVisibility() == View.VISIBLE) return;
         menuButton.setVisibility(View.VISIBLE);
         statusText.setVisibility(View.VISIBLE);
         controlsHandler.removeCallbacks(hideControls);
@@ -178,58 +348,99 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             }
             return true;
         }
-        if (sourcePanel.getVisibility() == View.VISIBLE && keyCode == KeyEvent.KEYCODE_BACK) {
-            closeSourcePanel();
-            return true;
-        }
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
-            toggleSourcePanel();
-            return true;
-        }
         return super.onKeyDown(keyCode, event);
     }
 
+    @Override
+    // Legacy fallback. API 33+ registers OnBackInvokedDispatcher in onCreate.
+    @SuppressLint("GestureBackNavigation")
+    public void onBackPressed() {
+        toggleSourcePanel();
+    }
+
     private void scanSources() {
-        scanButton.setEnabled(false);
-        scanButton.setText(R.string.scanning);
-        statusText.setText(R.string.searching_sources);
-        worker.execute(() -> {
-            String[] result = NativeBridge.findSources(3500);
-            List<String> sources = result == null ? Collections.emptyList() : Arrays.asList(result);
-            runOnUiThread(() -> showSources(sources));
+        if (!ndiAvailable || !activityVisible || destroyed ||
+                sourcePanel.getVisibility() != View.VISIBLE ||
+                (settingsDialog != null && settingsDialog.isShowing())) return;
+        stopDiscoveryPolling();
+        discoveryStartedAt = SystemClock.elapsedRealtime();
+        sourceCatalog.beginRefresh(discoveryStartedAt);
+        if (displayedSources.isEmpty()) sourceStatusText.setText(R.string.searching_sources);
+        // Show sources already known to the live finder before waiting for updates.
+        pollDiscovery(discoveryGeneration, 0);
+    }
+
+    private void stopDiscoveryPolling() {
+        ++discoveryGeneration;
+        if (nextDiscoveryPoll != null) {
+            controlsHandler.removeCallbacks(nextDiscoveryPoll);
+            nextDiscoveryPoll = null;
+        }
+    }
+
+    private void pollDiscovery(int generation, int timeoutMs) {
+        if (destroyed || !activityVisible || generation != discoveryGeneration) return;
+        DISCOVERY_WORKER.execute(() -> {
+            if (destroyed || generation != discoveryGeneration) return;
+            String[] result = NativeBridge.findSources(timeoutMs);
+            controlsHandler.post(() -> {
+                if (destroyed || !activityVisible || generation != discoveryGeneration ||
+                        sourcePanel.getVisibility() != View.VISIBLE) return;
+                showSources(sourceCatalog.update(result, SystemClock.elapsedRealtime()));
+                nextDiscoveryPoll = () -> pollDiscovery(generation, 500);
+                controlsHandler.postDelayed(nextDiscoveryPoll, 50);
+            });
         });
     }
 
     private void showSources(List<String> sources) {
-        scanButton.setEnabled(true);
-        scanButton.setText(R.string.scan_again);
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.source_item, sources);
-        sourceList.setAdapter(adapter);
-        sourceList.setOnItemClickListener((parent, view, position, id) ->
-                connectToSource(sources.get(position)));
-        if (sources.isEmpty()) {
-            statusText.setText(R.string.no_sources);
-        } else {
-            statusText.setText(getResources().getQuantityString(
-                    R.plurals.sources_found, sources.size(), sources.size()));
+        if (!displayedSources.equals(sources)) {
+            String selected = (String) sourceList.getSelectedItem();
+            int first = sourceList.getFirstVisiblePosition();
+            View firstChild = sourceList.getChildAt(0);
+            int top = firstChild == null ? 0 : firstChild.getTop();
+            sourceAdapter.setNotifyOnChange(false);
+            sourceAdapter.clear();
+            sourceAdapter.addAll(sources);
+            sourceAdapter.notifyDataSetChanged();
+            displayedSources = new ArrayList<>(sources);
+            int selection = selected == null ? -1 : sourceAdapter.getPosition(selected);
+            if (selection >= 0) {
+                sourceList.setSelection(selection);
+            } else if (!sources.isEmpty()) {
+                sourceList.setSelectionFromTop(Math.min(first, sources.size() - 1), top);
+            }
         }
+        String message = sources.isEmpty()
+                ? getString(SystemClock.elapsedRealtime() - discoveryStartedAt < 5000
+                        ? R.string.searching_sources : R.string.no_sources)
+                : getResources().getQuantityString(R.plurals.sources_found, sources.size(), sources.size());
+        if (!TextUtils.equals(sourceStatusText.getText(), message)) sourceStatusText.setText(message);
     }
 
     private void connectToSource(String sourceName) {
         preferences.edit().putString(KEY_LAST_SOURCE, sourceName).apply();
         statusText.setText(getString(R.string.connecting_to, sourceName));
         closeSourcePanel();
-        worker.execute(() -> NativeBridge.connect(sourceName));
+        showControls();
+        CAPTURE_WORKER.execute(() -> {
+            if (!destroyed) NativeBridge.connect(sourceName);
+        });
     }
 
     @SuppressWarnings("unused")
     public void onNativeStatus(String message) {
-        runOnUiThread(() -> statusText.setText(message));
+        runOnUiThread(() -> {
+            if (!destroyed) statusText.setText(message);
+        });
     }
 
     @SuppressWarnings("unused")
     public void onNativeVideoFormat(int width, int height, double fps) {
         runOnUiThread(() -> {
+            if (destroyed) return;
+            videoWidth = width;
+            videoHeight = height;
             fitVideoSurface(width, height);
             statusText.setText(String.format(Locale.getDefault(), "%d x %d  •  %.2f fps", width, height, fps));
         });
@@ -257,7 +468,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
 
     @SuppressWarnings("unused")
     public void onNativeAudio(short[] pcm, int sampleRate, int channels) {
-        if (pcm == null || pcm.length == 0) return;
+        if (destroyed || pcm == null || pcm.length == 0) return;
         if (audioTrack == null || audioSampleRate != sampleRate || audioChannels != channels) {
             configureAudio(sampleRate, channels);
         }
@@ -324,10 +535,18 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
 
     @Override
     protected void onDestroy() {
+        destroyed = true;
+        stopDiscoveryPolling();
         controlsHandler.removeCallbacksAndMessages(null);
-        NativeBridge.disconnect();
+        if (settingsDialog != null) settingsDialog.dismiss();
+        if (noticesDialog != null) noticesDialog.dismiss();
+        if (Build.VERSION.SDK_INT >= 33 && backCallback != null) {
+            getOnBackInvokedDispatcher().unregisterOnBackInvokedCallback(backCallback);
+        }
         NativeBridge.setCallbackTarget(null);
-        worker.shutdownNow();
+        // Serial cleanup follows any in-flight connect/scan, avoiding native races.
+        CAPTURE_WORKER.execute(NativeBridge::disconnect);
+        DISCOVERY_WORKER.execute(NativeBridge::releaseDiscovery);
         releaseAudio();
         if (multicastLock != null && multicastLock.isHeld()) multicastLock.release();
         super.onDestroy();

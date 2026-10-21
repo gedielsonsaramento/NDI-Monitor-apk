@@ -15,6 +15,7 @@
 
 #if NDI_ENABLED
 #include "Processing.NDI.Lib.h"
+#include "ndi_source_finder.h"
 #endif
 
 #define LOG_TAG "NDIMonitorNative"
@@ -30,6 +31,11 @@ std::mutex g_window_mutex;
 
 std::thread g_capture_thread;
 std::atomic<bool> g_running{false};
+std::mutex g_capture_control_mutex;
+
+#if NDI_ENABLED
+NdiSourceFinder g_source_finder;
+#endif
 
 JNIEnv* get_env(bool& attached) {
     attached = false;
@@ -164,7 +170,7 @@ void capture_loop(std::string source_name) {
     settings.color_format = NDIlib_recv_color_format_RGBX_RGBA;
     settings.bandwidth = NDIlib_recv_bandwidth_highest;
     settings.allow_video_fields = false;
-    settings.p_ndi_recv_name = "NDI Monitor Android";
+    settings.p_ndi_recv_name = "Monitor de Retorno Android";
 
     NDIlib_recv_instance_t receiver = NDIlib_recv_create_v3(&settings);
     if (!receiver) {
@@ -246,24 +252,13 @@ Java_br_com_polegar_ndimonitor_NativeBridge_findSources(JNIEnv* env, jclass, jin
     jclass string_class = env->FindClass("java/lang/String");
 #if NDI_ENABLED
     if (!ensure_ndi()) return env->NewObjectArray(0, string_class, nullptr);
-    NDIlib_find_create_t config{};
-    config.show_local_sources = true;
-    config.p_groups = nullptr;
-    config.p_extra_ips = nullptr;
-    NDIlib_find_instance_t finder = NDIlib_find_create_v2(&config);
-    if (!finder) return env->NewObjectArray(0, string_class, nullptr);
-
-    const int wait_time = std::max(500, static_cast<int>(timeout_ms));
-    NDIlib_find_wait_for_sources(finder, static_cast<uint32_t>(wait_time));
-    uint32_t count = 0;
-    const NDIlib_source_t* sources = NDIlib_find_get_current_sources(finder, &count);
-    jobjectArray result = env->NewObjectArray(static_cast<jsize>(count), string_class, nullptr);
-    for (uint32_t i = 0; i < count; ++i) {
-        jstring name = env->NewStringUTF(sources[i].p_ndi_name ? sources[i].p_ndi_name : "");
+    const std::vector<std::string> sources = g_source_finder.find(timeout_ms);
+    jobjectArray result = env->NewObjectArray(static_cast<jsize>(sources.size()), string_class, nullptr);
+    for (size_t i = 0; i < sources.size(); ++i) {
+        jstring name = env->NewStringUTF(sources[i].c_str());
         env->SetObjectArrayElement(result, static_cast<jsize>(i), name);
         env->DeleteLocalRef(name);
     }
-    NDIlib_find_destroy(finder);
     return result;
 #else
     return env->NewObjectArray(0, string_class, nullptr);
@@ -271,7 +266,15 @@ Java_br_com_polegar_ndimonitor_NativeBridge_findSources(JNIEnv* env, jclass, jin
 }
 
 extern "C" JNIEXPORT void JNICALL
+Java_br_com_polegar_ndimonitor_NativeBridge_releaseDiscovery(JNIEnv*, jclass) {
+#if NDI_ENABLED
+    g_source_finder.close();
+#endif
+}
+
+extern "C" JNIEXPORT void JNICALL
 Java_br_com_polegar_ndimonitor_NativeBridge_connect(JNIEnv* env, jclass, jstring source) {
+    std::lock_guard<std::mutex> lock(g_capture_control_mutex);
     const char* value = env->GetStringUTFChars(source, nullptr);
     const std::string source_name = value ? value : "";
     env->ReleaseStringUTFChars(source, value);
@@ -288,6 +291,7 @@ Java_br_com_polegar_ndimonitor_NativeBridge_connect(JNIEnv* env, jclass, jstring
 
 extern "C" JNIEXPORT void JNICALL
 Java_br_com_polegar_ndimonitor_NativeBridge_disconnect(JNIEnv*, jclass) {
+    std::lock_guard<std::mutex> lock(g_capture_control_mutex);
     stop_capture();
 }
 

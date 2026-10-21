@@ -2,8 +2,7 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/root"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="#000000">
+    android:layout_height="match_parent">
 
     <FrameLayout
         android:id="@+id/video_container"
@@ -21,44 +20,49 @@
 
     <TextView
         android:id="@+id/status_text"
+        android:visibility="gone"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|start"
-        android:layout_margin="18dp"
+        android:layout_margin="@dimen/overlay_margin"
         android:background="@drawable/status_background"
         android:paddingStart="14dp"
         android:paddingTop="8dp"
         android:paddingEnd="14dp"
         android:paddingBottom="8dp"
         android:text="@string/starting"
+        android:maxLines="2"
+        android:ellipsize="end"
         android:textColor="#FFFFFF"
         android:textSize="14sp" />
 
-    <Button
+    <ImageButton
         android:id="@+id/menu_button"
-        android:layout_width="52dp"
-        android:layout_height="52dp"
+        android:visibility="gone"
+        android:layout_width="@dimen/toolbar_button_size"
+        android:layout_height="@dimen/toolbar_button_size"
         android:layout_gravity="top|end"
-        android:layout_margin="14dp"
+        android:layout_margin="@dimen/overlay_margin"
         android:background="@drawable/round_button"
         android:contentDescription="@string/open_sources"
-        android:text="☰"
-        android:textColor="#FFFFFF"
-        android:textSize="22sp" />
+        android:padding="@dimen/toolbar_icon_padding"
+        android:src="@drawable/ic_sources"
+        android:tint="#FFFFFF" />
 
     <LinearLayout
         android:id="@+id/source_panel"
-        android:layout_width="360dp"
+        android:layout_width="@dimen/source_panel_width"
         android:layout_height="match_parent"
         android:layout_gravity="end"
         android:background="#F2161B20"
         android:orientation="vertical"
-        android:padding="22dp"
+        android:padding="@dimen/source_panel_padding"
         android:visibility="visible">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:baselineAligned="false"
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
@@ -68,80 +72,77 @@
                 android:layout_weight="1"
                 android:text="@string/sources_title"
                 android:textColor="#FFFFFF"
-                android:textSize="23sp"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:textSize="@dimen/source_title_size"
                 android:textStyle="bold" />
 
-            <Button
+            <ImageButton
+                android:id="@+id/scan_button"
+                android:layout_width="@dimen/toolbar_button_size"
+                android:layout_height="@dimen/toolbar_button_size"
+                android:padding="@dimen/toolbar_icon_padding"
+                android:background="@drawable/round_button"
+                android:contentDescription="@string/refresh_sources"
+                android:nextFocusDown="@id/source_list"
+                android:src="@drawable/ic_refresh"
+                android:tint="#FFFFFF" />
+
+            <ImageButton
+                android:id="@+id/monitor_settings_button"
+                android:layout_width="@dimen/toolbar_button_size"
+                android:layout_height="@dimen/toolbar_button_size"
+                android:padding="@dimen/toolbar_icon_padding"
+                android:background="@drawable/round_button"
+                android:contentDescription="@string/monitor_settings"
+                android:nextFocusDown="@id/source_list"
+                android:src="@drawable/ic_settings"
+                android:tint="#FFFFFF" />
+
+            <ImageButton
                 android:id="@+id/close_panel_button"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
+                android:layout_width="@dimen/toolbar_button_size"
+                android:layout_height="@dimen/toolbar_button_size"
+                android:padding="@dimen/toolbar_icon_padding"
                 android:background="@drawable/round_button"
                 android:contentDescription="@string/close"
-                android:text="×"
-                android:textColor="#FFFFFF"
-                android:textSize="24sp" />
+                android:nextFocusDown="@id/source_list"
+                android:src="@drawable/ic_close"
+                android:tint="#FFFFFF" />
         </LinearLayout>
 
         <TextView
+            android:id="@+id/source_status_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="@string/select_source_help"
+            android:text="@string/searching_sources"
+            android:accessibilityLiveRegion="polite"
+            android:maxLines="2"
+            android:ellipsize="end"
             android:textColor="#B8FFFFFF"
-            android:textSize="14sp" />
-
-        <Button
-            android:id="@+id/scan_button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:background="@drawable/primary_button"
-            android:text="@string/search_sources"
-            android:textAllCaps="false"
-            android:textColor="#FFFFFF"
-            android:textSize="16sp" />
+            android:textSize="@dimen/source_status_size" />
 
         <ListView
             android:id="@+id/source_list"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="8dp"
             android:layout_weight="1"
             android:divider="#2FFFFFFF"
             android:dividerHeight="1dp"
+            android:nextFocusUp="@id/scan_button"
             android:listSelector="@drawable/list_selector" />
-
-        <Button
-            android:id="@+id/home_settings_button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Definir tela inicial / sair do quiosque"
-            android:textAllCaps="false" />
-
-        <Button
-            android:id="@+id/android_settings_button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Configurações do Android"
-            android:textAllCaps="false" />
-
-        <CheckBox
-            android:id="@+id/boot_checkbox"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:buttonTint="#00B7FF"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp"
-            android:text="@string/start_on_boot"
-            android:textColor="#FFFFFF" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:autoLink="web"
             android:gravity="center"
+            android:layout_marginTop="4dp"
             android:text="@string/ndi_attribution"
-            android:textColor="#80FFFFFF"
+            android:textColor="#B8FFFFFF"
+            android:textColorLink="#00B7FF"
             android:textSize="11sp" />
     </LinearLayout>
 </FrameLayout>

@@ -1,5 +1,15 @@
 # Alterações
 
+## Revisão de teste 1.2.0 — `versionCode 3`
+
+- descobridor NDI persistente com atualizações contínuas, separadas da fila de conexão;
+- atualização manual sem limpar fontes, ordem estável e tolerância de 10 segundos a ausências transitórias;
+- barra com três ícones compactos e lista priorizada; configurações de Android/tela inicial movidas para diálogo com rolagem;
+- controles adaptáveis, preservação da navegação por controle remoto e áreas de toque de pelo menos 48 dp;
+- nome provisório “Monitor de Retorno”, pacote Android preservado e avisos do SDK disponíveis nas configurações;
+- target/compile API 36, AGP 8.13.2, Gradle 8.13, NDK r28 e alinhamento de 16 KB;
+- testes do catálogo, descobridor e layout; publicação de produção e testes em rede real permanecem etapas separadas.
+
 ## Preparação para publicação no GitHub
 
 - preservada a licença MIT escolhida pelo mantenedor;

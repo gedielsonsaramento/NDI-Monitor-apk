@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="source_panel_width">360dp</dimen>
+    <dimen name="source_panel_padding">12dp</dimen>
+    <dimen name="toolbar_button_size">48dp</dimen>
+    <dimen name="toolbar_icon_padding">14dp</dimen>
+    <dimen name="source_title_size">18sp</dimen>
+    <dimen name="source_status_size">13sp</dimen>
+    <dimen name="source_item_size">16sp</dimen>
+    <dimen name="source_item_height">48dp</dimen>
+    <dimen name="overlay_margin">12dp</dimen>
+</resources>

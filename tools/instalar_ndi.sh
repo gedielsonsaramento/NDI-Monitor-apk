@@ -9,15 +9,22 @@ fi
 SDK_DIR=$1
 PROJECT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 HEADER=$(find "$SDK_DIR" -type f -name 'Processing.NDI.Lib.h' -print -quit)
+LICENSES=$(find "$SDK_DIR" -type f -name 'libndi_licenses.txt' -print -quit)
 
 if [ -z "$HEADER" ]; then
     echo "Processing.NDI.Lib.h nao foi encontrado."
+    exit 1
+fi
+if [ -z "$LICENSES" ]; then
+    echo "libndi_licenses.txt nao foi encontrado na pasta licenses do SDK."
     exit 1
 fi
 
 HEADER_DIR=$(dirname "$HEADER")
 mkdir -p "$PROJECT_DIR/app/src/main/cpp/include"
 cp "$HEADER_DIR"/*.h "$PROJECT_DIR/app/src/main/cpp/include/"
+mkdir -p "$PROJECT_DIR/app/src/main/assets"
+cp "$LICENSES" "$PROJECT_DIR/app/src/main/assets/libndi_licenses.txt"
 
 FOUND_ARM64=0
 FOUND_ARM32=0
