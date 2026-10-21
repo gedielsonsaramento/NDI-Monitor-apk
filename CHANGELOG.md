@@ -1,3 +1,18 @@
+# 1.3.0 — NDI e retorno HTML
+
+- Acrescenta seletor NDI/HTML no cabeçalho compacto, preservando a área da lista.
+- Abre o link real de Stage HTML, com IP, porta, caminho e parâmetros editáveis.
+- Expande um IP digitado para a porta 5050 e o caminho `/output/saida-html-1`;
+  preserva endereços HTTP/HTTPS completos.
+- Salva modo, endereço HTML e fonte NDI separadamente por aparelho.
+- Encerra a recepção NDI ao entrar em HTML e destrói o renderizador web ao
+  voltar para NDI ou sair do aplicativo, encerrando a mídia da página.
+- Acrescenta recarga, tempo limite e novas tentativas de carregamento da página.
+- Valida endereços web, bloqueia navegação para esquemas locais/externos e
+  mantém a verificação de certificados HTTPS.
+- Permite HTTP para o servidor local do Spresenter. O modo HTML não acrescenta
+  áudio nem garante recursos que a página não forneça.
+
 # Alterações
 
 ## Revisão de teste 1.2.0 — `versionCode 3`

@@ -1,13 +1,15 @@
 # Monitor de Retorno — Android 7+
 
-Aplicativo Android independente, compatível com NDI®, para receber vídeo e áudio Standard full-bandwidth pela rede local em celulares e dispositivos Android de uso geral.
+Aplicativo Android independente para receber vídeo e áudio NDI® Standard full-bandwidth ou exibir um retorno HTML pela rede local em celulares e dispositivos Android de uso geral.
 
-Versão de teste: **1.2.0** (`versionCode 3`). Nome provisório: **Monitor de Retorno**. Pacote Android preservado: `br.com.polegar.ndimonitor`.
+Versão de teste: **1.3.0** (`versionCode 4`). Nome provisório: **Monitor de Retorno**. Pacote Android preservado: `br.com.polegar.ndimonitor`.
 
 Projeto independente. NDI® é marca registrada da Vizrt NDI AB. Conheça a tecnologia em [ndi.video](https://ndi.video/). Não há indicação de patrocínio ou certificação pela NDI/Vizrt.
 
 ## Recursos
 
+- Dois modos no mesmo aplicativo: **NDI** e **HTML**, com a escolha salva por aparelho.
+- Retorno HTML em tela cheia, endereço editável e salvo, recarga manual e novas tentativas de carregamento após falhas de rede. [Como configurar](RETORNO_HTML.md).
 - Descoberta contínua enquanto a lista está aberta: novas fontes aparecem sem precisar reiniciar a busca.
 - Atualização manual sem apagar a lista; fontes ausentes de sucessivas atualizações são removidas após 10 segundos de tolerância.
 - Painel compacto no celular, com ícones menores e área de toque de pelo menos 48 dp, lista com rolagem e controles maiores em telas grandes.
@@ -89,6 +91,7 @@ Leia [QUIOSQUE.md](QUIOSQUE.md) antes de mudar a tela inicial.
 
 ## Limitações conhecidas
 
+- O áudio no modo HTML depende do conteúdo que a página fornece. A reprodução de vídeos, o áudio, o tema e a atualização do retorno devem ser validados com o Spresenter real. É necessário um componente WebView funcional no aparelho.
 - A opção de tela inicial é um **launcher opcional**, não um quiosque gerenciado completo. Não bloqueia outros aplicativos, não encerra serviços de terceiros e não garante ganho de desempenho.
 - A abertura após o boot depende do firmware e das restrições de [início de atividades em segundo plano do Android](https://developer.android.com/guide/components/activities/background-starts). Teste no aparelho escolhido; não há garantia para todo dispositivo Android 7+.
 - O CMake e o NDK foram atualizados para alinhamento de 16 KB. Além de conferir o ELF e o empacotamento do APK/AAB, teste vídeo, áudio e reconexão em aparelho com páginas de 16 KB; só a configuração de compilação não confirma o funcionamento no dispositivo. Consulte a [documentação Android](https://developer.android.com/guide/practices/page-sizes).
@@ -97,11 +100,13 @@ Leia [QUIOSQUE.md](QUIOSQUE.md) antes de mudar a tela inicial.
 
 ## Documentação
 
+- [Modo HTML e troca entre fontes](RETORNO_HTML.md)
 - [Guia de instalação e compilação](GUIA_PASSO_A_PASSO.md)
 - [Tela inicial opcional e como desativar](QUIOSQUE.md)
 - [Licença e cuidados com o SDK NDI](LICENCA_NDI_IMPORTANTE.md)
 - [Histórico de alterações](CHANGELOG.md)
 - [Resultados e limites da validação 1.2.0](VALIDACAO_1.2.md)
+- [Resultados e limites da validação 1.3.0](VALIDACAO_1.3.md)
 
 ## Verificações de desenvolvimento
 

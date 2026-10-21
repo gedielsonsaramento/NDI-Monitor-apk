@@ -3,9 +3,8 @@
     <string name="app_name">Monitor de Retorno</string>
     <string name="video_monitor">Monitor de vídeo</string>
     <string name="starting">Iniciando monitor…</string>
-    <string name="open_sources">Abrir lista de fontes</string>
+    <string name="open_sources">Abrir fontes e modo de exibição</string>
     <string name="close">Fechar</string>
-    <string name="sources_title">Fontes NDI®</string>
     <string name="searching_sources">Procurando fontes NDI na rede…</string>
     <string name="no_sources">Nenhuma fonte encontrada. A busca continua; confira a rede.</string>
     <string name="refresh_sources">Atualizar fontes</string>
@@ -18,6 +17,24 @@
     <string name="third_party_notices">Licenças de terceiros</string>
     <string name="third_party_notices_unavailable">Avisos indisponíveis nesta compilação de preparação.</string>
     <string name="ndi_sdk_missing">SDK NDI ausente. Consulte o GUIA_PASSO_A_PASSO.md do projeto.</string>
+    <string name="choose_mode">Escolher NDI ou HTML</string>
+    <string name="mode_ndi">NDI ▾</string>
+    <string name="mode_html">HTML ▾</string>
+    <string-array name="monitor_modes">
+        <item>NDI — fontes na rede</item>
+        <item>HTML — endereço do retorno</item>
+    </string-array>
+    <string name="html_address">Endereço do retorno</string>
+    <string name="html_address_hint">Link HTML ou IP do computador</string>
+    <string name="html_instructions">Cole o link completo ou digite o IP do computador.</string>
+    <string name="html_invalid_address">Informe um IP ou um endereço HTTP/HTTPS válido.</string>
+    <string name="open_html">Salvar e abrir retorno</string>
+    <string name="refresh_html">Recarregar retorno HTML</string>
+    <string name="html_loading">Abrindo retorno HTML…</string>
+    <string name="html_open">Página do retorno HTML aberta</string>
+    <string name="html_retrying">Retorno indisponível. Tentando novamente…</string>
+    <string name="html_load_failed">Não foi possível abrir o retorno. Abra o menu para conferir o endereço e recarregar.</string>
+    <string name="html_renderer_unavailable">O componente de páginas web está indisponível. Verifique o Android System WebView nas configurações do aparelho.</string>
     <plurals name="sources_found">
         <item quantity="one">%d fonte encontrada · busca ativa</item>
         <item quantity="other">%d fontes encontradas · busca ativa</item>
