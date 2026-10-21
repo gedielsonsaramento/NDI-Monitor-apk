@@ -6,11 +6,13 @@ Este repositório não inclui esses arquivos proprietários. Cada usuário deve 
 
 ## Antes de distribuir um APK
 
-O APK com recepção real incorpora `libndi.so`. Não foi confirmada nesta publicação a autorização aplicável à sua distribuição; por isso, nenhum APK é disponibilizado no repositório nesta etapa.
+O APK com recepção real incorpora `libndi.so`. O escopo deste aplicativo é somente recepção **Standard full-bandwidth**, sem NDI|HX, HX2, HX3 ou recursos Advanced, distribuído como software para aparelhos Android de uso geral dos próprios usuários. A distribuição pelas lojas ou como APK deve respeitar os termos de redistribuição do SDK e incluir os avisos e atribuições aplicáveis.
 
 Confira o contrato existente na raiz da sua cópia do SDK e as [orientações oficiais de licenciamento](https://docs.ndi.video/all/developing-with-ndi/sdk/licensing), inclusive as condições para componentes redistribuíveis, avisos, atribuição e direitos de terceiros. A documentação também orienta entrar em contato com a NDI para usar “NDI” no nome de um produto.
 
-O uso em TV Box dedicada e a disponibilização de um aplicativo pronto devem ser avaliados conforme os termos efetivamente aceitos. Ser gratuito, privado ou sem venda não é, por si só, uma confirmação de permissão.
+O nome visível provisório é **Monitor de Retorno**, sem NDI no nome de produto. O identificador técnico de pacote é preservado para compatibilidade de atualizações. A marca permanece na indicação de compatibilidade e na atribuição.
+
+A opção voluntária de tela inicial não bloqueia outros aplicativos. Este projeto não fornece hardware dedicado, bloqueado ou vendido em conjunto com o app. Acrescentar HX/Advanced ou passar a fornecer esse tipo de equipamento exige nova revisão dos termos com a NDI.
 
 Em caso de dúvida, solicite orientação à [equipe NDI](https://ndi.video/resources/get-in-touch/) ou assessoria jurídica. Este arquivo não substitui o contrato nem constitui parecer jurídico.
 

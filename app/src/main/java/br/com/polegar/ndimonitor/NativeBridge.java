@@ -11,6 +11,7 @@ public final class NativeBridge {
 
     public static native boolean isNdiAvailable();
     public static native String[] findSources(int timeoutMs);
+    public static native void releaseDiscovery();
     public static native void connect(String sourceName);
     public static native void disconnect();
     public static native void setSurface(Surface surface);

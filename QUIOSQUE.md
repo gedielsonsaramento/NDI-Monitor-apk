@@ -1,4 +1,4 @@
-# NDI Monitor 1.1 — tela inicial opcional
+# Monitor de Retorno — tela inicial opcional
 
 O aplicativo pode ser escolhido como tela inicial (Home) da TV Box. Não usa root,
 não bloqueia aplicativos e não interrompe serviços de terceiros. Não há promessa
@@ -7,8 +7,9 @@ de melhora de desempenho nem recuperação automática de travamentos.
 ## Atualizar o projeto que já recebe NDI
 
 Feche o Android Studio. Faça uma cópia de segurança do projeto antigo.
-Extraia o pacote atualizado em outra pasta e copie estes arquivos para os mesmos
-locais no projeto antigo, substituindo apenas esses arquivos:
+Use a versão completa atualizada do código em uma pasta separada e integre novamente
+sua cópia local do SDK pelos scripts de instalação. A revisão 1.2.0 inclui novos
+arquivos de descoberta, catálogo e interface, além dos arquivos principais:
 
 - app/build.gradle
 - app/src/main/AndroidManifest.xml
@@ -20,14 +21,14 @@ Não substitua cpp/include nem jniLibs: preserve seu SDK NDI instalado.
 Abra a raiz do projeto antigo no Android Studio, sincronize o Gradle e use
 Build > Generate App Bundles or APKs > Generate APKs, ou execute
 `.\gradlew.bat :app:assembleDebug` no PowerShell na raiz.
-O novo APK fica em app/build/outputs/apk/debug/NDI Monitor.apk.
+O novo APK fica em app/build/outputs/apk/debug/app-debug.apk.
 Instale como atualização usando a mesma chave de assinatura anterior.
 
 ## Ativar na TV Box
 
-Abra o painel de fontes e use “Definir tela inicial / sair do quiosque”.
-Escolha NDI Monitor como aplicativo de início padrão. Em alguns aparelhos,
-pressione Home e escolha NDI Monitor > Sempre. A disponibilidade depende do
+Abra a engrenagem de configurações no painel e use “Escolher tela inicial”.
+Escolha Monitor de Retorno como aplicativo de início padrão. Em alguns aparelhos,
+pressione Home e escolha Monitor de Retorno > Sempre. A disponibilidade depende do
 firmware. Não selecione como tela inicial do celular se não desejar esse comportamento.
 Mantenha marcada a abertura após ligar e selecione uma fonte para salvar.
 Reinicie a TV Box e teste a abertura e a reconexão. Esse comportamento depende
@@ -36,7 +37,7 @@ aparelho de uso final.
 
 ## Desativar e manter acesso ao Android
 
-Toque no vídeo, abra o menu e use “Definir tela inicial / sair do quiosque”.
+Toque no vídeo, abra o painel, depois a engrenagem e use “Escolher tela inicial”.
 Escolha o launcher original. O botão “Configurações do Android” permanece
 disponível no painel. No controle, OK revela os controles; OK novamente abre
 o painel. Voltar abre ou fecha o painel em vez de encerrar o monitor.

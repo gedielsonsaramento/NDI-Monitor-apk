@@ -21,9 +21,9 @@ Não abra o projeto diretamente de dentro do ZIP.
 
 Na primeira abertura, o Android Studio poderá solicitar estes componentes:
 
-- Android SDK Platform 34;
+- Android SDK Platform 36;
 - Android SDK Build-Tools;
-- NDK (Side by side);
+- NDK (Side by side), versão 28.2.13676358;
 - CMake 3.22.1.
 
 Aceite a instalação desses componentes oficiais do Android Studio.
@@ -54,7 +54,8 @@ O script procura e copia:
 
 - `Processing.NDI.Lib.h` e os outros headers;
 - `libndi.so` ARM64;
-- `libndi.so` ARM32, quando disponível no SDK.
+- `libndi.so` ARM32, quando disponível no SDK;
+- `licenses/libndi_licenses.txt`, para consulta nas configurações do aplicativo.
 
 Se sua TV Box for somente ARM64 e o SDK atual não fornecer ARM32, abra `app/build.gradle` e remova `armeabi-v7a` de `abiFilters` antes de compilar.
 
@@ -66,6 +67,7 @@ No Android Studio, confira se estes arquivos existem:
 app/src/main/cpp/include/Processing.NDI.Lib.h
 app/src/main/jniLibs/arm64-v8a/libndi.so
 app/src/main/jniLibs/armeabi-v7a/libndi.so
+app/src/main/assets/libndi_licenses.txt
 ```
 
 Depois clique em:
@@ -79,7 +81,7 @@ Na saída do CMake, a mensagem esperada é:
 NDI SDK encontrado para arm64-v8a: recepcao real ativada
 ```
 
-## 6. Teste na TV Box
+## 6. Teste no celular ou aparelho Android de uso geral
 
 1. Ative as opções de desenvolvedor e a depuração USB na TV Box.
 2. Conecte a TV Box ao computador ou use ADB pela rede.
@@ -87,7 +89,7 @@ NDI SDK encontrado para arm64-v8a: recepcao real ativada
 4. Clique em **Run**.
 5. Deixe a TV Box e a fonte NDI na mesma rede local.
 6. De preferência, use cabo Ethernet.
-7. No aplicativo, clique em **Buscar fontes** e escolha a origem.
+7. No aplicativo, abra a lista e escolha a origem. Novas fontes aparecem continuamente; **↻** atualiza sem limpar as anteriores.
 
 Toque na imagem para revelar o menu e o status. Com o painel fechado, eles se ocultam depois de 4 segundos. Toque no botão de menu para abrir ou fechar o painel de fontes. No controle remoto, OK revela os controles e um novo acionamento abre o painel.
 
@@ -110,18 +112,18 @@ Alternativamente, execute na raiz do projeto:
 O APK de teste será criado em:
 
 ```text
-app\build\outputs\apk\debug\NDI Monitor.apk
+app\build\outputs\apk\debug\app-debug.apk
 ```
 
 É uma compilação debug para testes. Instale usando a mesma chave de assinatura para atualizar uma instalação anterior. Não publique chaves nem arquivos privados de assinatura.
 
 ## 8. Tela inicial opcional da TV Box
 
-O painel inclui **Definir tela inicial / sair do quiosque** e **Configurações do Android**. Leia [QUIOSQUE.md](QUIOSQUE.md), anote o launcher original e teste a saída antes de definir o monitor como tela inicial. Essa função não bloqueia aplicativos e não garante melhoria de desempenho.
+Abra a engrenagem **Configurações** para acessar **Escolher tela inicial**, **Configurações do Android**, início após o boot e licenças de terceiros. Essas opções não ocupam a área da lista. Leia [QUIOSQUE.md](QUIOSQUE.md), anote o launcher original e teste a saída antes de definir o monitor como tela inicial. Essa função é voluntária, não bloqueia aplicativos e não garante melhoria de desempenho.
 
 ## Antes de distribuir
 
-O SDK NDI não está incluído neste repositório. O APK com `libndi.so` depende das condições de distribuição aplicáveis ao SDK; leia [LICENCA_NDI_IMPORTANTE.md](LICENCA_NDI_IMPORTANTE.md). Consulte também as limitações de compatibilidade no [README](README.md), especialmente o suporte ainda não validado a páginas de 16 KB.
+O SDK NDI não está incluído neste repositório. O APK com `libndi.so` deve respeitar as condições de distribuição Standard; leia [LICENCA_NDI_IMPORTANTE.md](LICENCA_NDI_IMPORTANTE.md). Para a Play, prepare um **Android App Bundle assinado de release**, termos para usuários, política de privacidade e a ficha da loja. Confira o alinhamento ELF, o empacotamento de 16 KB e o funcionamento em aparelho. O APK debug é para testes.
 
 ## Soluções rápidas
 
