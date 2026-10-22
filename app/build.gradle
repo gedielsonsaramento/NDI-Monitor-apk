@@ -11,8 +11,8 @@ android {
         applicationId 'br.com.polegar.ndimonitor'
         minSdk 24
         targetSdk 36
-        versionCode 4
-        versionName '1.3.0'
+        versionCode 5
+        versionName '1.4.0'
 
         ndk {
             abiFilters 'armeabi-v7a', 'arm64-v8a'
@@ -52,6 +52,7 @@ android {
 dependencies {
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.robolectric:robolectric:4.16.1'
+    testImplementation 'com.squareup.okhttp3:mockwebserver:4.12.0'
 }
 
 tasks.register('verifyReleaseNdiSdk') {

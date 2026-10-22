@@ -1,18 +1,20 @@
 # NDI e retorno HTML no mesmo aplicativo
 
-A revisão 1.3.0 acrescenta o modo HTML ao Monitor de Retorno. Cada aparelho
+A revisão 1.4.0 acrescenta busca HTML ao modo introduzido na 1.3. Cada aparelho
 guarda seu modo e sua fonte: uma TV pode receber NDI enquanto outra abre o
 retorno HTML do Spresenter. A exibição usa um modo por vez em cada aparelho.
 
 ## Abrir o retorno
 
-1. Ative um destino **Saída HTML** em **Retorno (Stage)** no Spresenter e copie
+1. Ative um destino **Saída HTML** em **Retorno (Stage)** no Spresenter e confira
    o endereço exibido nessa configuração.
 2. Mantenha o computador e o aparelho Android em uma rede que permita a
    comunicação entre eles. Uma rede de convidados pode impedir esse acesso.
 3. No aplicativo, abra o painel e toque no seletor **NDI ▾** do cabeçalho.
-   Escolha **HTML — endereço do retorno**.
-4. Cole o link e toque em **Salvar e abrir retorno**.
+   Escolha **HTML — retornos na rede**.
+4. Aguarde os candidatos aparecerem na lista. Selecione o retorno com as setas
+   e OK do controle remoto ou por toque; o endereço fica salvo nesse aparelho.
+5. Se necessário, use **Informar endereço**, cole o link e acione **Salvar e abrir retorno**.
 
 O endereço completo fica editável. Exemplo de formato observado na configuração
 de Stage: `http://IP_DO_PC:5050/output/saida-html-1`. O IP, a porta e o caminho
@@ -22,7 +24,16 @@ Para facilitar, digitar apenas um IP ou nome de computador faz o aplicativo
 acrescentar a porta `5050` e o caminho `/output/saida-html-1`. Se esse destino
 for diferente no seu Spresenter, cole o link completo. Um endereço que já
 começa com `http://` ou `https://` é preservado, inclusive porta, caminho e
-parâmetros. O aplicativo não tenta descobrir o PC automaticamente.
+parâmetros. A busca automática usa Wi-Fi/Ethernet com IPv4 e testa o padrão
+`:5050/output/saida-html-1`. Não procura todas as portas ou nomes de saídas.
+Em redes maiores que /24, limita a varredura à faixa /24 do Android. Confira
+[algoritmo, limites e endereços personalizados no manual](DOCUMENTACAO_COMPLETA.md).
+
+Os resultados são páginas HTML acessíveis nesse endereço, não uma certificação
+do conteúdo do retorno. Servidores com rotas genéricas podem responder HTML
+para um caminho inexistente. Selecione e confira a página. Porta e caminho
+personalizados precisam ser informados uma vez; o link salvo não é propagado
+com seus parâmetros para outros computadores.
 
 ## Uso diário
 
@@ -30,8 +41,11 @@ parâmetros. O aplicativo não tenta descobrir o PC automaticamente.
   inicia novamente. O NDI mantém sua memória de fonte separada.
 - Toque na imagem ou use OK/Menu/Voltar no controle remoto para revelar os
   controles. O seletor do cabeçalho permite voltar ao NDI.
-- O ícone de atualização recarrega a página no modo HTML; no modo NDI, consulta
-  as fontes sem apagar a lista.
+- O ícone do cabeçalho refaz a busca do modo atual sem limpar imediatamente
+  a lista. No modo HTML, o botão ao lado de **Informar endereço** recarrega a página.
+- A busca HTML repete 30 s após o fim do ciclo anterior, somente com o painel
+  aberto. Fecha o painel, troca de modo ou sai do app: a busca é cancelada.
+  Fontes HTML ausentes têm tolerância de 90 s; o último link salvo é preservado.
 - A troca para HTML encerra a recepção NDI. A troca para NDI destrói o renderizador
   web, encerrando sua reprodução de mídia. Sair do aplicativo também encerra o
   renderizador HTML; ao retornar, a página é reaberta.

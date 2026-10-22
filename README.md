@@ -2,7 +2,9 @@
 
 Aplicativo Android independente para receber vídeo e áudio NDI® Standard full-bandwidth ou exibir um retorno HTML pela rede local em celulares e dispositivos Android de uso geral.
 
-Versão de teste: **1.3.0** (`versionCode 4`). Nome provisório: **Monitor de Retorno**. Pacote Android preservado: `br.com.polegar.ndimonitor`.
+Versão de teste: **1.4.0** (`versionCode 5`). Nome provisório: **Monitor de Retorno**. Pacote Android preservado: `br.com.polegar.ndimonitor`.
+
+Comece pela [documentação completa do projeto](DOCUMENTACAO_COMPLETA.md), com instalação, uso no controle remoto, arquitetura, compilação, testes, assinatura e preparação para publicação.
 
 Projeto independente. NDI® é marca registrada da Vizrt NDI AB. Conheça a tecnologia em [ndi.video](https://ndi.video/). Não há indicação de patrocínio ou certificação pela NDI/Vizrt.
 
@@ -10,8 +12,9 @@ Projeto independente. NDI® é marca registrada da Vizrt NDI AB. Conheça a tecn
 
 - Dois modos no mesmo aplicativo: **NDI** e **HTML**, com a escolha salva por aparelho.
 - Retorno HTML em tela cheia, endereço editável e salvo, recarga manual e novas tentativas de carregamento após falhas de rede. [Como configurar](RETORNO_HTML.md).
-- Descoberta contínua enquanto a lista está aberta: novas fontes aparecem sem precisar reiniciar a busca.
-- Atualização manual sem apagar a lista; fontes ausentes de sucessivas atualizações são removidas após 10 segundos de tolerância.
+- Busca HTML em Wi-Fi/Ethernet com IPv4: encontra páginas no padrão `:5050/output/saida-html-1` e permite selecioná-las com setas e OK, sem digitar. Repete 30 s depois de cada ciclo enquanto o painel está aberto, com requisições limitadas e cancelamento ao sair.
+- Descoberta NDI contínua enquanto a lista está aberta: novas fontes aparecem sem precisar reiniciar a busca.
+- Atualização manual sem apagar a lista: tolerância de ausência de 10 s para NDI e 90 s para HTML; o endereço HTML salvo permanece disponível.
 - Painel compacto no celular, com ícones menores e área de toque de pelo menos 48 dp, lista com rolagem e controles maiores em telas grandes.
 - Recepção de vídeo por JNI/C++ e reprodução de áudio por `AudioTrack`.
 - Tela cheia horizontal, com preservação da proporção da imagem.
@@ -85,12 +88,15 @@ Veja o [guia passo a passo](GUIA_PASSO_A_PASSO.md) para a instalação do SDK e 
 3. Toque no vídeo para revelar os controles; toque no menu para abrir o painel.
 4. No controle remoto, **OK/Enter/Menu** revela os controles e um novo acionamento abre o painel. **Voltar** abre ou fecha o painel.
 
+Para HTML, escolha **HTML — retornos na rede**, aguarde os candidatos e selecione um deles. **Informar endereço** fica como alternativa; o botão ao lado recarrega a página salva. O ícone do cabeçalho refaz a busca.
+
 Na engrenagem **Configurações**, a opção **Escolher tela inicial** permite escolher ou restaurar o launcher do aparelho. Essa opção é voluntária e não impede acesso a outros aplicativos. Não há bloqueio de hardware nesta versão.
 
 Leia [QUIOSQUE.md](QUIOSQUE.md) antes de mudar a tela inicial.
 
 ## Limitações conhecidas
 
+- A busca HTML testa o caminho e a porta do exemplo; não enumera qualquer site ou todas as saídas de um PC. Em redes maiores que /24, a varredura usa somente a faixa /24 do aparelho. IPv6, nomes de host e links personalizados continuam disponíveis pelo endereço manual. Um HTML encontrado é um candidato, cuja exibição precisa ser conferida.
 - O áudio no modo HTML depende do conteúdo que a página fornece. A reprodução de vídeos, o áudio, o tema e a atualização do retorno devem ser validados com o Spresenter real. É necessário um componente WebView funcional no aparelho.
 - A opção de tela inicial é um **launcher opcional**, não um quiosque gerenciado completo. Não bloqueia outros aplicativos, não encerra serviços de terceiros e não garante ganho de desempenho.
 - A abertura após o boot depende do firmware e das restrições de [início de atividades em segundo plano do Android](https://developer.android.com/guide/components/activities/background-starts). Teste no aparelho escolhido; não há garantia para todo dispositivo Android 7+.
@@ -100,6 +106,7 @@ Leia [QUIOSQUE.md](QUIOSQUE.md) antes de mudar a tela inicial.
 
 ## Documentação
 
+- [Manual completo do projeto 1.4.0](DOCUMENTACAO_COMPLETA.md)
 - [Modo HTML e troca entre fontes](RETORNO_HTML.md)
 - [Guia de instalação e compilação](GUIA_PASSO_A_PASSO.md)
 - [Tela inicial opcional e como desativar](QUIOSQUE.md)
@@ -107,10 +114,11 @@ Leia [QUIOSQUE.md](QUIOSQUE.md) antes de mudar a tela inicial.
 - [Histórico de alterações](CHANGELOG.md)
 - [Resultados e limites da validação 1.2.0](VALIDACAO_1.2.md)
 - [Resultados e limites da validação 1.3.0](VALIDACAO_1.3.md)
+- [Resultados e limites da validação 1.4.0](VALIDACAO_1.4.md)
 
 ## Verificações de desenvolvimento
 
 - `sh tools/test-native-discovery.sh`: regressões do descobridor com uma implementação simulada da API pública NDI, sem redistribuir o SDK.
-- `./gradlew :app:testDebugUnitTest :app:lintDebug`: catálogo de fontes e layout em telas pequenas/grandes. Os testes de layout usam Android simulado, não substituem o teste com rede e transmissor reais.
+- `./gradlew :app:testDebugUnitTest :app:lintDebug`: URLs, catálogos, faixas IPv4, HTTP, cancelamento, seleção e layout. Os testes usam servidores controlados e Android simulado; não substituem a rede e o transmissor reais.
 
 Para a Play, ainda são necessários termos para usuários e política de privacidade aplicáveis, ficha da loja, assinatura de produção, AAB e validação em aparelho. O build release verifica a presença dos componentes locais e avisos, mas não substitui essas etapas.

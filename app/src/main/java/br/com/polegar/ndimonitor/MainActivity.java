@@ -73,7 +73,16 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     private AlertDialog settingsDialog;
     private AlertDialog noticesDialog;
     private AlertDialog modeDialog;
+    private AlertDialog htmlAddressDialog;
     private HtmlMonitor htmlMonitor;
+    private LanHtmlDiscovery htmlDiscovery;
+    private final HtmlSourceCatalog htmlSourceCatalog = new HtmlSourceCatalog();
+    private List<HtmlSource> displayedHtmlSources = Collections.emptyList();
+    private Runnable nextHtmlScan;
+    private int htmlScanGeneration;
+    private int htmlScanProgress;
+    private int htmlScanFound;
+    private boolean htmlScanLimited;
     private EditText htmlUrlEditor;
     private volatile boolean htmlMode;
     private boolean modeInitialized;
@@ -119,13 +128,12 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         statusText = findViewById(R.id.status_text);
         sourceStatusText = findViewById(R.id.source_status_text);
         scanButton = findViewById(R.id.scan_button);
-        htmlUrlEditor = findViewById(R.id.html_url);
-        htmlUrlEditor.setText(preferences.getString(KEY_HTML_URL, ""));
+        htmlDiscovery = new LanHtmlDiscovery(this);
+        htmlSourceCatalog.remember(preferences.getString(KEY_HTML_URL, ""), SystemClock.elapsedRealtime());
         htmlMonitor = new HtmlMonitor(this, findViewById(R.id.html_container), new HtmlMonitor.Listener() {
             @Override public void onStatus(int message) {
                 if (!destroyed && htmlMode) {
                     statusText.setText(message);
-                    sourceStatusText.setText(message);
                 }
             }
 
@@ -134,8 +142,12 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         sourceAdapter = new ArrayAdapter<>(this, R.layout.source_item, new ArrayList<>());
         sourceList.setAdapter(sourceAdapter);
         sourceList.setOnItemClickListener((parent, view, position, id) -> {
-            String source = sourceAdapter.getItem(position);
-            if (source != null) connectToSource(source);
+            if (htmlMode) {
+                if (position < displayedHtmlSources.size()) selectHtmlSource(displayedHtmlSources.get(position).url);
+            } else {
+                String source = sourceAdapter.getItem(position);
+                if (source != null) connectToSource(source);
+            }
         });
 
         View root = findViewById(R.id.root);
@@ -158,17 +170,10 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         videoContainer.setOnClickListener(v -> showControls());
         menuButton.setOnClickListener(v -> toggleSourcePanel());
         findViewById(R.id.close_panel_button).setOnClickListener(v -> closeSourcePanel());
-        scanButton.setOnClickListener(v -> {
-            if (htmlMode) htmlMonitor.reload();
-            else scanSources();
-        });
+        scanButton.setOnClickListener(v -> scanSources());
         findViewById(R.id.source_mode_button).setOnClickListener(v -> showModeChooser());
-        findViewById(R.id.open_html_button).setOnClickListener(v -> openHtmlSource());
-        htmlUrlEditor.setOnEditorActionListener((view, action, event) -> {
-            if (action != EditorInfo.IME_ACTION_GO) return false;
-            openHtmlSource();
-            return true;
-        });
+        findViewById(R.id.manual_html_button).setOnClickListener(v -> showHtmlAddress());
+        findViewById(R.id.reload_html_button).setOnClickListener(v -> htmlMonitor.reload());
         findViewById(R.id.monitor_settings_button).setOnClickListener(v -> showMonitorSettings());
         menuButton.setVisibility(View.GONE);
         statusText.setVisibility(View.GONE);
@@ -244,9 +249,10 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         htmlMode = html;
         preferences.edit().putString(KEY_DISPLAY_MODE, html ? "html" : "ndi").apply();
         ((TextView) findViewById(R.id.source_mode_button)).setText(html ? R.string.mode_html : R.string.mode_ndi);
-        sourceList.setVisibility(html ? View.GONE : View.VISIBLE);
-        findViewById(R.id.html_form).setVisibility(html ? View.VISIBLE : View.GONE);
-        scanButton.setContentDescription(getString(html ? R.string.refresh_html : R.string.refresh_sources));
+        sourceList.setVisibility(View.VISIBLE);
+        findViewById(R.id.html_actions).setVisibility(html ? View.VISIBLE : View.GONE);
+        sourceStatusText.setMaxLines(html ? 1 : 2);
+        scanButton.setContentDescription(getString(html ? R.string.search_html : R.string.refresh_sources));
         scanButton.setEnabled(html || ndiAvailable);
         stopDiscoveryPolling();
         updateMulticastLock();
@@ -257,12 +263,17 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
                 releaseAudio();
             });
             videoSurface.setVisibility(View.GONE);
-            sourceStatusText.setText(R.string.html_instructions);
+            showHtmlSources();
+            sourceStatusText.setText(R.string.searching_html);
             String address = preferences.getString(KEY_HTML_URL, "");
             if (!HtmlSourceUrl.isWebAddress(address)) address = "";
             htmlMonitor.show(address);
             if (restoring && !address.isEmpty()) closeSourcePanel();
+            scanSources();
         } else {
+            displayedHtmlSources = Collections.emptyList();
+            sourceAdapter.clear();
+            displayedSources = Collections.emptyList();
             htmlMonitor.hide();
             videoSurface.setVisibility(View.VISIBLE);
             if (!ndiAvailable) {
@@ -275,7 +286,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             if (lastSource != null && !lastSource.isEmpty()) connectToSource(lastSource);
             scanSources();
         }
-        int nextFocus = html ? R.id.html_url : R.id.source_list;
+        int nextFocus = R.id.source_list;
         for (int id : new int[]{R.id.source_mode_button, R.id.scan_button,
                 R.id.monitor_settings_button, R.id.close_panel_button}) {
             findViewById(id).setNextFocusDownId(nextFocus);
@@ -294,12 +305,115 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         }
         htmlUrlEditor.setError(null);
         htmlUrlEditor.setText(address);
-        preferences.edit().putString(KEY_HTML_URL, address).apply();
         InputMethodManager keyboard = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
         if (keyboard != null) keyboard.hideSoftInputFromWindow(htmlUrlEditor.getWindowToken(), 0);
+        if (htmlAddressDialog != null) htmlAddressDialog.dismiss();
+        selectHtmlSource(address);
+    }
+
+    private void selectHtmlSource(String address) {
+        if (!htmlMode) return;
+        preferences.edit().putString(KEY_HTML_URL, address).apply();
+        htmlSourceCatalog.remember(address, SystemClock.elapsedRealtime());
         htmlMonitor.show(address);
         closeSourcePanel();
         showControls();
+    }
+
+    private void showHtmlAddress() {
+        if (!htmlMode || (htmlAddressDialog != null && htmlAddressDialog.isShowing())) return;
+        stopDiscoveryPolling();
+        View form = getLayoutInflater().inflate(R.layout.dialog_html_address, null);
+        htmlUrlEditor = form.findViewById(R.id.html_url);
+        htmlUrlEditor.setText(preferences.getString(KEY_HTML_URL, ""));
+        form.findViewById(R.id.open_html_button).setOnClickListener(v -> openHtmlSource());
+        htmlUrlEditor.setOnEditorActionListener((view, action, event) -> {
+            if (action != EditorInfo.IME_ACTION_GO) return false;
+            openHtmlSource();
+            return true;
+        });
+        htmlAddressDialog = new AlertDialog.Builder(this).setTitle(R.string.html_address)
+                .setView(form).setNegativeButton(android.R.string.cancel, null).create();
+        htmlAddressDialog.setOnDismissListener(dialog -> {
+            htmlAddressDialog = null;
+            if (!destroyed) scanSources();
+        });
+        htmlAddressDialog.show();
+    }
+
+    private void scanHtmlSources() {
+        stopDiscoveryPolling();
+        int generation = htmlScanGeneration;
+        htmlScanProgress = 0;
+        htmlScanFound = 0;
+        showHtmlSources();
+        sourceStatusText.setText(R.string.searching_html);
+        htmlDiscovery.start(preferences.getString(KEY_HTML_URL, ""), new LanHtmlDiscovery.Listener() {
+            private boolean current() {
+                return htmlMode && !destroyed && activityVisible && generation == htmlScanGeneration;
+            }
+            @Override public void onStarted(int total, boolean limited) {
+                if (!current()) return;
+                htmlScanLimited = limited;
+                sourceStatusText.setText(getString(R.string.html_scan_progress, 0, total));
+            }
+            @Override public void onSource(HtmlSource source) {
+                if (!current()) return;
+                ++htmlScanFound;
+                htmlSourceCatalog.found(source, SystemClock.elapsedRealtime());
+                showHtmlSources();
+            }
+            @Override public void onProgress(int done, int total) {
+                if (!current()) return;
+                htmlScanProgress = Math.max(htmlScanProgress, done);
+                sourceStatusText.setText(getString(R.string.html_scan_progress, htmlScanProgress, total));
+            }
+            @Override public void onFinished() {
+                if (!current()) return;
+                htmlSourceCatalog.finishScan(SystemClock.elapsedRealtime());
+                showHtmlSources();
+                sourceStatusText.setText(htmlScanFound == 0 ? R.string.html_none_found :
+                        htmlScanLimited ? R.string.html_found_limited : R.string.html_found);
+                scheduleNextHtmlScan(generation);
+            }
+            @Override public void onUnavailable() {
+                if (!current()) return;
+                sourceStatusText.setText(R.string.html_no_lan);
+                scheduleNextHtmlScan(generation);
+            }
+        });
+    }
+
+    private void scheduleNextHtmlScan(int generation) {
+        nextHtmlScan = () -> {
+            if (generation == htmlScanGeneration) scanSources();
+        };
+        controlsHandler.postDelayed(nextHtmlScan, 30_000);
+    }
+
+    private void showHtmlSources() {
+        List<HtmlSource> next = htmlSourceCatalog.snapshot();
+        List<String> labels = new ArrayList<>();
+        for (HtmlSource source : next) labels.add(source.displayName());
+        if (displayedSources.equals(labels)) { displayedHtmlSources = next; return; }
+        int first = sourceList.getFirstVisiblePosition();
+        View child = sourceList.getChildAt(0);
+        int top = child == null ? 0 : child.getTop();
+        int selection = sourceList.getSelectedItemPosition();
+        String selectedUrl = selection >= 0 && selection < displayedHtmlSources.size()
+                ? displayedHtmlSources.get(selection).url : null;
+        sourceAdapter.setNotifyOnChange(false);
+        sourceAdapter.clear();
+        sourceAdapter.addAll(labels);
+        sourceAdapter.notifyDataSetChanged();
+        displayedSources = labels;
+        displayedHtmlSources = next;
+        int nextSelection = -1;
+        for (int i = 0; i < next.size(); ++i) {
+            if (next.get(i).url.equals(selectedUrl)) { nextSelection = i; break; }
+        }
+        if (nextSelection >= 0) sourceList.setSelection(nextSelection);
+        else if (!labels.isEmpty()) sourceList.setSelectionFromTop(Math.min(first, labels.size() - 1), top);
     }
 
     private void resizeSourcePanel(int availableWidth) {
@@ -432,8 +546,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             menuButton.setVisibility(View.GONE);
             statusText.setVisibility(View.GONE);
             scanSources();
-            if (htmlMode) htmlUrlEditor.requestFocus();
-            else if (!displayedSources.isEmpty()) sourceList.requestFocus();
+            if (!displayedSources.isEmpty()) sourceList.requestFocus();
+            else if (htmlMode) findViewById(R.id.manual_html_button).requestFocus();
         }
     }
 
@@ -477,10 +591,12 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     }
 
     private void scanSources() {
-        if (htmlMode || !ndiAvailable || !activityVisible || destroyed ||
+        if ((!htmlMode && !ndiAvailable) || !activityVisible || destroyed ||
                 sourcePanel.getVisibility() != View.VISIBLE ||
                 (modeDialog != null && modeDialog.isShowing()) ||
+                (htmlAddressDialog != null && htmlAddressDialog.isShowing()) ||
                 (settingsDialog != null && settingsDialog.isShowing())) return;
+        if (htmlMode) { scanHtmlSources(); return; }
         stopDiscoveryPolling();
         discoveryStartedAt = SystemClock.elapsedRealtime();
         sourceCatalog.beginRefresh(discoveryStartedAt);
@@ -491,6 +607,12 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
 
     private void stopDiscoveryPolling() {
         ++discoveryGeneration;
+        ++htmlScanGeneration;
+        if (htmlDiscovery != null) htmlDiscovery.stop();
+        if (nextHtmlScan != null) {
+            controlsHandler.removeCallbacks(nextHtmlScan);
+            nextHtmlScan = null;
+        }
         if (nextDiscoveryPoll != null) {
             controlsHandler.removeCallbacks(nextDiscoveryPoll);
             nextDiscoveryPoll = null;
@@ -662,6 +784,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         if (settingsDialog != null) settingsDialog.dismiss();
         if (noticesDialog != null) noticesDialog.dismiss();
         if (modeDialog != null) modeDialog.dismiss();
+        if (htmlAddressDialog != null) htmlAddressDialog.dismiss();
         if (Build.VERSION.SDK_INT >= 33 && backCallback != null) {
             getOnBackInvokedDispatcher().unregisterOnBackInvokedCallback(backCallback);
         }

@@ -8,17 +8,20 @@ de melhora de desempenho nem recuperação automática de travamentos.
 
 Feche o Android Studio. Faça uma cópia de segurança do projeto antigo.
 Use a versão completa atualizada do código em uma pasta separada e integre novamente
-sua cópia local do SDK pelos scripts de instalação. A revisão 1.2.0 inclui novos
-arquivos de descoberta, catálogo e interface, além dos arquivos principais:
+sua cópia local do SDK pelos scripts de instalação. A revisão 1.4.0 inclui os
+dois modos e a busca HTML, além das melhorias de descoberta e interface da 1.2.
+Use o conjunto completo dos arquivos atuais, incluindo:
 
 - app/build.gradle
 - app/src/main/AndroidManifest.xml
 - app/src/main/java/br/com/polegar/ndimonitor/MainActivity.java
 - app/src/main/res/layout/activity_main.xml
 - app/src/main/res/drawable/ic_monitor.xml
+- app/src/main/java/br/com/polegar/ndimonitor/LanHtmlDiscovery.java
+- app/src/main/res/layout/dialog_html_address.xml
 
 Não substitua cpp/include nem jniLibs: preserve seu SDK NDI instalado.
-Abra a raiz do projeto antigo no Android Studio, sincronize o Gradle e use
+Abra a raiz do projeto atualizado no Android Studio, sincronize o Gradle e use
 Build > Generate App Bundles or APKs > Generate APKs, ou execute
 `.\gradlew.bat :app:assembleDebug` no PowerShell na raiz.
 O novo APK fica em app/build/outputs/apk/debug/app-debug.apk.

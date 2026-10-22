@@ -22,7 +22,7 @@
     <string name="mode_html">HTML ▾</string>
     <string-array name="monitor_modes">
         <item>NDI — fontes na rede</item>
-        <item>HTML — endereço do retorno</item>
+        <item>HTML — retornos na rede</item>
     </string-array>
     <string name="html_address">Endereço do retorno</string>
     <string name="html_address_hint">Link HTML ou IP do computador</string>
@@ -30,6 +30,14 @@
     <string name="html_invalid_address">Informe um IP ou um endereço HTTP/HTTPS válido.</string>
     <string name="open_html">Salvar e abrir retorno</string>
     <string name="refresh_html">Recarregar retorno HTML</string>
+    <string name="manual_html">Informar endereço</string>
+    <string name="search_html">Buscar retornos HTML na rede</string>
+    <string name="searching_html">Procurando retornos HTML na rede…</string>
+    <string name="html_scan_progress">Busca HTML · endereços %1$d/%2$d</string>
+    <string name="html_none_found">Nenhum novo retorno HTML. Confira o PC e a rede ou informe o endereço. Nova busca em 30 s.</string>
+    <string name="html_found">HTML encontrado. Selecione para conferir o retorno. Nova busca em 30 s.</string>
+    <string name="html_found_limited">HTML encontrado nesta faixa da rede. Selecione o retorno. Nova busca em 30 s.</string>
+    <string name="html_no_lan">Conecte-se por Wi-Fi ou Ethernet com IPv4 para buscar HTML, ou informe o endereço.</string>
     <string name="html_loading">Abrindo retorno HTML…</string>
     <string name="html_open">Página do retorno HTML aberta</string>
     <string name="html_retrying">Retorno indisponível. Tentando novamente…</string>

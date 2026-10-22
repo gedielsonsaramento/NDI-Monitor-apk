@@ -92,26 +92,45 @@ public class SourcePanelLayoutTest {
         }
     }
 
-    @Test public void htmlAddressAndOpenButtonFitOnShortPhone() throws IOException {
+    @Test public void htmlListAndManualAlternativeFitOnShortPhone() throws IOException {
         try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
             Activity activity = controller.get();
             activity.setTheme(R.style.AppTheme);
             View root = layout(activity, 640, 320);
-            root.findViewById(R.id.source_list).setVisibility(View.GONE);
-            root.findViewById(R.id.html_form).setVisibility(View.VISIBLE);
+            root.findViewById(R.id.html_actions).setVisibility(View.VISIBLE);
+            ((ListView) root.findViewById(R.id.source_list)).setAdapter(new ArrayAdapter<>(activity, R.layout.source_item,
+                    Arrays.asList("Retorno do palco\n192.168.2.53:5050/output/saida-html-1",
+                            "Retorno - segundo PC\n192.168.2.80:5050/output/saida-html-1")));
             ((android.widget.TextView) root.findViewById(R.id.source_mode_button)).setText(R.string.mode_html);
-            ((android.widget.TextView) root.findViewById(R.id.source_status_text)).setText(R.string.html_instructions);
-            ((android.widget.EditText) root.findViewById(R.id.html_url))
-                    .setText("http://192.168.2.53:5050/output/saida-html-1");
+            ((android.widget.TextView) root.findViewById(R.id.source_status_text)).setMaxLines(1);
+            ((android.widget.TextView) root.findViewById(R.id.source_status_text)).setText(R.string.searching_html);
             root.measure(View.MeasureSpec.makeMeasureSpec(640, View.MeasureSpec.EXACTLY),
                     View.MeasureSpec.makeMeasureSpec(320, View.MeasureSpec.EXACTLY));
             root.layout(0, 0, 640, 320);
             preview(root, "phone-html");
-            View form = root.findViewById(R.id.html_form);
-            View button = root.findViewById(R.id.open_html_button);
+            View button = root.findViewById(R.id.manual_html_button);
             assertTrue(button.getHeight() >= 48);
-            assertTrue(button.getBottom() <= form.getHeight());
-            assertTrue(root.findViewById(R.id.html_url).getWidth() > 250);
+            assertTrue(root.findViewById(R.id.source_list).getHeight() >= 2 * 48);
+            assertTrue(root.findViewById(R.id.html_actions).getBottom() <= root.findViewById(R.id.source_panel).getHeight());
+            assertEquals(R.id.source_list, button.getNextFocusUpId());
+            assertTrue(button.getWidth() > 250);
+        }
+    }
+
+    @Test public void htmlWithLargeFontStillHasRoomForASelectableSource() {
+        RuntimeEnvironment.setFontScale(2f);
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            Activity activity = controller.get();
+            activity.setTheme(R.style.AppTheme);
+            View root = layout(activity, 640, 320);
+            root.findViewById(R.id.html_actions).setVisibility(View.VISIBLE);
+            android.widget.TextView status = root.findViewById(R.id.source_status_text);
+            status.setMaxLines(1);
+            status.setText(R.string.searching_html);
+            root.measure(View.MeasureSpec.makeMeasureSpec(640, View.MeasureSpec.EXACTLY),
+                    View.MeasureSpec.makeMeasureSpec(320, View.MeasureSpec.EXACTLY));
+            root.layout(0, 0, 640, 320);
+            assertTrue(root.findViewById(R.id.source_list).getHeight() >= 48);
         }
     }
 

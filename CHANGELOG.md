@@ -1,3 +1,13 @@
+# 1.4.0 — Busca de retornos HTML pelo controle remoto
+
+- Busca o padrão `:5050/output/saida-html-1` em Wi-Fi/Ethernet IPv4, com até 12 requisições simultâneas, leitura limitada e cancelamento.
+- Exibe os candidatos HTML na lista e salva a escolha por aparelho, sem exigir digitação para o padrão suportado.
+- Mantém a ordem e as fontes durante novas buscas; tolerância de 90 s para HTML ausente, preservando o endereço salvo.
+- Repete a busca 30 s após cada ciclo com o painel aberto; para ao fechar o painel, sair ou trocar de modo.
+- Move o endereço manual para um diálogo e separa buscar fontes de recarregar a página.
+- Preserva o modo NDI, o renderizador HTML e os avisos do SDK.
+- Acrescenta documentação completa de uso, arquitetura, rede, compilação, validação, assinatura e publicação.
+
 # 1.3.0 — NDI e retorno HTML
 
 - Acrescenta seletor NDI/HTML no cabeçalho compacto, preservando a área da lista.

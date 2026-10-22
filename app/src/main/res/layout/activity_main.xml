@@ -145,59 +145,45 @@
             android:divider="#2FFFFFFF"
             android:dividerHeight="1dp"
             android:nextFocusUp="@id/scan_button"
+            android:nextFocusDown="@id/manual_html_button"
             android:listSelector="@drawable/list_selector" />
 
-        <ScrollView
-            android:id="@+id/html_form"
+        <LinearLayout
+            android:id="@+id/html_actions"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
+            android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:layout_weight="1"
-            android:fillViewport="true"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
             android:visibility="gone">
 
-            <LinearLayout
-                android:layout_width="match_parent"
+            <Button
+                android:id="@+id/manual_html_button"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:layout_weight="1"
+                android:minHeight="48dp"
+                android:background="@drawable/primary_button"
+                android:text="@string/manual_html"
+                android:textSize="14sp"
+                android:textAllCaps="false"
+                android:textColor="#FFFFFF"
+                android:nextFocusUp="@id/source_list"
+                android:nextFocusRight="@id/reload_html_button" />
 
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/html_address"
-                    android:textColor="#FFFFFF"
-                    android:textSize="14sp" />
-
-                <EditText
-                    android:id="@+id/html_url"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:minHeight="48dp"
-                    android:layout_marginTop="4dp"
-                    android:inputType="textUri|textNoSuggestions"
-                    android:importantForAutofill="no"
-                    android:singleLine="true"
-                    android:imeOptions="actionGo"
-                    android:hint="@string/html_address_hint"
-                    android:textColor="#FFFFFF"
-                    android:textColorHint="#B8FFFFFF"
-                    android:backgroundTint="#00B7FF"
-                    android:textSize="14sp"
-                    android:nextFocusDown="@id/open_html_button" />
-
-                <Button
-                    android:id="@+id/open_html_button"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:minHeight="48dp"
-                    android:layout_marginTop="8dp"
-                    android:background="@drawable/primary_button"
-                    android:text="@string/open_html"
-                    android:textAllCaps="false"
-                    android:textColor="#FFFFFF"
-                    android:nextFocusUp="@id/html_url" />
-            </LinearLayout>
-        </ScrollView>
+            <ImageButton
+                android:id="@+id/reload_html_button"
+                android:layout_width="@dimen/toolbar_button_size"
+                android:layout_height="@dimen/toolbar_button_size"
+                android:layout_marginStart="8dp"
+                android:padding="@dimen/toolbar_icon_padding"
+                android:background="@drawable/round_button"
+                android:contentDescription="@string/refresh_html"
+                android:nextFocusUp="@id/source_list"
+                android:nextFocusLeft="@id/manual_html_button"
+                android:src="@drawable/ic_refresh"
+                android:tint="#FFFFFF" />
+        </LinearLayout>
 
         <TextView
             android:layout_width="match_parent"
