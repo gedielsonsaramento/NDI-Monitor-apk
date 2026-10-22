@@ -16,6 +16,12 @@
             android:layout_height="match_parent"
             android:layout_gravity="center"
             android:contentDescription="@string/video_monitor" />
+
+        <FrameLayout
+            android:id="@+id/html_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone" />
     </FrameLayout>
 
     <TextView
@@ -66,11 +72,18 @@
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
-            <TextView
+            <Button
+                android:id="@+id/source_mode_button"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="@dimen/toolbar_button_size"
                 android:layout_weight="1"
-                android:text="@string/sources_title"
+                android:background="@drawable/round_button"
+                android:minWidth="0dp"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:text="@string/mode_ndi"
+                android:textAllCaps="false"
+                android:contentDescription="@string/choose_mode"
                 android:textColor="#FFFFFF"
                 android:maxLines="1"
                 android:ellipsize="end"
@@ -132,7 +145,45 @@
             android:divider="#2FFFFFFF"
             android:dividerHeight="1dp"
             android:nextFocusUp="@id/scan_button"
+            android:nextFocusDown="@id/manual_html_button"
             android:listSelector="@drawable/list_selector" />
+
+        <LinearLayout
+            android:id="@+id/html_actions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <Button
+                android:id="@+id/manual_html_button"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:minHeight="48dp"
+                android:background="@drawable/primary_button"
+                android:text="@string/manual_html"
+                android:textSize="14sp"
+                android:textAllCaps="false"
+                android:textColor="#FFFFFF"
+                android:nextFocusUp="@id/source_list"
+                android:nextFocusRight="@id/reload_html_button" />
+
+            <ImageButton
+                android:id="@+id/reload_html_button"
+                android:layout_width="@dimen/toolbar_button_size"
+                android:layout_height="@dimen/toolbar_button_size"
+                android:layout_marginStart="8dp"
+                android:padding="@dimen/toolbar_icon_padding"
+                android:background="@drawable/round_button"
+                android:contentDescription="@string/refresh_html"
+                android:nextFocusUp="@id/source_list"
+                android:nextFocusLeft="@id/manual_html_button"
+                android:src="@drawable/ic_refresh"
+                android:tint="#FFFFFF" />
+        </LinearLayout>
 
         <TextView
             android:layout_width="match_parent"
