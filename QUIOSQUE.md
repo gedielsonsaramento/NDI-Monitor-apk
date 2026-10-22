@@ -8,7 +8,7 @@ de melhora de desempenho nem recuperação automática de travamentos.
 
 Feche o Android Studio. Faça uma cópia de segurança do projeto antigo.
 Use a versão completa atualizada do código em uma pasta separada e integre novamente
-sua cópia local do SDK pelos scripts de instalação. A revisão 1.4.0 inclui os
+sua cópia local do SDK pelos scripts de instalação. A revisão 1.4.1 inclui os
 dois modos e a busca HTML, além das melhorias de descoberta e interface da 1.2.
 Use o conjunto completo dos arquivos atuais, incluindo:
 
@@ -34,6 +34,9 @@ Escolha Monitor de Retorno como aplicativo de início padrão. Em alguns aparelh
 pressione Home e escolha Monitor de Retorno > Sempre. A disponibilidade depende do
 firmware. Não selecione como tela inicial do celular se não desejar esse comportamento.
 Mantenha marcada a abertura após ligar e selecione uma fonte para salvar.
+O modo e a fonte confirmada são restaurados ao abrir. Depois de selecionar,
+a busca para; reabrir o painel não a reinicia. Use atualizar para procurar
+outra origem.
 Reinicie a TV Box e teste a abertura e a reconexão. Esse comportamento depende
 do firmware e das restrições da versão do Android, e deve ser validado no
 aparelho de uso final.

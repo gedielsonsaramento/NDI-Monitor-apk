@@ -8,6 +8,7 @@
     <string name="searching_sources">Procurando fontes NDI na rede…</string>
     <string name="no_sources">Nenhuma fonte encontrada. A busca continua; confira a rede.</string>
     <string name="refresh_sources">Atualizar fontes</string>
+    <string name="discovery_idle">Fonte salva · use atualizar para procurar outras</string>
     <string name="monitor_settings">Configurações</string>
     <string name="home_settings">Escolher tela inicial</string>
     <string name="android_settings">Configurações do Android</string>

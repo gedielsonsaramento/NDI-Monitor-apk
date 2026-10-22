@@ -87,6 +87,11 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     private volatile boolean htmlMode;
     private boolean modeInitialized;
     private boolean ndiAvailable;
+    private boolean discoveryRequested;
+    private boolean ndiDiscoveryActive;
+    private volatile String currentNdiSource = "";
+    private volatile int playbackGeneration;
+    private boolean ndiPlaybackRequested;
     private volatile boolean activityVisible;
     private volatile boolean destroyed;
     private volatile int discoveryGeneration;
@@ -170,7 +175,10 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         videoContainer.setOnClickListener(v -> showControls());
         menuButton.setOnClickListener(v -> toggleSourcePanel());
         findViewById(R.id.close_panel_button).setOnClickListener(v -> closeSourcePanel());
-        scanButton.setOnClickListener(v -> scanSources());
+        scanButton.setOnClickListener(v -> {
+            discoveryRequested = true;
+            scanSources();
+        });
         findViewById(R.id.source_mode_button).setOnClickListener(v -> showModeChooser());
         findViewById(R.id.manual_html_button).setOnClickListener(v -> showHtmlAddress());
         findViewById(R.id.reload_html_button).setOnClickListener(v -> htmlMonitor.reload());
@@ -193,7 +201,14 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
 
         NativeBridge.setCallbackTarget(this);
         ndiAvailable = NativeBridge.isNdiAvailable();
-        setSourceMode("html".equals(preferences.getString(KEY_DISPLAY_MODE, "ndi")), true);
+        boolean savedHtml = "html".equals(preferences.getString(KEY_DISPLAY_MODE, "ndi"));
+        boolean validHtml = HtmlSourceUrl.isWebAddress(preferences.getString(KEY_HTML_URL, ""));
+        String savedNdi = preferences.getString(KEY_LAST_SOURCE, "");
+        boolean validNdi = savedNdi != null && !savedNdi.trim().isEmpty();
+        // Older versions saved a browsed mode before a source was selected.
+        if (savedHtml && !validHtml && validNdi) savedHtml = false;
+        else if (!savedHtml && !validNdi && validHtml) savedHtml = true;
+        setSourceMode(savedHtml, true);
     }
 
     @Override
@@ -202,6 +217,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         activityVisible = true;
         updateMulticastLock();
         htmlMonitor.resume();
+        if (!htmlMode && ndiAvailable && !currentNdiSource.isEmpty()) startNdiPlayback();
         scanSources();
     }
 
@@ -209,16 +225,17 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     protected void onStop() {
         activityVisible = false;
         htmlMonitor.pause();
+        stopNdiPlayback();
         releaseAudio();
         stopDiscoveryPolling();
-        DISCOVERY_WORKER.execute(NativeBridge::releaseDiscovery);
         if (multicastLock != null && multicastLock.isHeld()) multicastLock.release();
         super.onStop();
     }
 
     private void updateMulticastLock() {
         if (multicastLock == null) return;
-        if (ndiAvailable && activityVisible && !htmlMode) {
+        if (ndiAvailable && activityVisible && !htmlMode &&
+                (ndiDiscoveryActive || !currentNdiSource.isEmpty())) {
             if (!multicastLock.isHeld()) multicastLock.acquire();
         } else if (multicastLock.isHeld()) {
             multicastLock.release();
@@ -231,8 +248,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         modeDialog = new AlertDialog.Builder(this)
                 .setTitle(R.string.choose_mode)
                 .setSingleChoiceItems(R.array.monitor_modes, htmlMode ? 1 : 0, (dialog, which) -> {
-                    dialog.dismiss();
                     setSourceMode(which == 1, false);
+                    dialog.dismiss();
                 })
                 .setNegativeButton(android.R.string.cancel, null)
                 .create();
@@ -247,7 +264,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         if (modeInitialized && htmlMode == html) return;
         modeInitialized = true;
         htmlMode = html;
-        preferences.edit().putString(KEY_DISPLAY_MODE, html ? "html" : "ndi").apply();
+        discoveryRequested = false;
         ((TextView) findViewById(R.id.source_mode_button)).setText(html ? R.string.mode_html : R.string.mode_ndi);
         sourceList.setVisibility(View.VISIBLE);
         findViewById(R.id.html_actions).setVisibility(html ? View.VISIBLE : View.GONE);
@@ -257,34 +274,52 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         stopDiscoveryPolling();
         updateMulticastLock();
         if (html) {
-            DISCOVERY_WORKER.execute(NativeBridge::releaseDiscovery);
-            CAPTURE_WORKER.execute(() -> {
-                NativeBridge.disconnect();
-                releaseAudio();
-            });
+            stopNdiPlayback();
+            releaseAudio();
+            currentNdiSource = "";
             videoSurface.setVisibility(View.GONE);
             showHtmlSources();
-            sourceStatusText.setText(R.string.searching_html);
             String address = preferences.getString(KEY_HTML_URL, "");
             if (!HtmlSourceUrl.isWebAddress(address)) address = "";
-            htmlMonitor.show(address);
-            if (restoring && !address.isEmpty()) closeSourcePanel();
-            scanSources();
+            if (!address.isEmpty()) {
+                if (restoring) {
+                    htmlMonitor.show(address);
+                    closeSourcePanel();
+                } else selectHtmlSource(address);
+            } else {
+                htmlMonitor.show("");
+                sourcePanel.setVisibility(View.VISIBLE);
+                discoveryRequested = true;
+                sourceStatusText.setText(R.string.searching_html);
+                scanSources();
+            }
         } else {
             displayedHtmlSources = Collections.emptyList();
             sourceAdapter.clear();
             displayedSources = Collections.emptyList();
             htmlMonitor.hide();
             videoSurface.setVisibility(View.VISIBLE);
+            String lastSource = preferences.getString(KEY_LAST_SOURCE, "");
+            currentNdiSource = lastSource == null || lastSource.trim().isEmpty() ? "" : lastSource;
             if (!ndiAvailable) {
                 sourceStatusText.setText(R.string.ndi_sdk_missing);
                 sourcePanel.setVisibility(View.VISIBLE);
                 return;
             }
-            sourceStatusText.setText(R.string.searching_sources);
-            String lastSource = preferences.getString(KEY_LAST_SOURCE, "");
-            if (lastSource != null && !lastSource.isEmpty()) connectToSource(lastSource);
-            scanSources();
+            if (!currentNdiSource.isEmpty()) {
+                sourceCatalog.update(new String[]{currentNdiSource}, SystemClock.elapsedRealtime());
+                showSources(Collections.singletonList(currentNdiSource));
+                sourceStatusText.setText(R.string.discovery_idle);
+                if (restoring) {
+                    statusText.setText(getString(R.string.connecting_to, currentNdiSource));
+                    closeSourcePanel();
+                } else connectToSource(currentNdiSource);
+            } else {
+                sourcePanel.setVisibility(View.VISIBLE);
+                discoveryRequested = true;
+                sourceStatusText.setText(R.string.searching_sources);
+                scanSources();
+            }
         }
         int nextFocus = R.id.source_list;
         for (int id : new int[]{R.id.source_mode_button, R.id.scan_button,
@@ -307,13 +342,13 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         htmlUrlEditor.setText(address);
         InputMethodManager keyboard = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
         if (keyboard != null) keyboard.hideSoftInputFromWindow(htmlUrlEditor.getWindowToken(), 0);
-        if (htmlAddressDialog != null) htmlAddressDialog.dismiss();
         selectHtmlSource(address);
+        if (htmlAddressDialog != null) htmlAddressDialog.dismiss();
     }
 
     private void selectHtmlSource(String address) {
-        if (!htmlMode) return;
-        preferences.edit().putString(KEY_HTML_URL, address).apply();
+        if (!htmlMode || !HtmlSourceUrl.isWebAddress(address)) return;
+        preferences.edit().putString(KEY_DISPLAY_MODE, "html").putString(KEY_HTML_URL, address).apply();
         htmlSourceCatalog.remember(address, SystemClock.elapsedRealtime());
         htmlMonitor.show(address);
         closeSourcePanel();
@@ -545,6 +580,10 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             sourcePanel.setVisibility(View.VISIBLE);
             menuButton.setVisibility(View.GONE);
             statusText.setVisibility(View.GONE);
+            if (!hasSavedSource()) discoveryRequested = true;
+            if (!discoveryRequested && (htmlMode || ndiAvailable)) {
+                sourceStatusText.setText(R.string.discovery_idle);
+            }
             scanSources();
             if (!displayedSources.isEmpty()) sourceList.requestFocus();
             else if (htmlMode) findViewById(R.id.manual_html_button).requestFocus();
@@ -552,6 +591,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     }
 
     private void closeSourcePanel() {
+        discoveryRequested = false;
         stopDiscoveryPolling();
         sourcePanel.setVisibility(View.GONE);
         hideControls.run();
@@ -591,7 +631,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     }
 
     private void scanSources() {
-        if ((!htmlMode && !ndiAvailable) || !activityVisible || destroyed ||
+        if (!discoveryRequested || (!htmlMode && !ndiAvailable) || !activityVisible || destroyed ||
                 sourcePanel.getVisibility() != View.VISIBLE ||
                 (modeDialog != null && modeDialog.isShowing()) ||
                 (htmlAddressDialog != null && htmlAddressDialog.isShowing()) ||
@@ -599,6 +639,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         if (htmlMode) { scanHtmlSources(); return; }
         stopDiscoveryPolling();
         discoveryStartedAt = SystemClock.elapsedRealtime();
+        ndiDiscoveryActive = true;
+        updateMulticastLock();
         sourceCatalog.beginRefresh(discoveryStartedAt);
         if (displayedSources.isEmpty()) sourceStatusText.setText(R.string.searching_sources);
         // Show sources already known to the live finder before waiting for updates.
@@ -617,10 +659,16 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             controlsHandler.removeCallbacks(nextDiscoveryPoll);
             nextDiscoveryPoll = null;
         }
+        if (ndiDiscoveryActive) {
+            ndiDiscoveryActive = false;
+            DISCOVERY_WORKER.execute(NativeBridge::releaseDiscovery);
+        }
+        updateMulticastLock();
     }
 
     private void pollDiscovery(int generation, int timeoutMs) {
-        if (destroyed || !activityVisible || generation != discoveryGeneration) return;
+        if (destroyed || !activityVisible || !discoveryRequested || !ndiDiscoveryActive ||
+                htmlMode || generation != discoveryGeneration) return;
         DISCOVERY_WORKER.execute(() -> {
             if (destroyed || generation != discoveryGeneration) return;
             String[] result = NativeBridge.findSources(timeoutMs);
@@ -660,27 +708,50 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     }
 
     private void connectToSource(String sourceName) {
-        if (htmlMode) return;
-        preferences.edit().putString(KEY_LAST_SOURCE, sourceName).apply();
+        if (htmlMode || sourceName == null || sourceName.trim().isEmpty()) return;
+        preferences.edit().putString(KEY_DISPLAY_MODE, "ndi").putString(KEY_LAST_SOURCE, sourceName).apply();
+        currentNdiSource = sourceName;
         statusText.setText(getString(R.string.connecting_to, sourceName));
         closeSourcePanel();
         showControls();
+        if (activityVisible) startNdiPlayback();
+    }
+
+    private boolean hasSavedSource() {
+        return htmlMode ? HtmlSourceUrl.isWebAddress(preferences.getString(KEY_HTML_URL, ""))
+                : !currentNdiSource.isEmpty();
+    }
+
+    private void startNdiPlayback() {
+        String source = currentNdiSource;
+        int generation = ++playbackGeneration;
+        ndiPlaybackRequested = true;
         CAPTURE_WORKER.execute(() -> {
-            if (!destroyed && !htmlMode) NativeBridge.connect(sourceName);
+            if (!destroyed && activityVisible && !htmlMode && generation == playbackGeneration) {
+                NativeBridge.connect(source);
+            }
         });
+    }
+
+    private void stopNdiPlayback() {
+        ++playbackGeneration;
+        if (ndiPlaybackRequested) {
+            ndiPlaybackRequested = false;
+            CAPTURE_WORKER.execute(NativeBridge::disconnect);
+        }
     }
 
     @SuppressWarnings("unused")
     public void onNativeStatus(String message) {
         runOnUiThread(() -> {
-            if (!destroyed && !htmlMode) statusText.setText(message);
+            if (!destroyed && activityVisible && !htmlMode) statusText.setText(message);
         });
     }
 
     @SuppressWarnings("unused")
     public void onNativeVideoFormat(int width, int height, double fps) {
         runOnUiThread(() -> {
-            if (destroyed || htmlMode) return;
+            if (destroyed || !activityVisible || htmlMode) return;
             videoWidth = width;
             videoHeight = height;
             fitVideoSurface(width, height);
@@ -778,6 +849,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     @Override
     protected void onDestroy() {
         destroyed = true;
+        stopNdiPlayback();
         htmlMonitor.destroy();
         stopDiscoveryPolling();
         controlsHandler.removeCallbacksAndMessages(null);
@@ -789,9 +861,6 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             getOnBackInvokedDispatcher().unregisterOnBackInvokedCallback(backCallback);
         }
         NativeBridge.setCallbackTarget(null);
-        // Serial cleanup follows any in-flight connect/scan, avoiding native races.
-        CAPTURE_WORKER.execute(NativeBridge::disconnect);
-        DISCOVERY_WORKER.execute(NativeBridge::releaseDiscovery);
         releaseAudio();
         if (multicastLock != null && multicastLock.isHeld()) multicastLock.release();
         super.onDestroy();

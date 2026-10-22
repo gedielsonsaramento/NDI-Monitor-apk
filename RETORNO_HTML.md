@@ -1,6 +1,7 @@
 # NDI e retorno HTML no mesmo aplicativo
 
-A revisão 1.4.0 acrescenta busca HTML ao modo introduzido na 1.3. Cada aparelho
+A revisão 1.4.1 restaura a última fonte e para a busca após a seleção, sobre
+a descoberta HTML acrescentada na 1.4. Cada aparelho
 guarda seu modo e sua fonte: uma TV pode receber NDI enquanto outra abre o
 retorno HTML do Spresenter. A exibição usa um modo por vez em cada aparelho.
 
@@ -15,6 +16,10 @@ retorno HTML do Spresenter. A exibição usa um modo por vez em cada aparelho.
 4. Aguarde os candidatos aparecerem na lista. Selecione o retorno com as setas
    e OK do controle remoto ou por toque; o endereço fica salvo nesse aparelho.
 5. Se necessário, use **Informar endereço**, cole o link e acione **Salvar e abrir retorno**.
+
+Com endereço já salvo, o aplicativo o reabre diretamente e mantém o painel
+fechado, sem varrer a rede. Reabrir apenas o painel mostra as fontes conhecidas;
+use o ícone de atualização do cabeçalho para iniciar uma busca por outras fontes.
 
 O endereço completo fica editável. Exemplo de formato observado na configuração
 de Stage: `http://IP_DO_PC:5050/output/saida-html-1`. O IP, a porta e o caminho
@@ -43,12 +48,18 @@ com seus parâmetros para outros computadores.
   controles. O seletor do cabeçalho permite voltar ao NDI.
 - O ícone do cabeçalho refaz a busca do modo atual sem limpar imediatamente
   a lista. No modo HTML, o botão ao lado de **Informar endereço** recarrega a página.
-- A busca HTML repete 30 s após o fim do ciclo anterior, somente com o painel
-  aberto. Fecha o painel, troca de modo ou sai do app: a busca é cancelada.
+- A busca começa automaticamente na configuração sem endereço ou quando
+  solicitada pelo botão atualizar. Durante essa sessão, repete 30 s após o
+  ciclo anterior com o painel aberto. Ao selecionar, fechar o painel, trocar
+  de modo ou sair do app, a busca é cancelada.
   Fontes HTML ausentes têm tolerância de 90 s; o último link salvo é preservado.
 - A troca para HTML encerra a recepção NDI. A troca para NDI destrói o renderizador
   web, encerrando sua reprodução de mídia. Sair do aplicativo também encerra o
   renderizador HTML; ao retornar, a página é reaberta.
+- O modo só substitui a configuração persistida quando há uma fonte escolhida.
+  Navegar por outro modo sem configurar uma fonte preserva a última seleção
+  para o próximo início. Se o retorno estiver indisponível, as tentativas usam
+  o mesmo endereço salvo, sem substituir automaticamente a origem.
 - Se a página não carregar por falha de rede ou erro do servidor, há novas
   tentativas com intervalo crescente, até 30 segundos. Um erro de endereço,
   autorização HTTP ou certificado exige conferência e recarga pelo menu.

@@ -1,3 +1,12 @@
+# 1.4.1 — Última fonte restaurada e descoberta parada após selecionar
+
+- Restaura diretamente o modo e a fonte confirmada ao iniciar, com painel fechado e sem busca geral de outras fontes.
+- Salva modo e origem juntos; navegar por outro modo ainda sem fonte não substitui a última seleção persistida.
+- Libera o finder NDI após a seleção ou fechamento da busca, além de cancelar a varredura HTML e seus temporizadores.
+- Reabrir apenas o painel não reinicia a descoberta. O botão atualizar permite procurar outra fonte; a configuração sem fonte mantém a descoberta inicial.
+- Pausa a recepção NDI em segundo plano e retoma a mesma origem ao retornar; descarta conexões enfileiradas que já foram canceladas.
+- Mantém os dados e as chaves de preferências da versão 1.4.0.
+
 # 1.4.0 — Busca de retornos HTML pelo controle remoto
 
 - Busca o padrão `:5050/output/saida-html-1` em Wi-Fi/Ethernet IPv4, com até 12 requisições simultâneas, leitura limitada e cancelamento.

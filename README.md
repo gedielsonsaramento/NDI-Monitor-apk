@@ -2,7 +2,7 @@
 
 Aplicativo Android independente para receber vídeo e áudio NDI® Standard full-bandwidth ou exibir um retorno HTML pela rede local em celulares e dispositivos Android de uso geral.
 
-Versão de teste: **1.4.0** (`versionCode 5`). Nome provisório: **Monitor de Retorno**. Pacote Android preservado: `br.com.polegar.ndimonitor`.
+Versão de teste: **1.4.1** (`versionCode 6`). Nome provisório: **Monitor de Retorno**. Pacote Android preservado: `br.com.polegar.ndimonitor`.
 
 Comece pela [documentação completa do projeto](DOCUMENTACAO_COMPLETA.md), com instalação, uso no controle remoto, arquitetura, compilação, testes, assinatura e preparação para publicação.
 
@@ -10,15 +10,16 @@ Projeto independente. NDI® é marca registrada da Vizrt NDI AB. Conheça a tecn
 
 ## Recursos
 
-- Dois modos no mesmo aplicativo: **NDI** e **HTML**, com a escolha salva por aparelho.
+- Dois modos no mesmo aplicativo: **NDI** e **HTML**, com modo e fonte confirmada salvos por aparelho e restaurados ao iniciar.
 - Retorno HTML em tela cheia, endereço editável e salvo, recarga manual e novas tentativas de carregamento após falhas de rede. [Como configurar](RETORNO_HTML.md).
-- Busca HTML em Wi-Fi/Ethernet com IPv4: encontra páginas no padrão `:5050/output/saida-html-1` e permite selecioná-las com setas e OK, sem digitar. Repete 30 s depois de cada ciclo enquanto o painel está aberto, com requisições limitadas e cancelamento ao sair.
-- Descoberta NDI contínua enquanto a lista está aberta: novas fontes aparecem sem precisar reiniciar a busca.
+- Busca HTML em Wi-Fi/Ethernet com IPv4: encontra páginas no padrão `:5050/output/saida-html-1` e permite selecioná-las com setas e OK, sem digitar. Durante uma busca solicitada, repete 30 s depois de cada ciclo com o painel aberto.
+- A busca começa na primeira configuração sem fonte ou pelo botão atualizar. Depois de selecionar, os descobridores são parados e o finder NDI é liberado. Reabrir apenas o painel não reinicia a busca; use atualizar para procurar outra fonte.
+- Ao iniciar com uma fonte salva, o aplicativo abre a mesma origem diretamente e mantém o painel fechado. A recuperação de sinal continua direcionada a essa origem.
 - Atualização manual sem apagar a lista: tolerância de ausência de 10 s para NDI e 90 s para HTML; o endereço HTML salvo permanece disponível.
 - Painel compacto no celular, com ícones menores e área de toque de pelo menos 48 dp, lista com rolagem e controles maiores em telas grandes.
 - Recepção de vídeo por JNI/C++ e reprodução de áudio por `AudioTrack`.
 - Tela cheia horizontal, com preservação da proporção da imagem.
-- Memória da última fonte e espera pela reconexão do receptor.
+- Memória da última fonte e espera pela reconexão do receptor; navegar por um modo ainda sem fonte não substitui a última configuração confirmada.
 - Menu e status ocultos durante a exibição; ao revelar os controles, eles se ocultam após 4 segundos com o painel fechado.
 - Operação por toque, mouse ou controle remoto.
 - Opção de abertura após iniciar o Android e de seleção como tela inicial da TV Box.
@@ -84,11 +85,11 @@ Veja o [guia passo a passo](GUIA_PASSO_A_PASSO.md) para a instalação do SDK e 
 ## Usar no aparelho
 
 1. Instale seu APK de teste e mantenha o aparelho e o transmissor na mesma rede local.
-2. Abra o painel de fontes e selecione uma origem. A busca segue ativa depois da primeira fonte; **↻** consulta a descoberta atual sem limpar a lista.
+2. Na primeira configuração, selecione uma origem na lista. A busca para após a seleção. Para trocar depois, abra o painel e pressione **↻**; durante essa busca, novas fontes aparecem sem apagar imediatamente as anteriores.
 3. Toque no vídeo para revelar os controles; toque no menu para abrir o painel.
 4. No controle remoto, **OK/Enter/Menu** revela os controles e um novo acionamento abre o painel. **Voltar** abre ou fecha o painel.
 
-Para HTML, escolha **HTML — retornos na rede**, aguarde os candidatos e selecione um deles. **Informar endereço** fica como alternativa; o botão ao lado recarrega a página salva. O ícone do cabeçalho refaz a busca.
+Para HTML, escolha **HTML — retornos na rede**, aguarde os candidatos e selecione um deles. Com endereço já salvo, ele é reaberto. **Informar endereço** fica como alternativa; o botão ao lado recarrega a página salva. O ícone do cabeçalho solicita uma busca por outras fontes.
 
 Na engrenagem **Configurações**, a opção **Escolher tela inicial** permite escolher ou restaurar o launcher do aparelho. Essa opção é voluntária e não impede acesso a outros aplicativos. Não há bloqueio de hardware nesta versão.
 
@@ -106,7 +107,7 @@ Leia [QUIOSQUE.md](QUIOSQUE.md) antes de mudar a tela inicial.
 
 ## Documentação
 
-- [Manual completo do projeto 1.4.0](DOCUMENTACAO_COMPLETA.md)
+- [Manual completo do projeto 1.4.1](DOCUMENTACAO_COMPLETA.md)
 - [Modo HTML e troca entre fontes](RETORNO_HTML.md)
 - [Guia de instalação e compilação](GUIA_PASSO_A_PASSO.md)
 - [Tela inicial opcional e como desativar](QUIOSQUE.md)
@@ -115,6 +116,7 @@ Leia [QUIOSQUE.md](QUIOSQUE.md) antes de mudar a tela inicial.
 - [Resultados e limites da validação 1.2.0](VALIDACAO_1.2.md)
 - [Resultados e limites da validação 1.3.0](VALIDACAO_1.3.md)
 - [Resultados e limites da validação 1.4.0](VALIDACAO_1.4.md)
+- [Resultados e limites da validação 1.4.1](VALIDACAO_1.4.1.md)
 
 ## Verificações de desenvolvimento
 

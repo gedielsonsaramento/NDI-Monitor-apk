@@ -1,12 +1,12 @@
 # Monitor de Retorno
 
-## Manual completo do projeto - versão 1.4.0
+## Manual completo do projeto - versão 1.4.1
 
 Aplicativo Android para receber NDI® Standard full-bandwidth ou abrir um retorno HTML pela rede local. Nome de produto provisório: Monitor de Retorno. Mantenedor: Gedielson Saramento. Documentação técnica revisada em 21/10/2026, horário do Brasil.
 
 NDI® is a registered trademark of Vizrt NDI AB. https://ndi.video/
 
-Esta revisão é uma versão de teste. O resultado de compilação, os testes executados e o que ainda precisa de equipamento real estão em VALIDACAO_1.4.md. A existência de um APK ou AAB compilado não significa publicação ou aprovação na Google Play.
+Esta revisão é uma versão de teste. O resultado de compilação, os testes executados e o que ainda precisa de equipamento real estão em VALIDACAO_1.4.1.md. A existência de um APK ou AAB compilado não significa publicação ou aprovação na Google Play.
 
 Repositório: https://github.com/gedielsonsaramento/NDI-Monitor-apk
 
@@ -54,7 +54,7 @@ O aplicativo não cria a apresentação, não controla os slides e não substitu
 | Orientação | Horizontal, com proporção preservada no vídeo NDI |
 | Operação | Toque, mouse ou controle remoto com setas e OK/Enter |
 | Pacote Android | br.com.polegar.ndimonitor |
-| Versão | versionName 1.4.0, versionCode 5 |
+| Versão | versionName 1.4.1, versionCode 6 |
 
 O Android 5.1 do servidor Samsung não é compatível com este APK. Não há pacote x86/x86_64 nesta revisão. O funcionamento de vídeo, áudio, boot e WebView varia conforme o hardware e o firmware: a versão mínima não comprova compatibilidade com todas as TV Boxes.
 
@@ -78,9 +78,11 @@ No computador, ative a saída HTML de retorno/Stage e deixe o Spresenter aberto.
 http://IP_DO_COMPUTADOR:5050/output/saida-html-1
 ```
 
-No Android, abra o painel de fontes. Acione o seletor do cabeçalho e escolha HTML - retornos na rede. A busca começa automaticamente. Os endereços encontrados entram na lista à medida que respondem; não é necessário esperar o ciclo terminar.
+Na primeira configuração, abra o painel de fontes. Acione o seletor do cabeçalho e escolha HTML - retornos na rede. Sem endereço salvo, a busca começa automaticamente. Os endereços encontrados entram na lista à medida que respondem; não é necessário esperar o ciclo terminar. Com endereço já salvo, o aplicativo reabre essa página diretamente.
 
 Use as setas e OK do controle remoto para selecionar o retorno, ou toque na linha. O aplicativo salva o endereço nesse aparelho, fecha o painel e abre a página. Na próxima abertura, ele restaura o modo HTML e esse endereço. Não escolhe sozinho um servidor novo descoberto na rede.
+
+O modo e o endereço são persistidos juntos ao confirmar uma fonte. Navegar por outro modo que ainda não tem origem configurada preserva a última seleção para o próximo início. Depois de selecionar, a varredura e os temporizadores param. Reabrir apenas o painel mostra a lista conhecida sem iniciar novas buscas; use atualizar para procurar outra fonte.
 
 Cada linha mostra o título recebido da página e o endereço do servidor, sem os parâmetros da URL. O título é apenas uma identificação fornecida pelo servidor; confira o conteúdo ao abrir. Encontrar HTML não comprova que a página contém o retorno correto ou que seu conteúdo continua sendo atualizado.
 
@@ -92,7 +94,9 @@ Para usar outro endereço, acione Informar endereço. Cole o link completo ou di
 
 Ative a fonte NDI Standard no computador e mantenha o Android em uma rede que permita sua descoberta e conexão. Abra o painel, selecione NDI e aguarde as fontes aparecerem. Selecione a origem desejada para iniciar a recepção e salvar sua identificação nesse aparelho.
 
-A descoberta permanece ativa enquanto a lista está aberta. Encontrar a primeira fonte não encerra a busca. Atualizar consulta o descobridor existente e preserva as linhas; uma origem que permanece ausente é retirada após a tolerância de 10 segundos. A ordem das fontes já apresentadas é mantida enquanto continuam no catálogo.
+A descoberta começa na configuração sem fonte ou ao solicitar atualizar. Enquanto essa sessão de busca está ativa e a lista está aberta, encontrar a primeira fonte não encerra a descoberta. A seleção ou o fechamento da lista interrompe as consultas e libera a instância de descoberta NDI. Atualizar inicia uma nova sessão e preserva as linhas; uma origem que permanece ausente é retirada após a tolerância de 10 segundos. A ordem das fontes já apresentadas é mantida enquanto continuam no catálogo.
+
+Com fonte salva, a inicialização conecta diretamente a essa identificação e mantém o painel fechado. Abrir apenas o painel não reinicia o descobridor. A reconexão continua direcionada à fonte salva; o SDK troca as mensagens necessárias para resolver e receber essa origem. O aplicativo não substitui a escolha por outra fonte que aparecer na rede.
 
 O vídeo usa sua proporção original, com áreas pretas quando necessário. O receptor entrega até dois canais de áudio ao Android. O volume depende do aparelho e da saída de áudio selecionada no sistema.
 
@@ -109,7 +113,7 @@ Ao trocar para HTML, a conexão NDI é encerrada. Ao trocar para NDI, o WebView 
 | Voltar | Abre ou fecha o painel de fontes |
 | Setas na lista e OK | Permitem escolher uma fonte |
 | Seletor NDI/HTML | Troca o modo deste aparelho |
-| Atualizar no cabeçalho | Refaz a busca do modo atual |
+| Atualizar no cabeçalho | Solicita uma sessão de busca no modo atual |
 | Informar endereço, no modo HTML | Abre o formulário manual |
 | Recarga ao lado do formulário manual | Reabre a página HTML selecionada |
 | Engrenagem | Mostra opções do monitor, Android e licenças |
@@ -139,7 +143,7 @@ Em cada interface IPv4 elegível, gera os endereços da sub-rede. Em redes maior
 | Espera de leitura | Até 800 ms por leitura |
 | Limite de leitura do corpo | 64 KiB por resposta |
 | Prazo de leitura da tentativa | 2,5 s, verificado durante a leitura |
-| Nova busca | 30 s depois de terminar o ciclo anterior, com painel aberto |
+| Nova busca | 30 s após o ciclo anterior, somente durante uma sessão de busca com painel aberto |
 | Tolerância para HTML ausente | 90 s; o endereço salvo é preservado |
 
 A duração de um ciclo depende de quantos endereços não respondem e da latência. Um servidor pode aparecer antes do término; não há promessa de descoberta instantânea. A varredura é finita e não percorre todas as portas da rede.
@@ -148,7 +152,7 @@ Um candidato é listado quando responde HTTP 200, informa conteúdo text/html ou
 
 Um redirecionamento de barra final pode ser aceito no mesmo endereço, protocolo, porta, caminho e parâmetros. Redirecionamentos para outro servidor, login ou outro caminho não são seguidos pela busca. O WebView, depois da seleção pelo usuário, tem seu próprio comportamento de navegação HTTP/HTTPS.
 
-Abrir o painel inicia a busca. Fechar o painel, abrir a configuração manual ou de modo, sair da atividade ou trocar de modo cancela o ciclo e a repetição. Respostas de ciclos cancelados não podem modificar a lista atual. A varredura não fica rodando em segundo plano durante a apresentação em tela cheia.
+A configuração sem uma fonte inicia a busca. Com fonte salva, abrir apenas o painel mantém a descoberta parada; o botão atualizar inicia uma sessão para procurar outras origens. Selecionar uma fonte ou fechar o painel encerra a sessão. Abrir a configuração manual ou de modo, sair da atividade ou trocar de modo cancela o ciclo em andamento. Respostas canceladas não podem modificar a lista atual. A varredura não fica rodando durante a apresentação em tela cheia.
 
 ## 8. Endereços personalizados e limites da descoberta
 
@@ -170,7 +174,7 @@ As configurações ficam em SharedPreferences, no arquivo privado ndi_monitor_pr
 
 | Chave | Finalidade |
 | --- | --- |
-| display_mode | Modo ndi ou html |
+| display_mode | Modo ndi ou html da última fonte confirmada |
 | html_url | Último endereço HTML escolhido |
 | last_source | Identificação da última fonte NDI |
 | start_on_boot | Preferência de abertura após iniciar o Android |
@@ -208,7 +212,7 @@ O diretório app/src/main/res contém layouts, ícones, dimensões e textos. act
 
 As filas estáticas CAPTURE_WORKER e DISCOVERY_WORKER serializam operações NDI. A descoberta HTML usa seu próprio conjunto limitado de trabalhadores. Atualizações de interface voltam ao thread principal; números de geração descartam eventos de operações canceladas.
 
-onStop pausa e destrói o renderizador HTML, libera o áudio Android e cancela a descoberta. A captura NDI é encerrada ao trocar para HTML ou destruir a atividade; esta revisão não promete interromper toda recepção NDI apenas por a atividade perder visibilidade. onDestroy limpa os componentes e agenda a liberação nativa.
+onStop pausa e destrói o renderizador HTML, libera o áudio Android, cancela a descoberta e agenda o encerramento da captura NDI. Ao voltar a onStart, a recepção usa a mesma fonte salva, sem uma busca geral. Conexões enfileiradas canceladas são descartadas por geração. onDestroy limpa os componentes; a liberação do finder acompanha o encerramento da busca, inclusive ao selecionar ou fechar o painel.
 
 As tentativas de carregamento HTML usam intervalo crescente até 30 s para falhas recuperáveis. Elas tratam a abertura da página e erros do renderizador. Uma página que abriu mas parou de receber seus próprios eventos internos precisa implementar sua reconexão; o aplicativo não detecta conteúdo congelado por inspeção visual.
 
@@ -343,7 +347,7 @@ Antes de usar em um culto, registre o modelo do aparelho, versão do Android/Web
 
 1. Buscar o retorno HTML padrão, selecionar com setas/OK e abrir sem digitar.
 2. Abrir dois computadores transmissores e conferir identificação e seleção de cada retorno.
-3. Repetir a busca sem perder as fontes já exibidas nem deslocar a seleção.
+3. Repetir a busca solicitada sem perder as fontes já exibidas nem deslocar a seleção.
 4. Fechar o painel e confirmar que uma busca antiga não reabre ou altera a exibição.
 5. Reiniciar o aplicativo e confirmar modo, fonte e endereço salvos por aparelho.
 6. Desligar e religar o transmissor; conferir descoberta e carregamento após a volta.
@@ -356,7 +360,9 @@ Antes de usar em um culto, registre o modelo do aparelho, versão do Android/Web
 13. Validar ARM64 em ambiente de páginas de 16 KB, além dos checks de alinhamento.
 14. Fazer um ensaio prolongado no tempo e na rede previstos para o uso real.
 
-A validação automatizada desta revisão está em VALIDACAO_1.4.md. Ela não substitui esses cenários. Não há teste real concluído com todas as TV Boxes, todas as saídas Spresenter nem todos os formatos de fonte NDI.
+Confira também que abrir apenas o menu não inicia buscas depois de selecionar. Volte do segundo plano e confirme a mesma origem. Se a fonte estiver fora do ar, confirme que as tentativas continuam direcionadas a ela, sem selecionar outra automaticamente.
+
+A validação automatizada desta revisão está em VALIDACAO_1.4.1.md. Ela não substitui esses cenários. Não há teste real concluído com todas as TV Boxes, todas as saídas Spresenter nem todos os formatos de fonte NDI.
 
 ## 18. Manutenção e referências
 
@@ -364,7 +370,7 @@ Ao alterar descoberta, preserve seus limites, cancelamento e a ausência de requ
 
 Ao alterar o layout, confira celular em paisagem com altura pequena, fonte ampliada e TV com controle remoto. Ao atualizar SDK NDI, NDK ou AGP, repita os testes nativos e as verificações de 16 KB. Ao aumentar targetSdk, reveja as mudanças de comportamento e a permissão LAN antes da publicação.
 
-Histórico resumido: a revisão 1.2 melhorou descoberta NDI e painel; a 1.3 acrescentou HTML por endereço salvo; a 1.4 acrescenta busca HTML limitada, seleção pela lista e este manual. Consulte CHANGELOG.md para o histórico do projeto.
+Histórico resumido: a revisão 1.2 melhorou descoberta NDI e painel; a 1.3 acrescentou HTML por endereço salvo; a 1.4 acrescentou busca HTML limitada, seleção pela lista e este manual. A 1.4.1 restaura a última configuração confirmada e encerra a descoberta depois de selecionar, inclusive liberando o finder NDI. Consulte CHANGELOG.md para o histórico do projeto.
 
 Referências oficiais consultadas:
 
