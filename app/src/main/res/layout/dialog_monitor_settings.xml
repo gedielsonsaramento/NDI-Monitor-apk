@@ -26,6 +26,15 @@
             android:text="@string/android_settings"
             android:textAllCaps="false" />
 
+        <Button
+            android:id="@+id/html_layout_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:text="@string/html_layout_title"
+            android:textAllCaps="false"
+            android:visibility="gone" />
+
         <CheckBox
             android:id="@+id/boot_checkbox"
             android:layout_width="match_parent"

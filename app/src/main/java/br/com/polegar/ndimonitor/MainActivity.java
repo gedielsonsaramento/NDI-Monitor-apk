@@ -55,6 +55,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     public static final String KEY_START_ON_BOOT = "start_on_boot";
     public static final String KEY_DISPLAY_MODE = "display_mode";
     public static final String KEY_HTML_URL = "html_url";
+    public static final String KEY_HTML_STAGE_LAYOUT = "html_stage_layout";
 
     // Shared queues preserve connect/cleanup ordering across Activity recreation.
     private static final ExecutorService CAPTURE_WORKER = Executors.newSingleThreadExecutor();
@@ -74,6 +75,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     private AlertDialog noticesDialog;
     private AlertDialog modeDialog;
     private AlertDialog htmlAddressDialog;
+    private AlertDialog htmlLayoutDialog;
     private HtmlMonitor htmlMonitor;
     private LanHtmlDiscovery htmlDiscovery;
     private final HtmlSourceCatalog htmlSourceCatalog = new HtmlSourceCatalog();
@@ -144,6 +146,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
 
             @Override public void onInteraction() { showControls(); }
         });
+        htmlMonitor.setStageLayout(preferences.getBoolean(KEY_HTML_STAGE_LAYOUT, true));
         sourceAdapter = new ArrayAdapter<>(this, R.layout.source_item, new ArrayList<>());
         sourceList.setAdapter(sourceAdapter);
         sourceList.setOnItemClickListener((parent, view, position, id) -> {
@@ -521,11 +524,36 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         });
         content.findViewById(R.id.third_party_notices_button).setOnClickListener(v ->
                 showThirdPartyNotices());
+        TextView layoutButton = content.findViewById(R.id.html_layout_button);
+        layoutButton.setVisibility(htmlMode ? View.VISIBLE : View.GONE);
+        updateHtmlLayoutButton(layoutButton);
+        layoutButton.setOnClickListener(v -> {
+            if (htmlLayoutDialog != null && htmlLayoutDialog.isShowing()) return;
+            htmlLayoutDialog = new AlertDialog.Builder(this)
+                    .setTitle(R.string.html_layout_title)
+                    .setSingleChoiceItems(R.array.html_layouts,
+                            preferences.getBoolean(KEY_HTML_STAGE_LAYOUT, true) ? 0 : 1,
+                            (dialog, which) -> {
+                                boolean stage = which == 0;
+                                preferences.edit().putBoolean(KEY_HTML_STAGE_LAYOUT, stage).apply();
+                                htmlMonitor.setStageLayout(stage);
+                                updateHtmlLayoutButton(layoutButton);
+                                dialog.dismiss();
+                            }).setNegativeButton(android.R.string.cancel, null).create();
+            htmlLayoutDialog.setOnDismissListener(dialog -> htmlLayoutDialog = null);
+            htmlLayoutDialog.show();
+        });
         settingsDialog.setOnDismissListener(dialog -> {
             settingsDialog = null;
             if (!destroyed) scanSources();
         });
         settingsDialog.show();
+    }
+
+    private void updateHtmlLayoutButton(TextView button) {
+        button.setText(getString(R.string.html_layout_button, getString(
+                preferences.getBoolean(KEY_HTML_STAGE_LAYOUT, true)
+                        ? R.string.html_layout_monitor : R.string.html_layout_page)));
     }
 
     private void showThirdPartyNotices() {
@@ -857,6 +885,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         if (noticesDialog != null) noticesDialog.dismiss();
         if (modeDialog != null) modeDialog.dismiss();
         if (htmlAddressDialog != null) htmlAddressDialog.dismiss();
+        if (htmlLayoutDialog != null) htmlLayoutDialog.dismiss();
         if (Build.VERSION.SDK_INT >= 33 && backCallback != null) {
             getOnBackInvokedDispatcher().unregisterOnBackInvokedCallback(backCallback);
         }

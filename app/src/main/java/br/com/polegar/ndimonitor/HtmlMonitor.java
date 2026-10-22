@@ -2,6 +2,8 @@ package br.com.polegar.ndimonitor;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.net.http.SslError;
 import android.os.Build;
@@ -10,6 +12,7 @@ import android.os.Looper;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ContextThemeWrapper;
 import android.webkit.RenderProcessGoneDetail;
 import android.webkit.SslErrorHandler;
 import android.webkit.WebChromeClient;
@@ -34,6 +37,8 @@ final class HtmlMonitor {
     private final Listener listener;
     private final Handler handler = new Handler(Looper.getMainLooper());
     private WebView webView;
+    private HtmlStageViewport viewport;
+    private boolean stageLayout = true;
     private View customView;
     private WebChromeClient.CustomViewCallback customViewCallback;
     private TextView failureView;
@@ -72,6 +77,16 @@ final class HtmlMonitor {
         if (enabled && !paused && !address.isEmpty()) loadCurrentAddress();
     }
 
+    void setStageLayout(boolean enabled) {
+        if (stageLayout == enabled) return;
+        stageLayout = enabled;
+        retries = 0;
+        handler.removeCallbacks(loadTimeout);
+        handler.removeCallbacks(retry);
+        disposeRenderer();
+        if (this.enabled && !paused && !address.isEmpty()) loadCurrentAddress();
+    }
+
     void resume() {
         paused = false;
         if (enabled && !address.isEmpty()) loadCurrentAddress();
@@ -102,7 +117,18 @@ final class HtmlMonitor {
     private boolean ensureRenderer() {
         if (webView != null) return true;
         try {
-            webView = new WebView(activity) {
+            Context rendererContext = activity;
+            if (stageLayout) {
+                // Scope a 1x density to this renderer, keeping the virtual canvas at 1080p
+                // even on high-density phones. App controls keep the user's normal scale.
+                ContextThemeWrapper desktop = new ContextThemeWrapper(activity, activity.getTheme());
+                Configuration configuration = new Configuration();
+                configuration.densityDpi = 160;
+                configuration.fontScale = 1f;
+                desktop.applyOverrideConfiguration(configuration);
+                rendererContext = desktop;
+            }
+            webView = new WebView(rendererContext) {
                 @Override public boolean dispatchTouchEvent(MotionEvent event) {
                     if (event.getActionMasked() == MotionEvent.ACTION_DOWN) listener.onInteraction();
                     return super.dispatchTouchEvent(event);
@@ -116,9 +142,20 @@ final class HtmlMonitor {
             settings.setAllowFileAccess(false);
             settings.setAllowContentAccess(false);
             settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
+            settings.setTextZoom(100);
+            settings.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.NORMAL);
             settings.setSupportZoom(false);
-            settings.setUseWideViewPort(true);
-            settings.setLoadWithOverviewMode(true);
+            settings.setUseWideViewPort(!stageLayout);
+            settings.setLoadWithOverviewMode(!stageLayout);
+            if (stageLayout) {
+                String agent = settings.getUserAgentString();
+                if (agent != null) settings.setUserAgentString(agent
+                        .replaceFirst("\\([^)]*\\)", "(X11; Linux x86_64)")
+                        .replace(" Version/4.0", "").replace(" Mobile", ""));
+                webView.setHorizontalScrollBarEnabled(false);
+                webView.setVerticalScrollBarEnabled(false);
+                webView.setOverScrollMode(View.OVER_SCROLL_NEVER);
+            }
             webView.setWebViewClient(new WebViewClient() {
                 @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                     return !HtmlSourceUrl.isWebAddress(request.getUrl().toString());
@@ -177,7 +214,8 @@ final class HtmlMonitor {
 
                 @Override public void onHideCustomView() { hideCustomView(); }
             });
-            container.addView(webView, 0, new FrameLayout.LayoutParams(-1, -1));
+            viewport = new HtmlStageViewport(activity, webView, stageLayout);
+            container.addView(viewport, 0, new FrameLayout.LayoutParams(-1, -1));
             return true;
         } catch (RuntimeException unavailable) {
             disposeRenderer();
@@ -253,7 +291,11 @@ final class HtmlMonitor {
         if (webView != null) {
             WebView old = webView;
             webView = null;
-            container.removeView(old);
+            if (viewport != null) {
+                container.removeView(viewport);
+                viewport.removeView(old);
+                viewport = null;
+            }
             old.stopLoading();
             old.setWebChromeClient(null);
             old.setWebViewClient(new WebViewClient());

@@ -4,6 +4,23 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class HtmlSourceUrlTest {
+    @Test public void knownOutputsIncludeTheNamedRetonoWithoutNeedingItsIp() {
+        assertEquals(java.util.Arrays.asList("/output/saida-html-1", "/output/retorno", "/output/retono"),
+                HtmlSourceUrl.discoveryPaths(""));
+        assertEquals(java.util.Arrays.asList("/output/palco", "/output/saida-html-1", "/output/retorno", "/output/retono"),
+                HtmlSourceUrl.discoveryPaths("http://192.168.2.60:5050/output/palco/"));
+        assertEquals(3, HtmlSourceUrl.discoveryPaths("http://192.168.2.60:5050/output/retono").size());
+    }
+
+    @Test public void privateSavedQueriesAndNonOutputRoutesNeverBecomeScanPatterns() {
+        for (String value : new String[]{"http://192.168.2.60:5050/output/palco?token=private",
+                "http://192.168.2.60:5050/private", "http://192.168.2.60:6060/output/palco",
+                "http://192.168.2.60:5050/output/../private", "http://192.168.2.60:5050/output/a%2Fb"}) {
+            assertEquals(value, java.util.Arrays.asList("/output/saida-html-1", "/output/retorno", "/output/retono"),
+                    HtmlSourceUrl.discoveryPaths(value));
+        }
+    }
+
     @Test public void expandsPcAddressWithStagePortAndPath() {
         assertEquals("http://192.168.2.53:5050/output/saida-html-1",
                 HtmlSourceUrl.normalize(" 192.168.2.53 "));

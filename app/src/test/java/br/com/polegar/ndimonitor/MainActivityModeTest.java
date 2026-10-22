@@ -102,6 +102,35 @@ public class MainActivityModeTest {
         }
     }
 
+    @Test public void htmlDisplayChoiceIsSavedWithoutChangingSourceOrRestartingDiscovery() {
+        android.content.SharedPreferences prefs = RuntimeEnvironment.getApplication()
+                .getSharedPreferences(MainActivity.PREFERENCES, Context.MODE_PRIVATE);
+        String url = "http://192.168.2.60:5050/output/saida-html-1";
+        prefs.edit().clear().putString(MainActivity.KEY_DISPLAY_MODE, "html")
+                .putString(MainActivity.KEY_HTML_URL, url).commit();
+        try (ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class).setup()) {
+            MainActivity activity = controller.get();
+            android.widget.FrameLayout frame = activity.findViewById(R.id.html_container);
+            assertTrue(((HtmlStageViewport) frame.getChildAt(0)).usesStageLayout());
+            activity.onBackPressed();
+            activity.findViewById(R.id.monitor_settings_button).performClick();
+            android.app.AlertDialog settings = ShadowAlertDialog.getLatestAlertDialog();
+            settings.findViewById(R.id.html_layout_button).performClick();
+            android.app.AlertDialog chooser = ShadowAlertDialog.getLatestAlertDialog();
+            chooser.getListView().performItemClick(null, 1, 1);
+            assertFalse(prefs.getBoolean(MainActivity.KEY_HTML_STAGE_LAYOUT, true));
+            assertFalse(((HtmlStageViewport) frame.getChildAt(0)).usesStageLayout());
+            settings.dismiss();
+            org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle();
+            controller.recreate();
+            frame = controller.get().findViewById(R.id.html_container);
+            assertFalse(((HtmlStageViewport) frame.getChildAt(0)).usesStageLayout());
+            assertEquals(url, prefs.getString(MainActivity.KEY_HTML_URL, ""));
+            assertEquals("html", prefs.getString(MainActivity.KEY_DISPLAY_MODE, ""));
+            assertEquals(0, FakeHtmlDiscovery.starts);
+        }
+    }
+
     @Test public void invalidAddressDoesNotReplaceSavedAddressOrCloseForm() {
         android.content.SharedPreferences prefs = RuntimeEnvironment.getApplication()
                 .getSharedPreferences(MainActivity.PREFERENCES, Context.MODE_PRIVATE);
@@ -270,7 +299,7 @@ public class MainActivityModeTest {
                 .putString(MainActivity.KEY_HTML_URL, url).commit();
         try (ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class).setup()) {
             android.widget.FrameLayout frame = controller.get().findViewById(R.id.html_container);
-            android.webkit.WebView web = (android.webkit.WebView) frame.getChildAt(0);
+            android.webkit.WebView web = (android.webkit.WebView) ((HtmlStageViewport) frame.getChildAt(0)).getChildAt(0);
             assertEquals(url, org.robolectric.Shadows.shadowOf(web).getLastLoadedUrl());
             controller.get().onBackPressed();
             assertEquals(1, ((ListView) controller.get().findViewById(R.id.source_list)).getAdapter().getCount());
@@ -331,7 +360,7 @@ public class MainActivityModeTest {
             controller.recreate();
             assertEquals(View.GONE, controller.get().findViewById(R.id.source_panel).getVisibility());
             android.widget.FrameLayout frame = controller.get().findViewById(R.id.html_container);
-            assertEquals(url, org.robolectric.Shadows.shadowOf((android.webkit.WebView) frame.getChildAt(0)).getLastLoadedUrl());
+            assertEquals(url, org.robolectric.Shadows.shadowOf((android.webkit.WebView) ((HtmlStageViewport) frame.getChildAt(0)).getChildAt(0)).getLastLoadedUrl());
             assertEquals(scans, FakeHtmlDiscovery.starts);
         }
     }

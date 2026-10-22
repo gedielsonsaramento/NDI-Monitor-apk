@@ -42,6 +42,58 @@ public class HtmlMonitorTest {
         });
     }
 
+    @Test
+    @Config(qualifiers = "land-xxhdpi")
+    public void desktopCanvasIs1080pEvenOnDensePhoneWithLargeSystemFont() {
+        org.robolectric.RuntimeEnvironment.setFontScale(2f);
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            Activity activity = controller.get();
+            FrameLayout frame = new FrameLayout(activity);
+            HtmlMonitor monitor = create(activity, frame, new ArrayList<>());
+            monitor.resume();
+            monitor.show(URL);
+            frame.measure(android.view.View.MeasureSpec.makeMeasureSpec(1536, android.view.View.MeasureSpec.EXACTLY),
+                    android.view.View.MeasureSpec.makeMeasureSpec(709, android.view.View.MeasureSpec.EXACTLY));
+            frame.layout(0, 0, 1536, 709);
+            HtmlStageViewport viewport = (HtmlStageViewport) frame.getChildAt(0);
+            WebView web = (WebView) viewport.getChildAt(0);
+            assertTrue(viewport.usesStageLayout());
+            // Robolectric replaces Chromium's measurement. Canvas geometry is covered
+            // with a real drawing View in HtmlStageViewportTest.
+            assertEquals(1f, web.getResources().getDisplayMetrics().density, 0);
+            assertEquals(100, web.getSettings().getTextZoom());
+            assertFalse(web.getSettings().getUseWideViewPort());
+            assertTrue(activity.getResources().getDisplayMetrics().density > 1f);
+            assertEquals(2f, activity.getResources().getConfiguration().fontScale, 0);
+            monitor.destroy();
+        }
+    }
+
+    @Test public void changingDisplayLayoutKeepsAddressAndSurvivesPause() {
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            Activity activity = controller.get();
+            FrameLayout frame = new FrameLayout(activity);
+            HtmlMonitor monitor = create(activity, frame, new ArrayList<>());
+            monitor.resume();
+            monitor.show(URL);
+            WebView original = (WebView) ((HtmlStageViewport) frame.getChildAt(0)).getChildAt(0);
+            monitor.setStageLayout(false);
+            HtmlStageViewport viewport = (HtmlStageViewport) frame.getChildAt(0);
+            WebView changed = (WebView) viewport.getChildAt(0);
+            assertNotSame(original, changed);
+            assertNull(original.getParent());
+            assertFalse(viewport.usesStageLayout());
+            assertTrue(changed.getSettings().getUseWideViewPort());
+            assertEquals(URL, Shadows.shadowOf(changed).getLastLoadedUrl());
+            monitor.pause();
+            monitor.resume();
+            assertFalse(((HtmlStageViewport) frame.getChildAt(0)).usesStageLayout());
+            monitor.setStageLayout(true);
+            assertTrue(((HtmlStageViewport) frame.getChildAt(0)).usesStageLayout());
+            monitor.destroy();
+        }
+    }
+
     @Test public void opensSavedUrlWithMediaAndSafeWebSettings() {
         try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
             Activity activity = controller.get();
@@ -50,7 +102,7 @@ public class HtmlMonitorTest {
             monitor.show(URL);
             assertEquals(0, frame.getChildCount());
             monitor.resume();
-            WebView web = (WebView) frame.getChildAt(0);
+            WebView web = (WebView) ((HtmlStageViewport) frame.getChildAt(0)).getChildAt(0);
             assertEquals(URL, Shadows.shadowOf(web).getLastLoadedUrl());
             assertTrue(web.getSettings().getJavaScriptEnabled());
             assertFalse(web.getSettings().getMediaPlaybackRequiresUserGesture());
@@ -70,11 +122,11 @@ public class HtmlMonitorTest {
             HtmlMonitor monitor = create(activity, frame, new ArrayList<>());
             monitor.resume();
             monitor.show(URL);
-            WebView first = (WebView) frame.getChildAt(0);
+            WebView first = (WebView) ((HtmlStageViewport) frame.getChildAt(0)).getChildAt(0);
             monitor.pause();
             assertEquals(0, frame.getChildCount());
             monitor.resume();
-            WebView second = (WebView) frame.getChildAt(0);
+            WebView second = (WebView) ((HtmlStageViewport) frame.getChildAt(0)).getChildAt(0);
             assertNotSame(first, second);
             assertEquals(URL, Shadows.shadowOf(second).getLastLoadedUrl());
             monitor.hide();
@@ -93,7 +145,7 @@ public class HtmlMonitorTest {
             HtmlMonitor monitor = create(activity, frame, messages);
             monitor.resume();
             monitor.show(URL);
-            WebView web = (WebView) frame.getChildAt(0);
+            WebView web = (WebView) ((HtmlStageViewport) frame.getChildAt(0)).getChildAt(0);
             web.getWebViewClient().onReceivedError(web, request(URL + "/image.png", false), null);
             assertFalse(messages.contains(R.string.html_retrying));
             web.getWebViewClient().onReceivedError(web, request(URL, true), null);

@@ -3,6 +3,9 @@ package br.com.polegar.ndimonitor;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Locale;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
 
 /** Accepts web addresses only. A bare PC address expands to the Stage HTML route. */
 final class HtmlSourceUrl {
@@ -10,6 +13,25 @@ final class HtmlSourceUrl {
     static final String DEFAULT_PATH = "/output/saida-html-1";
 
     private HtmlSourceUrl() {}
+
+    static boolean isOutputPath(String path) {
+        return path != null && path.matches("/output/[A-Za-z0-9_-]{1,120}/?");
+    }
+
+    static List<String> discoveryPaths(String savedAddress) {
+        LinkedHashSet<String> paths = new LinkedHashSet<>();
+        if (isWebAddress(savedAddress)) {
+            URI saved = URI.create(savedAddress);
+            // A public output slug may be reused after its host changes IP. Keep all
+            // parameters and non-output paths confined to the exact saved address.
+            if (saved.getRawQuery() == null && isOutputPath(saved.getRawPath()) &&
+                    saved.getPort() == DEFAULT_PORT) paths.add(saved.getRawPath().replaceAll("/+$", ""));
+        }
+        paths.add(DEFAULT_PATH);
+        paths.add("/output/retorno");
+        paths.add("/output/retono");
+        return new ArrayList<>(paths);
+    }
 
     static String normalize(String input) {
         String text = input == null ? "" : input.trim();

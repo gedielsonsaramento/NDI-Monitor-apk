@@ -41,6 +41,7 @@ final class LanHtmlDiscovery {
         stop();
         int current = generation;
         Map<String, HtmlHttpProbe.Target> targets = new LinkedHashMap<>();
+        java.util.List<String> paths = HtmlSourceUrl.discoveryPaths(savedAddress);
         boolean limited = false;
         int networks = 0;
         try {
@@ -64,8 +65,10 @@ final class LanHtmlDiscovery {
                         if (subnet.contains(saved.getHost())) add(targets, network, savedAddress);
                     }
                     for (String host : subnet.candidates()) {
-                        String url = "http://" + host + ":" + HtmlSourceUrl.DEFAULT_PORT + HtmlSourceUrl.DEFAULT_PATH;
-                        if (!add(targets, network, url)) { limited = true; break; }
+                        String root = "http://" + host + ":" + HtmlSourceUrl.DEFAULT_PORT;
+                        String[] alternatives = new String[paths.size() - 1];
+                        for (int i = 1; i < paths.size(); ++i) alternatives[i - 1] = root + paths.get(i);
+                        if (!add(targets, network, root + paths.get(0), alternatives)) { limited = true; break; }
                     }
                 }
             }
@@ -88,10 +91,11 @@ final class LanHtmlDiscovery {
         session.start();
     }
 
-    private static boolean add(Map<String, HtmlHttpProbe.Target> targets, Network network, String url) {
+    private static boolean add(Map<String, HtmlHttpProbe.Target> targets, Network network, String url,
+                               String... alternatives) {
         if (targets.size() >= MAX_TARGETS) return false;
         targets.putIfAbsent(network.toString() + "|" + url, new HtmlHttpProbe.Target(url,
-                address -> (HttpURLConnection) network.openConnection(address, Proxy.NO_PROXY)));
+                address -> (HttpURLConnection) network.openConnection(address, Proxy.NO_PROXY), alternatives));
         return true;
     }
 

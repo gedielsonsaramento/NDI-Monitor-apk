@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
@@ -18,33 +19,60 @@ final class HtmlHttpProbe {
     static final int CONNECT_TIMEOUT_MS = 650;
     static final int READ_TIMEOUT_MS = 800;
     static final int DEADLINE_MS = 2_500;
+    static final int MAX_REDIRECTS = 2;
     interface ConnectionOpener { HttpURLConnection open(URL url) throws IOException; }
     static final class Target {
         final String url;
         final ConnectionOpener opener;
-        Target(String url, ConnectionOpener opener) { this.url = url; this.opener = opener; }
+        final String[] alternatives;
+        Target(String url, ConnectionOpener opener, String... alternatives) {
+            this.url = url;
+            this.opener = opener;
+            this.alternatives = alternatives.clone();
+        }
     }
+    private static final class MissingOutputRoute extends IOException { }
 
     HtmlSource probe(Target target, HtmlDiscoverySession.Cancellation cancellation) throws IOException {
-        URL address = new URL(target.url);
         long deadline = System.nanoTime() + DEADLINE_MS * 1_000_000L;
-        for (int redirect = 0; redirect <= 1 && !cancellation.isCancelled(); ++redirect) {
-            HttpURLConnection connection = target.opener.open(address);
+        URL first = new URL(target.url);
+        for (int candidate = 0; candidate <= target.alternatives.length && !cancellation.isCancelled(); ++candidate) {
+            URL original = candidate == 0 ? first : new URL(target.alternatives[candidate - 1]);
+            if (!sameOrigin(first, original) || original.getUserInfo() != null) return null;
+            try {
+                return probeAddress(original, target.opener, cancellation, deadline);
+            } catch (MissingOutputRoute absent) {
+                // A missing output name is different from an unreachable host. Try another
+                // known display name only after an actual 404/410 from this server.
+            }
+        }
+        return null;
+    }
+
+    private HtmlSource probeAddress(URL original, ConnectionOpener opener,
+                                    HtmlDiscoverySession.Cancellation cancellation, long deadline) throws IOException {
+        URL address = original;
+        for (int redirect = 0; redirect <= MAX_REDIRECTS && !cancellation.isCancelled(); ++redirect) {
+            long remaining = (deadline - System.nanoTime()) / 1_000_000L;
+            if (remaining <= 0) return null;
+            HttpURLConnection connection = opener.open(address);
             cancellation.track(connection);
             try {
                 if (cancellation.isCancelled()) return null;
-                connection.setConnectTimeout(CONNECT_TIMEOUT_MS);
-                connection.setReadTimeout(READ_TIMEOUT_MS);
+                connection.setConnectTimeout((int) Math.min(CONNECT_TIMEOUT_MS, remaining));
+                connection.setReadTimeout((int) Math.min(READ_TIMEOUT_MS, remaining));
                 connection.setInstanceFollowRedirects(false);
                 connection.setUseCaches(false);
                 connection.setRequestProperty("Accept", "text/html, application/xhtml+xml");
-                connection.setRequestProperty("User-Agent", "MonitorDeRetorno/1.4 (LAN discovery)");
+                connection.setRequestProperty("User-Agent", "MonitorDeRetorno/1.4.2 (LAN discovery)");
                 int status = connection.getResponseCode();
+                if (System.nanoTime() >= deadline || cancellation.isCancelled()) return null;
+                if (status == 404 || status == 410) throw new MissingOutputRoute();
                 if (status == 301 || status == 302 || status == 303 || status == 307 || status == 308) {
                     String location = connection.getHeaderField("Location");
-                    if (redirect != 0 || location == null) return null;
+                    if (redirect == MAX_REDIRECTS || location == null) return null;
                     URL next = new URL(address, location);
-                    if (!sameEndpoint(address, next)) return null;
+                    if (!mayFollow(original, address, next)) return null;
                     address = next;
                     continue;
                 }
@@ -57,9 +85,9 @@ final class HtmlHttpProbe {
                 try (InputStream input = connection.getInputStream()) {
                     byte[] buffer = new byte[2048];
                     while (bytes.size() < MAX_BYTES && !cancellation.isCancelled()) {
-                        long remaining = (deadline - System.nanoTime()) / 1_000_000L;
-                        if (remaining <= 0) return null;
-                        connection.setReadTimeout((int) Math.min(READ_TIMEOUT_MS, remaining));
+                        long readRemaining = (deadline - System.nanoTime()) / 1_000_000L;
+                        if (readRemaining <= 0) return null;
+                        connection.setReadTimeout((int) Math.min(READ_TIMEOUT_MS, readRemaining));
                         int count = input.read(buffer, 0, Math.min(buffer.length, MAX_BYTES - bytes.size()));
                         if (count == -1) break;
                         bytes.write(buffer, 0, count);
@@ -72,7 +100,7 @@ final class HtmlHttpProbe {
                 Matcher title = Pattern.compile("<title[^>]*>(.*?)</title>",
                         Pattern.CASE_INSENSITIVE | Pattern.DOTALL).matcher(html);
                 String name = title.find() ? cleanTitle(title.group(1)) : "Retorno HTML";
-                return new HtmlSource(target.url, name);
+                return new HtmlSource(original.toExternalForm(), name);
             } finally {
                 cancellation.untrack(connection);
                 connection.disconnect();
@@ -81,15 +109,43 @@ final class HtmlHttpProbe {
         return null;
     }
 
-    private static boolean sameEndpoint(URL old, URL next) {
+    private static boolean mayFollow(URL original, URL old, URL next) {
         try {
             URI before = old.toURI(), after = next.toURI();
-            return before.getScheme().equalsIgnoreCase(after.getScheme()) &&
-                    before.getHost().equalsIgnoreCase(after.getHost()) && before.getPort() == after.getPort() &&
-                    after.getUserInfo() == null &&
-                    before.getPath().replaceAll("/+$", "").equals(after.getPath().replaceAll("/+$", "")) &&
-                    java.util.Objects.equals(before.getRawQuery(), after.getRawQuery());
+            if (!sameOrigin(old, next) || after.getUserInfo() != null) return false;
+            String beforePath = before.getPath().replaceAll("/+$", "");
+            String afterPath = after.getPath().replaceAll("/+$", "");
+            if (beforePath.equals(afterPath) &&
+                    java.util.Objects.equals(before.getRawQuery(), after.getRawQuery())) return true;
+            // S-Present's stable output URL opens a generated, display-only stage route.
+            // Never follow login/control routes or move a custom saved query to another path.
+            URI start = original.toURI();
+            return HtmlSourceUrl.isOutputPath(start.getPath()) &&
+                    start.getRawQuery() == null && before.getRawQuery() == null &&
+                    HtmlSourceUrl.isOutputPath(beforePath) && afterPath.equals("/slide") &&
+                    hasSingleStageSelector(after.getRawQuery());
         } catch (Exception invalid) { return false; }
+    }
+
+    private static boolean sameOrigin(URL before, URL after) {
+        int beforePort = before.getPort() == -1 ? before.getDefaultPort() : before.getPort();
+        int afterPort = after.getPort() == -1 ? after.getDefaultPort() : after.getPort();
+        return before.getProtocol().equalsIgnoreCase(after.getProtocol()) &&
+                before.getHost().equalsIgnoreCase(after.getHost()) && beforePort == afterPort;
+    }
+
+    private static boolean hasSingleStageSelector(String query) throws Exception {
+        if (query == null) return false;
+        int selectors = 0;
+        for (String item : query.split("&", -1)) {
+            String[] pair = item.split("=", 2);
+            String name = URLDecoder.decode(pair[0], "UTF-8");
+            if (!name.equalsIgnoreCase("output")) continue;
+            if (!name.equals("output") || pair.length != 2 ||
+                    !URLDecoder.decode(pair[1], "UTF-8").equals("stage")) return false;
+            if (++selectors != 1) return false;
+        }
+        return selectors == 1;
     }
 
     private static Charset charset(String type) {

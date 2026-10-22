@@ -41,6 +41,14 @@
     <string name="html_no_lan">Conecte-se por Wi-Fi ou Ethernet com IPv4 para buscar HTML, ou informe o endereço.</string>
     <string name="html_loading">Abrindo retorno HTML…</string>
     <string name="html_open">Página do retorno HTML aberta</string>
+    <string name="html_layout_title">Exibição do retorno HTML</string>
+    <string name="html_layout_button">Exibição HTML: %1$s</string>
+    <string name="html_layout_monitor">Monitor 16:9</string>
+    <string name="html_layout_page">Página original</string>
+    <string-array name="html_layouts">
+        <item>Monitor 16:9 — ajustar à tela</item>
+        <item>Layout original da página</item>
+    </string-array>
     <string name="html_retrying">Retorno indisponível. Tentando novamente…</string>
     <string name="html_load_failed">Não foi possível abrir o retorno. Abra o menu para conferir o endereço e recarregar.</string>
     <string name="html_renderer_unavailable">O componente de páginas web está indisponível. Verifique o Android System WebView nas configurações do aparelho.</string>

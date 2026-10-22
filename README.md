@@ -2,7 +2,7 @@
 
 Aplicativo Android independente para receber vídeo e áudio NDI® Standard full-bandwidth ou exibir um retorno HTML pela rede local em celulares e dispositivos Android de uso geral.
 
-Versão de teste: **1.4.1** (`versionCode 6`). Nome provisório: **Monitor de Retorno**. Pacote Android preservado: `br.com.polegar.ndimonitor`.
+Versão de teste: **1.4.2** (`versionCode 7`). Nome provisório: **Monitor de Retorno**. Pacote Android preservado: `br.com.polegar.ndimonitor`.
 
 Comece pela [documentação completa do projeto](DOCUMENTACAO_COMPLETA.md), com instalação, uso no controle remoto, arquitetura, compilação, testes, assinatura e preparação para publicação.
 
@@ -11,8 +11,8 @@ Projeto independente. NDI® é marca registrada da Vizrt NDI AB. Conheça a tecn
 ## Recursos
 
 - Dois modos no mesmo aplicativo: **NDI** e **HTML**, com modo e fonte confirmada salvos por aparelho e restaurados ao iniciar.
-- Retorno HTML em tela cheia, endereço editável e salvo, recarga manual e novas tentativas de carregamento após falhas de rede. [Como configurar](RETORNO_HTML.md).
-- Busca HTML em Wi-Fi/Ethernet com IPv4: encontra páginas no padrão `:5050/output/saida-html-1` e permite selecioná-las com setas e OK, sem digitar. Durante uma busca solicitada, repete 30 s depois de cada ciclo com o painel aberto.
+- Retorno HTML com exibição de monitor 16:9: área de referência de 1920 × 1080 ajustada inteira à tela, texto em 100% e opção de layout original da página na engrenagem. Endereço e escolha de exibição salvos, recarga manual e novas tentativas após falhas de rede. [Como configurar](RETORNO_HTML.md).
+- Busca HTML em Wi-Fi/Ethernet com IPv4: procura saídas na porta 5050 com os nomes `saida-html-1`, `retorno` e `retono`, além de um nome de saída salvo elegível. Aceita o redirecionamento de exibição para `/slide/?output=stage...` no mesmo servidor. Os nomes alternativos só são tentados após HTTP 404/410; hosts sem conexão não recebem tentativas extras. Durante a busca solicitada, repete 30 s depois de cada ciclo com o painel aberto.
 - A busca começa na primeira configuração sem fonte ou pelo botão atualizar. Depois de selecionar, os descobridores são parados e o finder NDI é liberado. Reabrir apenas o painel não reinicia a busca; use atualizar para procurar outra fonte.
 - Ao iniciar com uma fonte salva, o aplicativo abre a mesma origem diretamente e mantém o painel fechado. A recuperação de sinal continua direcionada a essa origem.
 - Atualização manual sem apagar a lista: tolerância de ausência de 10 s para NDI e 90 s para HTML; o endereço HTML salvo permanece disponível.
@@ -107,7 +107,7 @@ Leia [QUIOSQUE.md](QUIOSQUE.md) antes de mudar a tela inicial.
 
 ## Documentação
 
-- [Manual completo do projeto 1.4.1](DOCUMENTACAO_COMPLETA.md)
+- [Manual completo do projeto 1.4.2](DOCUMENTACAO_COMPLETA.md)
 - [Modo HTML e troca entre fontes](RETORNO_HTML.md)
 - [Guia de instalação e compilação](GUIA_PASSO_A_PASSO.md)
 - [Tela inicial opcional e como desativar](QUIOSQUE.md)
@@ -116,7 +116,7 @@ Leia [QUIOSQUE.md](QUIOSQUE.md) antes de mudar a tela inicial.
 - [Resultados e limites da validação 1.2.0](VALIDACAO_1.2.md)
 - [Resultados e limites da validação 1.3.0](VALIDACAO_1.3.md)
 - [Resultados e limites da validação 1.4.0](VALIDACAO_1.4.md)
-- [Resultados e limites da validação 1.4.1](VALIDACAO_1.4.1.md)
+- [Resultados e limites da validação 1.4.2](VALIDACAO_1.4.2.md)
 
 ## Verificações de desenvolvimento
 

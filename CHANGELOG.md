@@ -1,3 +1,11 @@
+# 1.4.2 — Descoberta de saídas nomeadas e exibição HTML de monitor
+
+- Procura também /output/retorno e /output/retono, além de um nome de saída salvo elegível. Tenta outro nome somente depois de HTTP 404/410; mantém o limite de trabalhadores e evita repetir conexões em hosts indisponíveis.
+- Aceita até dois redirecionamentos limitados à exibição Stage no mesmo servidor; conserva a URL curta da fonte selecionada.
+- Acrescenta exibição HTML de monitor 16:9 com área de referência de 1920 × 1080, ajuste proporcional inteiro, texto em 100% e contexto de densidade 1x restrito ao WebView.
+- Permite escolher a página original na engrenagem e salva essa preferência por aparelho.
+- Preserva modo, fonte, início automático e parada da descoberta depois da seleção.
+
 # 1.4.1 — Última fonte restaurada e descoberta parada após selecionar
 
 - Restaura diretamente o modo e a fonte confirmada ao iniciar, com painel fechado e sem busca geral de outras fontes.

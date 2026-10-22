@@ -1,12 +1,12 @@
 # Monitor de Retorno
 
-## Manual completo do projeto - versão 1.4.1
+## Manual completo do projeto - versão 1.4.2
 
 Aplicativo Android para receber NDI® Standard full-bandwidth ou abrir um retorno HTML pela rede local. Nome de produto provisório: Monitor de Retorno. Mantenedor: Gedielson Saramento. Documentação técnica revisada em 21/10/2026, horário do Brasil.
 
 NDI® is a registered trademark of Vizrt NDI AB. https://ndi.video/
 
-Esta revisão é uma versão de teste. O resultado de compilação, os testes executados e o que ainda precisa de equipamento real estão em VALIDACAO_1.4.1.md. A existência de um APK ou AAB compilado não significa publicação ou aprovação na Google Play.
+Esta revisão é uma versão de teste. O resultado de compilação, os testes executados e o que ainda precisa de equipamento real estão em VALIDACAO_1.4.2.md. A existência de um APK ou AAB compilado não significa publicação ou aprovação na Google Play.
 
 Repositório: https://github.com/gedielsonsaramento/NDI-Monitor-apk
 
@@ -54,7 +54,7 @@ O aplicativo não cria a apresentação, não controla os slides e não substitu
 | Orientação | Horizontal, com proporção preservada no vídeo NDI |
 | Operação | Toque, mouse ou controle remoto com setas e OK/Enter |
 | Pacote Android | br.com.polegar.ndimonitor |
-| Versão | versionName 1.4.1, versionCode 6 |
+| Versão | versionName 1.4.2, versionCode 7 |
 
 O Android 5.1 do servidor Samsung não é compatível com este APK. Não há pacote x86/x86_64 nesta revisão. O funcionamento de vídeo, áudio, boot e WebView varia conforme o hardware e o firmware: a versão mínima não comprova compatibilidade com todas as TV Boxes.
 
@@ -89,6 +89,12 @@ Cada linha mostra o título recebido da página e o endereço do servidor, sem o
 O ícone de atualização no cabeçalho refaz a busca sem apagar imediatamente as fontes conhecidas. O botão de recarga ao lado de Informar endereço recarrega a página já escolhida. As duas ações têm funções diferentes.
 
 Para usar outro endereço, acione Informar endereço. Cole o link completo ou digite apenas o IP. Um IP sem protocolo é completado com a porta 5050 e o caminho /output/saida-html-1. Um link completo HTTP ou HTTPS preserva a porta, o caminho, os parâmetros e o fragmento.
+
+### Ajuste da imagem HTML
+
+O padrão Monitor 16:9 usa uma área de referência de 1920 × 1080 e a ajusta inteira ao espaço disponível, preservando a proporção. Telas com outra proporção recebem faixas pretas. A renderização usa escala de texto de 100% e identificação de navegador de computador. Uma configuração de densidade 1x é aplicada somente ao contexto do WebView, evitando multiplicar a área virtual pela densidade do celular; os controles do aplicativo preservam a escala do sistema.
+
+Na engrenagem do modo HTML, Exibição HTML permite escolher Monitor 16:9 - ajustar à tela ou Layout original da página. A escolha é salva e restaura-se ao reiniciar. A troca recria o renderizador com a mesma URL e encerra a mídia anterior. O layout original usa a área disponível e o viewport definido pela página. O modo monitor define o enquadramento do aplicativo; ele não reescreve o CSS do tema nem garante corrigir um corte interno do conteúdo do servidor.
 
 ## 5. Primeiro uso do NDI
 
@@ -135,14 +141,14 @@ Em cada interface IPv4 elegível, gera os endereços da sub-rede. Em redes maior
 | Controle | Valor nesta versão |
 | --- | --- |
 | Porta padrão | TCP 5050 |
-| Caminho padrão | /output/saida-html-1 |
+| Caminhos conhecidos | /output/saida-html-1, /output/retorno e /output/retono |
 | Redes usadas por ciclo | Até duas redes Wi-Fi/Ethernet |
-| Limite global de alvos | 512 URLs por ciclo |
+| Limite global de alvos | 512 alvos por ciclo; nomes alternativos usam o mesmo trabalhador |
 | Requisições simultâneas | Até 12 |
 | Tempo limite de conexão | 650 ms por tentativa |
 | Espera de leitura | Até 800 ms por leitura |
 | Limite de leitura do corpo | 64 KiB por resposta |
-| Prazo de leitura da tentativa | 2,5 s, verificado durante a leitura |
+| Orçamento do alvo | 2,5 s compartilhados entre nomes e redirecionamentos; leituras e conexões são limitadas |
 | Nova busca | 30 s após o ciclo anterior, somente durante uma sessão de busca com painel aberto |
 | Tolerância para HTML ausente | 90 s; o endereço salvo é preservado |
 
@@ -150,13 +156,15 @@ A duração de um ciclo depende de quantos endereços não respondem e da latên
 
 Um candidato é listado quando responde HTTP 200, informa conteúdo text/html ou application/xhtml+xml e o trecho lido contém uma estrutura HTML reconhecível. A descoberta lê o título; não executa scripts nem carrega imagens da página. Falhas, JSON, respostas de autorização e páginas de erro HTTP não entram como novos retornos.
 
-Um redirecionamento de barra final pode ser aceito no mesmo endereço, protocolo, porta, caminho e parâmetros. Redirecionamentos para outro servidor, login ou outro caminho não são seguidos pela busca. O WebView, depois da seleção pelo usuário, tem seu próprio comportamento de navegação HTTP/HTTPS.
+A busca aceita até dois redirecionamentos por nome de saída: normalização de barra final no mesmo endereço, ou mudança de `/output/NOME` sem parâmetros para `/slide/?output=stage...` no mesmo protocolo, host e porta. O seletor output deve ser único e igual a stage. Não segue login, APIs de controle, outro servidor ou mudança de parâmetros de um endereço personalizado para outra rota. A escolha na lista conserva o endereço curto de entrada, sem salvar o outputId temporário do destino. O WebView, depois da seleção pelo usuário, tem seu próprio comportamento de navegação HTTP/HTTPS.
+
+Em cada alvo, o primeiro HTML válido é listado. Somente respostas HTTP 404/410 permitem tentar o próximo nome conhecido; falhas de conexão, autorização ou tipos de conteúdo diferentes encerram esse alvo. Assim, um endereço sem servidor não recebe tentativas de conexão para cada nome. A busca não enumera todas as saídas de um mesmo servidor.
 
 A configuração sem uma fonte inicia a busca. Com fonte salva, abrir apenas o painel mantém a descoberta parada; o botão atualizar inicia uma sessão para procurar outras origens. Selecionar uma fonte ou fechar o painel encerra a sessão. Abrir a configuração manual ou de modo, sair da atividade ou trocar de modo cancela o ciclo em andamento. Respostas canceladas não podem modificar a lista atual. A varredura não fica rodando durante a apresentação em tela cheia.
 
 ## 8. Endereços personalizados e limites da descoberta
 
-Esta implementação cobre o padrão do exemplo de Stage; não descobre qualquer site HTML existente na LAN. O nome de uma saída é parte da URL, e nem todo servidor publica uma lista dessas saídas sem autenticação.
+Esta implementação cobre os nomes conhecidos saida-html-1, retorno e retono na porta 5050; não descobre qualquer site HTML existente na LAN. Um link salvo sem parâmetros, na porta 5050 e com caminho simples /output/NOME pode fornecer o primeiro nome tentado em outros endereços, permitindo reencontrá-lo após mudança de IP. Caminhos fora de /output/NOME, portas diferentes e parâmetros ficam restritos ao endereço completo salvo. O nome de uma saída é parte da URL, e nem todo servidor publica uma lista dessas saídas sem autenticação.
 
 Se a instalação usar outra porta ou outro nome de saída, informe o link completo uma vez. A busca também pode verificar o endereço salvo, com sua porta e parâmetros, quando o host é um IPv4 numérico pertencente à rede conectada. Esse endereço recebe prioridade em sua interface. Parâmetros do link salvo não são copiados para outros computadores pesquisados.
 
@@ -176,6 +184,7 @@ As configurações ficam em SharedPreferences, no arquivo privado ndi_monitor_pr
 | --- | --- |
 | display_mode | Modo ndi ou html da última fonte confirmada |
 | html_url | Último endereço HTML escolhido |
+| html_stage_layout | Exibição HTML como monitor 16:9 ou página original |
 | last_source | Identificação da última fonte NDI |
 | start_on_boot | Preferência de abertura após iniciar o Android |
 
@@ -202,6 +211,7 @@ O código próprio não implementa conta, anúncios, analytics ou envio de logs 
 | HtmlSourceCatalog.java | Ordem estável, tolerância de ausência e endereço lembrado |
 | HtmlSourceUrl.java | Validação e normalização de endereços HTTP/HTTPS |
 | HtmlMonitor.java | WebView, mídia, estados, recarga e tentativas de carregamento |
+| HtmlStageViewport.java | Área de monitor e ajuste proporcional da cena inteira |
 | NativeBridge.java | Interface JNI do receptor e da descoberta NDI |
 | ndi_bridge.cpp | Integração NDI, superfície de vídeo e conversão de áudio |
 | ndi_source_finder.h | Instância persistente de descoberta NDI |
@@ -324,7 +334,8 @@ Spresenter é software separado. O aplicativo abre a saída fornecida pela insta
 
 | Situação | Verificação e próximo passo |
 | --- | --- |
-| Nenhum HTML encontrado | Confirme a saída ligada no PC, porta/caminho padrão, IPv4, rede e firewall local |
+| Nenhum HTML encontrado | Confirme a saída ligada, porta 5050, nome de saída elegível, IPv4, rede e firewall local |
+| HTML com letras maiores ou cortes no celular | Use engrenagem, Exibição HTML, Monitor 16:9; confira também o CSS do tema no servidor |
 | PC e Android no mesmo Wi-Fi, sem acesso | Verifique rede de convidados e isolamento entre clientes no roteador |
 | Retorno usa outro nome ou porta | Use Informar endereço com o link completo; ele ficará salvo no aparelho |
 | Rede maior que /24 | Teste o IP salvo ou coloque os aparelhos na mesma faixa; a busca não cobre toda a rede grande |
@@ -345,24 +356,24 @@ Spresenter é software separado. O aplicativo abre a saída fornecida pela insta
 
 Antes de usar em um culto, registre o modelo do aparelho, versão do Android/WebView, tipo de rede e versão do transmissor. Execute os cenários abaixo e anote os resultados.
 
-1. Buscar o retorno HTML padrão, selecionar com setas/OK e abrir sem digitar.
-2. Abrir dois computadores transmissores e conferir identificação e seleção de cada retorno.
-3. Repetir a busca solicitada sem perder as fontes já exibidas nem deslocar a seleção.
-4. Fechar o painel e confirmar que uma busca antiga não reabre ou altera a exibição.
-5. Reiniciar o aplicativo e confirmar modo, fonte e endereço salvos por aparelho.
-6. Desligar e religar o transmissor; conferir descoberta e carregamento após a volta.
-7. Testar a página real com letras, avisos, relógios, vídeos e áudio que ela forneça.
-8. Alternar NDI/HTML e confirmar que a mídia do modo anterior para.
-9. Testar fonte NDI Standard com imagem, áudio, proporção e interrupção do sinal.
-10. Conferir toque, mouse, controle remoto, foco e saída para as configurações do Android.
-11. Testar Home/boot e restaurar o launcher original.
-12. Conferir atualização com a chave correta e registrar se as preferências foram mantidas.
-13. Validar ARM64 em ambiente de páginas de 16 KB, além dos checks de alinhamento.
-14. Fazer um ensaio prolongado no tempo e na rede previstos para o uso real.
-
+1. Buscar os retornos conhecidos, inclusive /output/retono, selecionar com setas/OK e abrir sem digitar; conferir redirecionamento de Stage.
+2. Conferir visitantes, Harpa, oportunidade e imagem na exibição Monitor 16:9; comparar a opção de página original e restaurar a escolha após reiniciar.
+3. Abrir dois computadores transmissores e conferir identificação e seleção de cada retorno.
+4. Repetir a busca solicitada sem perder as fontes já exibidas nem deslocar a seleção.
+5. Fechar o painel e confirmar que uma busca antiga não reabre ou altera a exibição.
+6. Reiniciar o aplicativo e confirmar modo, fonte e endereço salvos por aparelho.
+7. Desligar e religar o transmissor; conferir descoberta e carregamento após a volta.
+8. Testar a página real com letras, avisos, relógios, vídeos e áudio que ela forneça.
+9. Alternar NDI/HTML e confirmar que a mídia do modo anterior para.
+10. Testar fonte NDI Standard com imagem, áudio, proporção e interrupção do sinal.
+11. Conferir toque, mouse, controle remoto, foco e saída para as configurações do Android.
+12. Testar Home/boot e restaurar o launcher original.
+13. Conferir atualização com a chave correta e registrar se as preferências foram mantidas.
+14. Validar ARM64 em ambiente de páginas de 16 KB, além dos checks de alinhamento.
+15. Fazer um ensaio prolongado no tempo e na rede previstos para o uso real.
 Confira também que abrir apenas o menu não inicia buscas depois de selecionar. Volte do segundo plano e confirme a mesma origem. Se a fonte estiver fora do ar, confirme que as tentativas continuam direcionadas a ela, sem selecionar outra automaticamente.
 
-A validação automatizada desta revisão está em VALIDACAO_1.4.1.md. Ela não substitui esses cenários. Não há teste real concluído com todas as TV Boxes, todas as saídas Spresenter nem todos os formatos de fonte NDI.
+A validação automatizada desta revisão está em VALIDACAO_1.4.2.md. Ela não substitui esses cenários. Não há teste real concluído com todas as TV Boxes, todas as saídas Spresenter nem todos os formatos de fonte NDI.
 
 ## 18. Manutenção e referências
 
@@ -370,7 +381,7 @@ Ao alterar descoberta, preserve seus limites, cancelamento e a ausência de requ
 
 Ao alterar o layout, confira celular em paisagem com altura pequena, fonte ampliada e TV com controle remoto. Ao atualizar SDK NDI, NDK ou AGP, repita os testes nativos e as verificações de 16 KB. Ao aumentar targetSdk, reveja as mudanças de comportamento e a permissão LAN antes da publicação.
 
-Histórico resumido: a revisão 1.2 melhorou descoberta NDI e painel; a 1.3 acrescentou HTML por endereço salvo; a 1.4 acrescentou busca HTML limitada, seleção pela lista e este manual. A 1.4.1 restaura a última configuração confirmada e encerra a descoberta depois de selecionar, inclusive liberando o finder NDI. Consulte CHANGELOG.md para o histórico do projeto.
+Histórico resumido: a revisão 1.2 melhorou descoberta NDI e painel; a 1.3 acrescentou HTML por endereço salvo; a 1.4 acrescentou busca HTML limitada, seleção pela lista e este manual. A 1.4.1 restaura a última configuração confirmada e encerra a descoberta depois de selecionar, inclusive liberando o finder NDI. A 1.4.2 acrescenta nomes alternativos de saída, redirecionamento para Stage e enquadramento HTML de monitor 16:9. Consulte CHANGELOG.md para o histórico do projeto.
 
 Referências oficiais consultadas:
 

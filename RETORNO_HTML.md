@@ -1,7 +1,8 @@
 # NDI e retorno HTML no mesmo aplicativo
 
-A revisão 1.4.1 restaura a última fonte e para a busca após a seleção, sobre
-a descoberta HTML acrescentada na 1.4. Cada aparelho
+A revisão 1.4.2 acrescenta exibição de monitor 16:9, aceita o redirecionamento
+para o Stage e procura também os nomes de saída `retorno` e `retono`. Mantém
+a última fonte restaurada e a busca parada após a seleção. Cada aparelho
 guarda seu modo e sua fonte: uma TV pode receber NDI enquanto outra abre o
 retorno HTML do Spresenter. A exibição usa um modo por vez em cada aparelho.
 
@@ -30,15 +31,19 @@ acrescentar a porta `5050` e o caminho `/output/saida-html-1`. Se esse destino
 for diferente no seu Spresenter, cole o link completo. Um endereço que já
 começa com `http://` ou `https://` é preservado, inclusive porta, caminho e
 parâmetros. A busca automática usa Wi-Fi/Ethernet com IPv4 e testa o padrão
-`:5050/output/saida-html-1`. Não procura todas as portas ou nomes de saídas.
+porta 5050 com os caminhos `/output/saida-html-1`, `/output/retorno` e
+`/output/retono`. Um nome salvo em `/output/NOME`, sem parâmetros e na porta
+5050, pode ser tentado primeiro. Não procura todas as portas ou nomes de saídas.
 Em redes maiores que /24, limita a varredura à faixa /24 do Android. Confira
 [algoritmo, limites e endereços personalizados no manual](DOCUMENTACAO_COMPLETA.md).
 
 Os resultados são páginas HTML acessíveis nesse endereço, não uma certificação
 do conteúdo do retorno. Servidores com rotas genéricas podem responder HTML
 para um caminho inexistente. Selecione e confira a página. Porta e caminho
-personalizados precisam ser informados uma vez; o link salvo não é propagado
-com seus parâmetros para outros computadores.
+personalizados podem precisar ser informados uma vez; os parâmetros do link salvo
+continuam restritos ao seu servidor. Cada alvo tenta outro nome somente após
+uma resposta HTTP 404/410; uma conexão que falha não inicia outras tentativas
+para os nomes alternativos. O primeiro HTML válido encerra as tentativas desse alvo.
 
 ## Uso diário
 
@@ -63,6 +68,23 @@ com seus parâmetros para outros computadores.
 - Se a página não carregar por falha de rede ou erro do servidor, há novas
   tentativas com intervalo crescente, até 30 segundos. Um erro de endereço,
   autorização HTTP ou certificado exige conferência e recarga pelo menu.
+
+## Exibição como monitor
+
+O padrão **Monitor 16:9** prepara uma área de 1920 × 1080, como a saída Stage
+mostrada na configuração do Spresenter. A cena inteira é reduzida ou ampliada
+uniformemente para caber no aparelho; telas com outra proporção podem mostrar
+faixas pretas. O renderizador usa texto em 100% e identificação de navegador
+de computador para reduzir diferenças do layout móvel. Os controles do app
+continuam usando a escala normal do Android.
+
+No modo HTML, abra **engrenagem → Exibição HTML** para escolher entre
+**Monitor 16:9 — ajustar à tela** e **Layout original da página**. A preferência
+fica salva no aparelho e a mesma URL é reaberta ao trocar a opção. O layout
+original permite usar o comportamento responsivo fornecido pela própria página.
+
+Esse ajuste não corrige posições ou cortes internos definidos no CSS do tema.
+A validação final precisa conferir o conteúdo real do retorno no aparelho.
 
 ## Imagem, áudio e compatibilidade
 
