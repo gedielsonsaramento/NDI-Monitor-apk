@@ -64,7 +64,7 @@ final class HtmlHttpProbe {
                 connection.setInstanceFollowRedirects(false);
                 connection.setUseCaches(false);
                 connection.setRequestProperty("Accept", "text/html, application/xhtml+xml");
-                connection.setRequestProperty("User-Agent", "MonitorDeRetorno/1.4.2 (LAN discovery)");
+                connection.setRequestProperty("User-Agent", "MonitorDeRetorno/1.4.3 (LAN discovery)");
                 int status = connection.getResponseCode();
                 if (System.nanoTime() >= deadline || cancellation.isCancelled()) return null;
                 if (status == 404 || status == 410) throw new MissingOutputRoute();

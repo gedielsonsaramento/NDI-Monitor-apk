@@ -1,5 +1,16 @@
 # 1.4.2 — Descoberta de saídas nomeadas e exibição HTML de monitor
 
+## 1.4.3 — teste de compatibilidade em TV Box (22/10/2026)
+
+- HTML passa a ter mínimo Android 6 / API 23; NDI mantém o limite de API 24 dos binários integrados.
+- `NdiReceiver` impede carregamento JNI em API 23 e protege HTML de erros de ligação das bibliotecas NDI.
+- Tipos de navegação Android 13 e recuperação de renderizador Android 8 ficam isolados dos caminhos de inicialização antigos; o overload de navegação WebView usado em API 23 também é tratado.
+- Nova exibição 16:9 com a densidade do firmware, persistida e inicial em API 23–25, sem reescrever o tema ou forçar renderização por CPU.
+- Diagnóstico local e sob demanda do app, Android/API, ABIs, motor WebView, área CSS e recursos CSS. Nenhuma telemetria ou busca de fontes é acrescentada.
+- Build `tvboxTest` usa pacote e nome próprios para instalar ao lado da edição habitual.
+- Recepção NDI, rotas de busca HTML, última fonte salva e parada da busca mantidas; layout real nas boxes ainda depende do teste no equipamento.
+
+
 - Procura também /output/retorno e /output/retono, além de um nome de saída salvo elegível. Tenta outro nome somente depois de HTTP 404/410; mantém o limite de trabalhadores e evita repetir conexões em hosts indisponíveis.
 - Aceita até dois redirecionamentos limitados à exibição Stage no mesmo servidor; conserva a URL curta da fonte selecionada.
 - Acrescenta exibição HTML de monitor 16:9 com área de referência de 1920 × 1080, ajuste proporcional inteiro, texto em 100% e contexto de densidade 1x restrito ao WebView.

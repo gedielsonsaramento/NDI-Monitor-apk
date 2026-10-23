@@ -20,7 +20,8 @@ final class HtmlDiscoverySession {
     }
     static final class Cancellation {
         private volatile boolean cancelled;
-        private final Set<HttpURLConnection> active = ConcurrentHashMap.newKeySet();
+        private final Set<HttpURLConnection> active = java.util.Collections.newSetFromMap(
+                new ConcurrentHashMap<HttpURLConnection, Boolean>());
         boolean isCancelled() { return cancelled || Thread.currentThread().isInterrupted(); }
         void track(HttpURLConnection connection) {
             active.add(connection);

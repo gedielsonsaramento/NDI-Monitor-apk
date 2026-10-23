@@ -1,10 +1,12 @@
 # NDI e retorno HTML no mesmo aplicativo
 
-A revisão 1.4.2 acrescenta exibição de monitor 16:9, aceita o redirecionamento
+A revisão 1.4.2 acrescentou exibição de monitor 16:9, aceita o redirecionamento
 para o Stage e procura também os nomes de saída `retorno` e `retono`. Mantém
 a última fonte restaurada e a busca parada após a seleção. Cada aparelho
 guarda seu modo e sua fonte: uma TV pode receber NDI enquanto outra abre o
 retorno HTML do Spresenter. A exibição usa um modo por vez em cada aparelho.
+
+A revisão **1.4.3** acrescenta HTML em Android 6 (API 23), proteção quando a biblioteca NDI não carrega, exibição 16:9 com densidade do próprio firmware e diagnóstico sob demanda. NDI permanece restrito a API 24 ou superior. Veja o procedimento de teste em [TVBOX.md](TVBOX.md).
 
 ## Abrir o retorno
 
@@ -79,7 +81,9 @@ de computador para reduzir diferenças do layout móvel. Os controles do app
 continuam usando a escala normal do Android.
 
 No modo HTML, abra **engrenagem → Exibição HTML** para escolher entre
-**Monitor 16:9 — ajustar à tela** e **Layout original da página**. A preferência
+**Monitor 16:9 — ajustar à tela**, **Layout original da página** e
+**Monitor 16:9 — compatibilidade TV Box**. A última opção mantém a densidade
+real do WebView e é o padrão inicial em Android API 23–25. A preferência
 fica salva no aparelho e a mesma URL é reaberta ao trocar a opção. O layout
 original permite usar o comportamento responsivo fornecido pela própria página.
 

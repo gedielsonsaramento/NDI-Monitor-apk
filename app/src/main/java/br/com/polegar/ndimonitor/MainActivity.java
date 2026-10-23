@@ -28,8 +28,6 @@ import android.view.WindowManager;
 import android.view.WindowInsets;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
-import android.window.OnBackInvokedCallback;
-import android.window.OnBackInvokedDispatcher;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -56,6 +54,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     public static final String KEY_DISPLAY_MODE = "display_mode";
     public static final String KEY_HTML_URL = "html_url";
     public static final String KEY_HTML_STAGE_LAYOUT = "html_stage_layout";
+    public static final String KEY_HTML_COMPATIBILITY = "html_compatibility";
 
     // Shared queues preserve connect/cleanup ordering across Activity recreation.
     private static final ExecutorService CAPTURE_WORKER = Executors.newSingleThreadExecutor();
@@ -108,7 +107,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     private View menuButton;
     private int safeInsetLeft;
     private int safeInsetRight;
-    private OnBackInvokedCallback backCallback;
+    private Object backCallback;
+    private AlertDialog diagnosticsDialog;
     private final Handler controlsHandler = new Handler(Looper.getMainLooper());
     private final Runnable hideControls = () -> {
         if (sourcePanel.getVisibility() != View.VISIBLE) {
@@ -146,7 +146,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
 
             @Override public void onInteraction() { showControls(); }
         });
-        htmlMonitor.setStageLayout(preferences.getBoolean(KEY_HTML_STAGE_LAYOUT, true));
+        htmlMonitor.setDisplayLayout(preferences.getBoolean(KEY_HTML_STAGE_LAYOUT, true),
+                preferences.getBoolean(KEY_HTML_COMPATIBILITY, Build.VERSION.SDK_INT <= 25));
         sourceAdapter = new ArrayAdapter<>(this, R.layout.source_item, new ArrayList<>());
         sourceList.setAdapter(sourceAdapter);
         sourceList.setOnItemClickListener((parent, view, position, id) -> {
@@ -188,11 +189,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         findViewById(R.id.monitor_settings_button).setOnClickListener(v -> showMonitorSettings());
         menuButton.setVisibility(View.GONE);
         statusText.setVisibility(View.GONE);
-        if (Build.VERSION.SDK_INT >= 33) {
-            backCallback = this::toggleSourcePanel;
-            getOnBackInvokedDispatcher().registerOnBackInvokedCallback(
-                    OnBackInvokedDispatcher.PRIORITY_DEFAULT, backCallback);
-        }
+        backCallback = BackNavigation.register(this, this::toggleSourcePanel);
         root.requestApplyInsets();
 
         WifiManager wifiManager = (WifiManager) getApplicationContext()
@@ -202,14 +199,15 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             multicastLock.setReferenceCounted(false);
         }
 
-        NativeBridge.setCallbackTarget(this);
-        ndiAvailable = NativeBridge.isNdiAvailable();
-        boolean savedHtml = "html".equals(preferences.getString(KEY_DISPLAY_MODE, "ndi"));
+        NdiReceiver.setCallbackTarget(this);
+        ndiAvailable = NdiReceiver.isNdiAvailable();
+        boolean savedHtml = Build.VERSION.SDK_INT < 24
+                || "html".equals(preferences.getString(KEY_DISPLAY_MODE, "ndi"));
         boolean validHtml = HtmlSourceUrl.isWebAddress(preferences.getString(KEY_HTML_URL, ""));
         String savedNdi = preferences.getString(KEY_LAST_SOURCE, "");
         boolean validNdi = savedNdi != null && !savedNdi.trim().isEmpty();
         // Older versions saved a browsed mode before a source was selected.
-        if (savedHtml && !validHtml && validNdi) savedHtml = false;
+        if (Build.VERSION.SDK_INT >= 24 && savedHtml && !validHtml && validNdi) savedHtml = false;
         else if (!savedHtml && !validNdi && validHtml) savedHtml = true;
         setSourceMode(savedHtml, true);
     }
@@ -524,6 +522,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         });
         content.findViewById(R.id.third_party_notices_button).setOnClickListener(v ->
                 showThirdPartyNotices());
+        content.findViewById(R.id.device_diagnostics_button).setOnClickListener(v -> showDeviceDiagnostics());
         TextView layoutButton = content.findViewById(R.id.html_layout_button);
         layoutButton.setVisibility(htmlMode ? View.VISIBLE : View.GONE);
         updateHtmlLayoutButton(layoutButton);
@@ -532,11 +531,14 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             htmlLayoutDialog = new AlertDialog.Builder(this)
                     .setTitle(R.string.html_layout_title)
                     .setSingleChoiceItems(R.array.html_layouts,
-                            preferences.getBoolean(KEY_HTML_STAGE_LAYOUT, true) ? 0 : 1,
+                            !preferences.getBoolean(KEY_HTML_STAGE_LAYOUT, true) ? 1
+                                    : preferences.getBoolean(KEY_HTML_COMPATIBILITY, Build.VERSION.SDK_INT <= 25) ? 2 : 0,
                             (dialog, which) -> {
-                                boolean stage = which == 0;
-                                preferences.edit().putBoolean(KEY_HTML_STAGE_LAYOUT, stage).apply();
-                                htmlMonitor.setStageLayout(stage);
+                                boolean stage = which != 1;
+                                boolean compatibility = which == 2;
+                                preferences.edit().putBoolean(KEY_HTML_STAGE_LAYOUT, stage)
+                                        .putBoolean(KEY_HTML_COMPATIBILITY, compatibility).apply();
+                                htmlMonitor.setDisplayLayout(stage, compatibility);
                                 updateHtmlLayoutButton(layoutButton);
                                 dialog.dismiss();
                             }).setNegativeButton(android.R.string.cancel, null).create();
@@ -552,8 +554,33 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
 
     private void updateHtmlLayoutButton(TextView button) {
         button.setText(getString(R.string.html_layout_button, getString(
-                preferences.getBoolean(KEY_HTML_STAGE_LAYOUT, true)
-                        ? R.string.html_layout_monitor : R.string.html_layout_page)));
+                !preferences.getBoolean(KEY_HTML_STAGE_LAYOUT, true) ? R.string.html_layout_page
+                        : preferences.getBoolean(KEY_HTML_COMPATIBILITY, Build.VERSION.SDK_INT <= 25)
+                                ? R.string.html_layout_compatibility : R.string.html_layout_monitor)));
+    }
+
+    private void showDeviceDiagnostics() {
+        if (diagnosticsDialog != null && diagnosticsDialog.isShowing()) return;
+        String device = DeviceDiagnostics.describe(this, ndiAvailable);
+        TextView details = new TextView(this);
+        int padding = Math.round(16 * getResources().getDisplayMetrics().density);
+        details.setPadding(padding, padding, padding, padding);
+        details.setTextIsSelectable(true);
+        details.setText(getString(R.string.device_diagnostics_reading, device));
+        android.widget.ScrollView scroll = new android.widget.ScrollView(this);
+        scroll.addView(details);
+        diagnosticsDialog = new AlertDialog.Builder(this)
+                .setTitle(R.string.device_diagnostics)
+                .setView(scroll)
+                .setPositiveButton(R.string.close, null).create();
+        diagnosticsDialog.setOnDismissListener(dialog -> diagnosticsDialog = null);
+        diagnosticsDialog.show();
+        AlertDialog activeDialog = diagnosticsDialog;
+        htmlMonitor.describePage(page -> {
+            if (!destroyed && diagnosticsDialog == activeDialog && activeDialog.isShowing()) {
+                details.setText(getString(R.string.device_diagnostics_result, device, page));
+            }
+        });
     }
 
     private void showThirdPartyNotices() {
@@ -689,7 +716,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         }
         if (ndiDiscoveryActive) {
             ndiDiscoveryActive = false;
-            DISCOVERY_WORKER.execute(NativeBridge::releaseDiscovery);
+            DISCOVERY_WORKER.execute(NdiReceiver::releaseDiscovery);
         }
         updateMulticastLock();
     }
@@ -699,7 +726,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
                 htmlMode || generation != discoveryGeneration) return;
         DISCOVERY_WORKER.execute(() -> {
             if (destroyed || generation != discoveryGeneration) return;
-            String[] result = NativeBridge.findSources(timeoutMs);
+            String[] result = NdiReceiver.findSources(timeoutMs);
             controlsHandler.post(() -> {
                 if (destroyed || !activityVisible || generation != discoveryGeneration ||
                         sourcePanel.getVisibility() != View.VISIBLE) return;
@@ -756,7 +783,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         ndiPlaybackRequested = true;
         CAPTURE_WORKER.execute(() -> {
             if (!destroyed && activityVisible && !htmlMode && generation == playbackGeneration) {
-                NativeBridge.connect(source);
+                NdiReceiver.connect(source);
             }
         });
     }
@@ -765,7 +792,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         ++playbackGeneration;
         if (ndiPlaybackRequested) {
             ndiPlaybackRequested = false;
-            CAPTURE_WORKER.execute(NativeBridge::disconnect);
+            CAPTURE_WORKER.execute(NdiReceiver::disconnect);
         }
     }
 
@@ -855,17 +882,17 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-        NativeBridge.setSurface(holder.getSurface());
+        NdiReceiver.setSurface(holder.getSurface());
     }
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        NativeBridge.setSurface(holder.getSurface());
+        NdiReceiver.setSurface(holder.getSurface());
     }
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
-        NativeBridge.setSurface(null);
+        NdiReceiver.setSurface(null);
     }
 
     @Override
@@ -886,10 +913,9 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         if (modeDialog != null) modeDialog.dismiss();
         if (htmlAddressDialog != null) htmlAddressDialog.dismiss();
         if (htmlLayoutDialog != null) htmlLayoutDialog.dismiss();
-        if (Build.VERSION.SDK_INT >= 33 && backCallback != null) {
-            getOnBackInvokedDispatcher().unregisterOnBackInvokedCallback(backCallback);
-        }
-        NativeBridge.setCallbackTarget(null);
+        BackNavigation.unregister(this, backCallback);
+        if (diagnosticsDialog != null) diagnosticsDialog.dismiss();
+        NdiReceiver.setCallbackTarget(null);
         releaseAudio();
         if (multicastLock != null && multicastLock.isHeld()) multicastLock.release();
         super.onDestroy();

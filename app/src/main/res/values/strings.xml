@@ -17,7 +17,10 @@
     <string name="ndi_attribution">NDI® is a registered trademark of Vizrt NDI AB.\nhttps://ndi.video/</string>
     <string name="third_party_notices">Licenças de terceiros</string>
     <string name="third_party_notices_unavailable">Avisos indisponíveis nesta compilação de preparação.</string>
-    <string name="ndi_sdk_missing">SDK NDI ausente. Consulte o GUIA_PASSO_A_PASSO.md do projeto.</string>
+    <string name="ndi_sdk_missing">NDI indisponível neste aparelho. Use HTML ou consulte Diagnóstico do aparelho nas configurações.</string>
+    <string name="device_diagnostics">Diagnóstico do aparelho</string>
+    <string name="device_diagnostics_reading">%1$s\n\nLendo a página HTML…</string>
+    <string name="device_diagnostics_result">%1$s\n\n%2$s</string>
     <string name="choose_mode">Escolher NDI ou HTML</string>
     <string name="mode_ndi">NDI ▾</string>
     <string name="mode_html">HTML ▾</string>
@@ -45,9 +48,11 @@
     <string name="html_layout_button">Exibição HTML: %1$s</string>
     <string name="html_layout_monitor">Monitor 16:9</string>
     <string name="html_layout_page">Página original</string>
+    <string name="html_layout_compatibility">16:9 — compatibilidade TV Box</string>
     <string-array name="html_layouts">
         <item>Monitor 16:9 — ajustar à tela</item>
         <item>Layout original da página</item>
+        <item>Monitor 16:9 — compatibilidade TV Box</item>
     </string-array>
     <string name="html_retrying">Retorno indisponível. Tentando novamente…</string>
     <string name="html_load_failed">Não foi possível abrir o retorno. Abra o menu para conferir o endereço e recarregar.</string>

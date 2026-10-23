@@ -1,12 +1,12 @@
 # Monitor de Retorno
 
-## Manual completo do projeto - versão 1.4.2
+## Manual completo do projeto - versão 1.4.3
 
-Aplicativo Android para receber NDI® Standard full-bandwidth ou abrir um retorno HTML pela rede local. Nome de produto provisório: Monitor de Retorno. Mantenedor: Gedielson Saramento. Documentação técnica revisada em 21/10/2026, horário do Brasil.
+Aplicativo Android para receber NDI® Standard full-bandwidth ou abrir um retorno HTML pela rede local. Nome de produto provisório: Monitor de Retorno. Mantenedor: Gedielson Saramento. Documentação técnica revisada em 22/10/2026, horário do Brasil.
 
 NDI® is a registered trademark of Vizrt NDI AB. https://ndi.video/
 
-Esta revisão é uma versão de teste. O resultado de compilação, os testes executados e o que ainda precisa de equipamento real estão em VALIDACAO_1.4.2.md. A existência de um APK ou AAB compilado não significa publicação ou aprovação na Google Play.
+Esta revisão é uma versão de teste. O resultado de compilação, os testes executados e o que ainda precisa de equipamento real estão em VALIDACAO_1.4.3.md. A existência de um APK ou AAB compilado não significa publicação ou aprovação na Google Play.
 
 Repositório: https://github.com/gedielsonsaramento/NDI-Monitor-apk
 
@@ -45,7 +45,7 @@ O aplicativo não cria a apresentação, não controla os slides e não substitu
 
 | Item | Requisito ou configuração |
 | --- | --- |
-| Sistema mínimo | Android 7.0, API 24 |
+| Sistema mínimo | HTML: Android 6.0 / API 23; NDI: Android 7.0 / API 24 |
 | Processadores do APK | ARM32 armeabi-v7a e ARM64 arm64-v8a |
 | Rede | Wi-Fi ou Ethernet com acesso ao computador transmissor |
 | Busca HTML automática | Rede local com IPv4 privado; padrão TCP 5050 |
@@ -54,11 +54,21 @@ O aplicativo não cria a apresentação, não controla os slides e não substitu
 | Orientação | Horizontal, com proporção preservada no vídeo NDI |
 | Operação | Toque, mouse ou controle remoto com setas e OK/Enter |
 | Pacote Android | br.com.polegar.ndimonitor |
-| Versão | versionName 1.4.2, versionCode 7 |
+| Versão | versionName 1.4.3, versionCode 8; teste de box: 1.4.3-tvbox |
 
 O Android 5.1 do servidor Samsung não é compatível com este APK. Não há pacote x86/x86_64 nesta revisão. O funcionamento de vídeo, áudio, boot e WebView varia conforme o hardware e o firmware: a versão mínima não comprova compatibilidade com todas as TV Boxes.
 
 Uma rede local funcionando é suficiente para o uso habitual de fontes locais. O conteúdo de uma página HTML pode exigir internet se carregar fontes, imagens, scripts ou outros recursos externos.
+
+### Compatibilidade de TV Box na revisão 1.4.3
+
+No Android 6, somente HTML é habilitado na inicialização: todas as chamadas à ponte NDI passam por `NdiReceiver`, que verifica API 24 antes de inicializar `NativeBridge`. Falhas de ligação de biblioteca (`LinkageError`) deixam HTML e o menu acessíveis. Isso não intercepta falhas nativas de execução, como SIGSEGV; essas ainda exigem log do aparelho. Não há promessa de NDI no Android 6.
+
+O modo **16:9 — compatibilidade TV Box** preserva a densidade de tela fornecida ao WebView pelo próprio firmware. Mede o canvas de 1920 × 1080 CSS nessa mesma densidade e o encaixa proporcionalmente na tela; não força software nem altera o CSS do tema. É escolhido por padrão em API 23–25 quando ainda não existe uma preferência explícita. As alternativas anteriores continuam disponíveis na engrenagem.
+
+**Diagnóstico do aparelho** mostra versão/código e pacote do app, fabricante/modelo, Android Release e API, ABIs, densidade, disponibilidade NDI, user agent do WebView, área nativa/CSS e suporte a Grid, variáveis CSS e `clamp()`. A leitura ocorre somente ao abrir essa tela. Não envia dados, faz busca de fontes nem altera o HTML. Uma resposta ausente ao JavaScript recebe um limite de 1,5 s. Consulte [TVBOX.md](TVBOX.md).
+
+O APK `tvboxTest` usa `.tvboxtest` e nome próprio para instalação paralela. As fontes e preferências precisam ser configuradas uma vez nessa edição e ficam salvas nela. A assinatura é de desenvolvimento; não serve para a Play Store. Para atualizações da edição habitual, continuam valendo as regras de certificado descritas a seguir.
 
 ## 3. Instalação e atualização
 
@@ -212,7 +222,9 @@ O código próprio não implementa conta, anúncios, analytics ou envio de logs 
 | HtmlSourceUrl.java | Validação e normalização de endereços HTTP/HTTPS |
 | HtmlMonitor.java | WebView, mídia, estados, recarga e tentativas de carregamento |
 | HtmlStageViewport.java | Área de monitor e ajuste proporcional da cena inteira |
-| NativeBridge.java | Interface JNI do receptor e da descoberta NDI |
+| NdiReceiver.java / NativeBridge.java | Limite de API, proteção de carregamento e interface JNI do receptor |
+| BackNavigation.java | Tipos de navegação API 33 isolados dos Androids antigos |
+| DeviceDiagnostics.java / HtmlPageDiagnostics.java | Diagnóstico local de sistema e renderizador, sem telemetria |
 | ndi_bridge.cpp | Integração NDI, superfície de vídeo e conversão de áudio |
 | ndi_source_finder.h | Instância persistente de descoberta NDI |
 | SourceCatalog.java | Catálogo NDI com tolerância de 10 s |
@@ -308,7 +320,7 @@ Esses comandos verificam aspectos do pacote. O teste de recepção, áudio e rec
 
 No GitHub, mantenha código próprio, documentação, histórico e licença. Distribua um APK release assinado apenas depois da validação e dos termos aplicáveis. O repositório de código não precisa conter o SDK completo nem o projeto com caches do Android Studio. A versão do código e o certificado do APK devem ser identificáveis nas notas do lançamento.
 
-Na consulta oficial de 21/10/2026, novos apps e atualizações móveis da Play precisam de target API 36 desde 31/08/2026, com exceções por formato. O projeto já configura API 36. A página oficial de compatibilidade também exige suporte a páginas de 16 KB em apps com target 35 ou superior nos aparelhos de 64 bits e informa bloqueio de atualizações incompatíveis a partir de 01/02/2027. Reconfirme a política e o diagnóstico do Play Console no envio; esse prazo não é uma dispensa de compatibilidade.
+Na consulta oficial de 22/10/2026, novos apps e atualizações móveis da Play precisam de target API 36 desde 31/08/2026, com exceções por formato. O projeto já configura API 36. A página oficial de compatibilidade também exige suporte a páginas de 16 KB em apps com target 35 ou superior nos aparelhos de 64 bits e informa bloqueio de atualizações incompatíveis a partir de 01/02/2027. Reconfirme a política e o diagnóstico do Play Console no envio; esse prazo não é uma dispensa de compatibilidade.
 
 A preparação inclui AAB release assinado, Play App Signing, nome definitivo, descrição, ícones e imagens reais, política de privacidade acessível, Segurança dos dados, classificação de conteúdo, público-alvo e informações de acesso para revisão. Se a função exigir um transmissor na LAN, explique como o revisor pode avaliar o aplicativo e quais funções dependem desse ambiente. Não declare ausência de coleta apenas com base no código próprio: avalie os componentes incluídos.
 
@@ -373,7 +385,7 @@ Antes de usar em um culto, registre o modelo do aparelho, versão do Android/Web
 15. Fazer um ensaio prolongado no tempo e na rede previstos para o uso real.
 Confira também que abrir apenas o menu não inicia buscas depois de selecionar. Volte do segundo plano e confirme a mesma origem. Se a fonte estiver fora do ar, confirme que as tentativas continuam direcionadas a ela, sem selecionar outra automaticamente.
 
-A validação automatizada desta revisão está em VALIDACAO_1.4.2.md. Ela não substitui esses cenários. Não há teste real concluído com todas as TV Boxes, todas as saídas Spresenter nem todos os formatos de fonte NDI.
+A validação automatizada desta revisão está em VALIDACAO_1.4.3.md. Ela não substitui esses cenários. Não há teste real concluído com todas as TV Boxes, todas as saídas Spresenter nem todos os formatos de fonte NDI.
 
 ## 18. Manutenção e referências
 
@@ -381,7 +393,7 @@ Ao alterar descoberta, preserve seus limites, cancelamento e a ausência de requ
 
 Ao alterar o layout, confira celular em paisagem com altura pequena, fonte ampliada e TV com controle remoto. Ao atualizar SDK NDI, NDK ou AGP, repita os testes nativos e as verificações de 16 KB. Ao aumentar targetSdk, reveja as mudanças de comportamento e a permissão LAN antes da publicação.
 
-Histórico resumido: a revisão 1.2 melhorou descoberta NDI e painel; a 1.3 acrescentou HTML por endereço salvo; a 1.4 acrescentou busca HTML limitada, seleção pela lista e este manual. A 1.4.1 restaura a última configuração confirmada e encerra a descoberta depois de selecionar, inclusive liberando o finder NDI. A 1.4.2 acrescenta nomes alternativos de saída, redirecionamento para Stage e enquadramento HTML de monitor 16:9. Consulte CHANGELOG.md para o histórico do projeto.
+Histórico resumido: a revisão 1.2 melhorou descoberta NDI e painel; a 1.3 acrescentou HTML por endereço salvo; a 1.4 acrescentou busca HTML limitada, seleção pela lista e este manual. A 1.4.1 restaura a última configuração confirmada e encerra a descoberta depois de selecionar, inclusive liberando o finder NDI. A 1.4.2 acrescenta nomes alternativos de saída, redirecionamento para Stage e enquadramento HTML de monitor 16:9. A 1.4.3 acrescenta HTML em API 23, proteção de carregamento nativo, modo de densidade do firmware e diagnóstico sob demanda. Consulte CHANGELOG.md para o histórico do projeto.
 
 Referências oficiais consultadas:
 

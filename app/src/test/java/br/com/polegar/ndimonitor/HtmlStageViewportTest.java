@@ -49,6 +49,21 @@ public class HtmlStageViewportTest {
         }
     }
 
+    @Test @Config(qualifiers = "land-xhdpi")
+    public void compatibilityCanvasUsesSystemDensityAndPreservesAspectRatio() {
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            View content = new View(controller.get());
+            HtmlStageViewport viewport = new HtmlStageViewport(controller.get(), content, true);
+            float density = content.getResources().getDisplayMetrics().density;
+            layout(viewport, 1280, 720);
+            assertEquals(Math.round(1920 * density), content.getWidth());
+            assertEquals(Math.round(1080 * density), content.getHeight());
+            assertEquals(content.getScaleX(), content.getScaleY(), .0001f);
+            assertEquals(1280f, content.getWidth() * content.getScaleX(), .01f);
+            assertEquals(720f, content.getHeight() * content.getScaleY(), .01f);
+        }
+    }
+
     @Test public void originalPageUsesTheDeviceViewportWithoutTransform() {
         try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
             View content = new View(controller.get());
