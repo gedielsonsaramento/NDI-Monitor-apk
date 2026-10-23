@@ -94,7 +94,9 @@ final class LanHtmlDiscovery {
     private static boolean add(Map<String, HtmlHttpProbe.Target> targets, Network network, String url,
                                String... alternatives) {
         if (targets.size() >= MAX_TARGETS) return false;
-        targets.putIfAbsent(network.toString() + "|" + url, new HtmlHttpProbe.Target(url,
+        String key = network.toString() + "|" + url;
+        // Targets are assembled on the calling thread. Map.putIfAbsent needs API 24.
+        if (!targets.containsKey(key)) targets.put(key, new HtmlHttpProbe.Target(url,
                 address -> (HttpURLConnection) network.openConnection(address, Proxy.NO_PROXY), alternatives));
         return true;
     }

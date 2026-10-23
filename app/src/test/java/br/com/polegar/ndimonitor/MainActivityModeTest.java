@@ -44,6 +44,7 @@ public class MainActivityModeTest {
     }
     @Before public void resetDiscovery() throws Exception {
         drainWorkers();
+        org.robolectric.util.ReflectionHelpers.setStaticField(NdiReceiver.class, "loadFailure", null);
         FakeHtmlDiscovery.listener = null;
         FakeHtmlDiscovery.starts = 0;
         NoNativeReceiver.available = false;
@@ -128,6 +129,34 @@ public class MainActivityModeTest {
             assertEquals(url, prefs.getString(MainActivity.KEY_HTML_URL, ""));
             assertEquals("html", prefs.getString(MainActivity.KEY_DISPLAY_MODE, ""));
             assertEquals(0, FakeHtmlDiscovery.starts);
+        }
+    }
+
+    @Test public void compatibilityDisplayChoiceIsSavedAndDoesNotRestartDiscovery() {
+        android.content.SharedPreferences prefs = RuntimeEnvironment.getApplication()
+                .getSharedPreferences(MainActivity.PREFERENCES, Context.MODE_PRIVATE);
+        String url = "http://192.168.2.60:5050/output/retono";
+        prefs.edit().clear().putString(MainActivity.KEY_DISPLAY_MODE, "html")
+                .putString(MainActivity.KEY_HTML_URL, url).commit();
+        try (ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class).setup()) {
+            MainActivity activity = controller.get();
+            activity.onBackPressed();
+            activity.findViewById(R.id.monitor_settings_button).performClick();
+            android.app.AlertDialog settings = ShadowAlertDialog.getLatestAlertDialog();
+            settings.findViewById(R.id.html_layout_button).performClick();
+            android.app.AlertDialog chooser = ShadowAlertDialog.getLatestAlertDialog();
+            chooser.getListView().performItemClick(null, 2, 2);
+            assertTrue(prefs.getBoolean(MainActivity.KEY_HTML_STAGE_LAYOUT, false));
+            assertTrue(prefs.getBoolean(MainActivity.KEY_HTML_COMPATIBILITY, false));
+            assertEquals(url, prefs.getString(MainActivity.KEY_HTML_URL, ""));
+            settings.dismiss();
+            controller.recreate();
+            assertEquals(0, FakeHtmlDiscovery.starts);
+            assertEquals(View.GONE, controller.get().findViewById(R.id.source_panel).getVisibility());
+            android.widget.FrameLayout frame = controller.get().findViewById(R.id.html_container);
+            android.webkit.WebView web = (android.webkit.WebView) ((HtmlStageViewport) frame.getChildAt(0)).getChildAt(0);
+            assertEquals(controller.get().getResources().getDisplayMetrics().density,
+                    web.getResources().getDisplayMetrics().density, 0);
         }
     }
 

@@ -1,12 +1,18 @@
-# Monitor de Retorno — Android 7+
+# Monitor de Retorno — Android 6+ para HTML; Android 7+ para NDI
 
 Aplicativo Android independente para receber vídeo e áudio NDI® Standard full-bandwidth ou exibir um retorno HTML pela rede local em celulares e dispositivos Android de uso geral.
 
-Versão de teste: **1.4.2** (`versionCode 7`). Nome provisório: **Monitor de Retorno**. Pacote Android preservado: `br.com.polegar.ndimonitor`.
+Versão de teste: **1.4.3** (`versionCode 8`). Nome provisório: **Monitor de Retorno**. Pacote Android preservado: `br.com.polegar.ndimonitor`.
 
 Comece pela [documentação completa do projeto](DOCUMENTACAO_COMPLETA.md), com instalação, uso no controle remoto, arquitetura, compilação, testes, assinatura e preparação para publicação.
 
 Projeto independente. NDI® é marca registrada da Vizrt NDI AB. Conheça a tecnologia em [ndi.video](https://ndi.video/). Não há indicação de patrocínio ou certificação pela NDI/Vizrt.
+
+## Teste em TV Box
+
+A versão **1.4.3-tvbox** usa o pacote `br.com.polegar.ndimonitor.tvboxtest` e o nome **Monitor de Retorno — TV Box**. Instala ao lado da versão habitual, com preferências próprias. Essa edição não atualiza nem remove o app 1.4.2. Veja [TVBOX.md](TVBOX.md) para o teste e o diagnóstico do aparelho.
+
+Android 6 abre HTML sem carregar as bibliotecas NDI, compiladas para API 24. Android 7 ou superior mantém o receptor NDI quando as bibliotecas carregam corretamente. A opção **16:9 — compatibilidade TV Box** usa a densidade real do motor web; é o padrão inicial em API 23–25. Não acrescenta recursos de CSS ausentes no WebView da box.
 
 ## Recursos
 
@@ -37,7 +43,7 @@ Sem o SDK, o projeto pode ser compilado em **modo de preparação**. Nesse modo,
 
 | Item | Configuração do projeto |
 | --- | --- |
-| Android mínimo | Android 7.0 / API 24 |
+| Android mínimo | Android 6.0 / API 23 para HTML; Android 7.0 / API 24 para NDI |
 | Arquiteturas | ARM32 `armeabi-v7a` e ARM64 `arm64-v8a` |
 | SDK de compilação / destino | API 36 / API 36 |
 | JDK | 17 |
@@ -107,7 +113,7 @@ Leia [QUIOSQUE.md](QUIOSQUE.md) antes de mudar a tela inicial.
 
 ## Documentação
 
-- [Manual completo do projeto 1.4.2](DOCUMENTACAO_COMPLETA.md)
+- [Manual completo do projeto 1.4.3](DOCUMENTACAO_COMPLETA.md)
 - [Modo HTML e troca entre fontes](RETORNO_HTML.md)
 - [Guia de instalação e compilação](GUIA_PASSO_A_PASSO.md)
 - [Tela inicial opcional e como desativar](QUIOSQUE.md)
@@ -116,7 +122,7 @@ Leia [QUIOSQUE.md](QUIOSQUE.md) antes de mudar a tela inicial.
 - [Resultados e limites da validação 1.2.0](VALIDACAO_1.2.md)
 - [Resultados e limites da validação 1.3.0](VALIDACAO_1.3.md)
 - [Resultados e limites da validação 1.4.0](VALIDACAO_1.4.md)
-- [Resultados e limites da validação 1.4.2](VALIDACAO_1.4.2.md)
+- [Resultados e limites da validação 1.4.3](VALIDACAO_1.4.3.md)
 
 ## Verificações de desenvolvimento
 

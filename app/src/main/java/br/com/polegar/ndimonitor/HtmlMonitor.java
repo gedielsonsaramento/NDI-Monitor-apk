@@ -22,6 +22,7 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.webkit.ConsoleMessage;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
@@ -39,6 +40,8 @@ final class HtmlMonitor {
     private WebView webView;
     private HtmlStageViewport viewport;
     private boolean stageLayout = true;
+    private boolean compatibilityMode;
+    private String lastConsoleError = "";
     private View customView;
     private WebChromeClient.CustomViewCallback customViewCallback;
     private TextView failureView;
@@ -78,8 +81,13 @@ final class HtmlMonitor {
     }
 
     void setStageLayout(boolean enabled) {
-        if (stageLayout == enabled) return;
-        stageLayout = enabled;
+        setDisplayLayout(enabled, compatibilityMode);
+    }
+
+    void setDisplayLayout(boolean stage, boolean compatibility) {
+        if (stageLayout == stage && compatibilityMode == compatibility) return;
+        stageLayout = stage;
+        compatibilityMode = compatibility;
         retries = 0;
         handler.removeCallbacks(loadTimeout);
         handler.removeCallbacks(retry);
@@ -118,7 +126,7 @@ final class HtmlMonitor {
         if (webView != null) return true;
         try {
             Context rendererContext = activity;
-            if (stageLayout) {
+            if (stageLayout && !compatibilityMode) {
                 // Scope a 1x density to this renderer, keeping the virtual canvas at 1080p
                 // even on high-density phones. App controls keep the user's normal scale.
                 ContextThemeWrapper desktop = new ContextThemeWrapper(activity, activity.getTheme());
@@ -156,52 +164,16 @@ final class HtmlMonitor {
                 webView.setVerticalScrollBarEnabled(false);
                 webView.setOverScrollMode(View.OVER_SCROLL_NEVER);
             }
-            webView.setWebViewClient(new WebViewClient() {
-                @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-                    return !HtmlSourceUrl.isWebAddress(request.getUrl().toString());
-                }
-
-                @Override public void onPageStarted(WebView view, String url, android.graphics.Bitmap icon) {
-                    if (!isCurrent(view) || !HtmlSourceUrl.isWebAddress(url)) return;
-                    failed = false;
-                    listener.onStatus(R.string.html_loading);
-                }
-
-                @Override public void onPageFinished(WebView view, String url) {
-                    if (!isCurrent(view) || failed || !HtmlSourceUrl.isWebAddress(url)) return;
-                    retries = 0;
-                    handler.removeCallbacks(loadTimeout);
-                    hideFailure();
-                    listener.onStatus(R.string.html_open);
-                }
-
-                @Override public void onReceivedError(WebView view, WebResourceRequest request,
-                                                       WebResourceError error) {
-                    if (isCurrent(view) && request.isForMainFrame()) fail(true);
-                }
-
-                @Override public void onReceivedHttpError(WebView view, WebResourceRequest request,
-                                                           WebResourceResponse response) {
-                    if (isCurrent(view) && request.isForMainFrame()) {
-                        fail(response.getStatusCode() >= 500);
-                    }
-                }
-
-                @Override public void onReceivedSslError(WebView view, SslErrorHandler sslHandler,
-                                                          SslError error) {
-                    sslHandler.cancel();
-                    if (isCurrent(view)) fail(false);
-                }
-
-                @Override public boolean onRenderProcessGone(WebView view, RenderProcessGoneDetail detail) {
-                    if (Build.VERSION.SDK_INT >= 26 && view == webView) {
-                        disposeRenderer();
-                        if (enabled && !paused) fail(true);
+            webView.setWebViewClient(Build.VERSION.SDK_INT >= 26
+                    ? new Api26WebViewClient() : new MonitorWebViewClient());
+            webView.setWebChromeClient(new WebChromeClient() {
+                @Override public boolean onConsoleMessage(ConsoleMessage message) {
+                    if (message.messageLevel() == ConsoleMessage.MessageLevel.ERROR) {
+                        String text = message.message();
+                        lastConsoleError = text == null ? "" : text.substring(0, Math.min(240, text.length()));
                     }
                     return true;
                 }
-            });
-            webView.setWebChromeClient(new WebChromeClient() {
                 @Override public void onShowCustomView(View view, CustomViewCallback callback) {
                     if (customView != null) {
                         callback.onCustomViewHidden();
@@ -226,6 +198,61 @@ final class HtmlMonitor {
         }
     }
 
+    private class MonitorWebViewClient extends WebViewClient {
+        // API 23 calls the String overload; API 24+ calls the request overload.
+        @Override public boolean shouldOverrideUrlLoading(WebView view, String url) {
+            return !HtmlSourceUrl.isWebAddress(url);
+        }
+        @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+            return !HtmlSourceUrl.isWebAddress(request.getUrl().toString());
+        }
+
+        @Override public void onPageStarted(WebView view, String url, android.graphics.Bitmap icon) {
+            if (!isCurrent(view) || !HtmlSourceUrl.isWebAddress(url)) return;
+            failed = false;
+            listener.onStatus(R.string.html_loading);
+        }
+
+        @Override public void onPageFinished(WebView view, String url) {
+            if (!isCurrent(view) || failed || !HtmlSourceUrl.isWebAddress(url)) return;
+            retries = 0;
+            handler.removeCallbacks(loadTimeout);
+            hideFailure();
+            listener.onStatus(R.string.html_open);
+        }
+
+        @Override public void onReceivedError(WebView view, WebResourceRequest request,
+                                               WebResourceError error) {
+            if (isCurrent(view) && request.isForMainFrame()) fail(true);
+        }
+
+        @Override public void onReceivedHttpError(WebView view, WebResourceRequest request,
+                                                   WebResourceResponse response) {
+            if (isCurrent(view) && request.isForMainFrame()) {
+                fail(response.getStatusCode() >= 500);
+            }
+        }
+
+        @Override public void onReceivedSslError(WebView view, SslErrorHandler sslHandler,
+                                                  SslError error) {
+            sslHandler.cancel();
+            if (isCurrent(view)) fail(false);
+        }
+
+    }
+
+    @android.annotation.TargetApi(26)
+    @android.annotation.SuppressLint("UseRequiresApi") // Only constructed by the checked API 26+ branch.
+    private final class Api26WebViewClient extends MonitorWebViewClient {
+        @Override public boolean onRenderProcessGone(WebView view, RenderProcessGoneDetail detail) {
+            if (view == webView) {
+                disposeRenderer();
+                if (enabled && !paused) fail(true);
+            }
+            return true;
+        }
+    }
+
     private boolean isCurrent(WebView view) {
         return enabled && !paused && view == webView;
     }
@@ -235,11 +262,45 @@ final class HtmlMonitor {
         if (!ensureRenderer()) return;
         hideCustomView();
         failed = false;
+        lastConsoleError = "";
         hideFailure();
         listener.onStatus(R.string.html_loading);
         handler.removeCallbacks(loadTimeout);
         handler.postDelayed(loadTimeout, 15000);
         webView.loadUrl(address);
+    }
+
+    interface DiagnosticsCallback { void onResult(String description); }
+
+    void describePage(DiagnosticsCallback callback) {
+        WebView current = webView;
+        if (current == null) {
+            callback.onResult("HTML: nenhuma página ativa");
+            return;
+        }
+        String description = "WebView: " + current.getSettings().getUserAgentString()
+                + "\nÁrea do motor: " + current.getWidth() + " × " + current.getHeight()
+                + " px; densidade " + current.getResources().getDisplayMetrics().density
+                + "\nExibição: " + (stageLayout ? compatibilityMode ? "16:9 compatibilidade" : "16:9" : "página original")
+                + (lastConsoleError.isEmpty() ? "" : "\nErro JavaScript: " + lastConsoleError);
+        java.util.concurrent.atomic.AtomicBoolean finished = new java.util.concurrent.atomic.AtomicBoolean();
+        Runnable timeout = () -> {
+            if (finished.compareAndSet(false, true)) callback.onResult(description + "\nPágina: sem resposta ao diagnóstico");
+        };
+        handler.postDelayed(timeout, 1500);
+        try {
+            current.evaluateJavascript(HtmlPageDiagnostics.SCRIPT, value -> {
+                if (!finished.compareAndSet(false, true)) return;
+                handler.removeCallbacks(timeout);
+                callback.onResult(description + "\n" + (current == webView
+                        ? HtmlPageDiagnostics.format(value) : "Página alterada durante a leitura"));
+            });
+        } catch (RuntimeException unavailable) {
+            if (finished.compareAndSet(false, true)) {
+                handler.removeCallbacks(timeout);
+                callback.onResult(description + "\nPágina: diagnóstico indisponível");
+            }
+        }
     }
 
     private void fail(boolean retryable) {
