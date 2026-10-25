@@ -90,6 +90,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     private boolean ndiAvailable;
     private boolean discoveryRequested;
     private boolean ndiDiscoveryActive;
+    private boolean firstNdiDiscovery = true;
     private volatile String currentNdiSource = "";
     private volatile int playbackGeneration;
     private boolean ndiPlaybackRequested;
@@ -200,14 +201,18 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         }
 
         NdiReceiver.setCallbackTarget(this);
-        ndiAvailable = NdiReceiver.isNdiAvailable();
-        boolean savedHtml = Build.VERSION.SDK_INT < 24
-                || "html".equals(preferences.getString(KEY_DISPLAY_MODE, "ndi"));
         boolean validHtml = HtmlSourceUrl.isWebAddress(preferences.getString(KEY_HTML_URL, ""));
         String savedNdi = preferences.getString(KEY_LAST_SOURCE, "");
         boolean validNdi = savedNdi != null && !savedNdi.trim().isEmpty();
+        boolean htmlOnly = getIntent().getBooleanExtra(StartupActivity.EXTRA_HTML_ONLY, false);
+        String savedMode = preferences.getString(KEY_DISPLAY_MODE, "");
+        // First use on old TV firmware opens HTML without loading any NDI code.
+        // A previously selected NDI source still restores normally.
+        boolean savedHtml = htmlOnly || Build.VERSION.SDK_INT < 24
+                || "html".equals(savedMode)
+                || (Build.VERSION.SDK_INT <= 25 && savedMode.isEmpty() && !validNdi);
         // Older versions saved a browsed mode before a source was selected.
-        if (Build.VERSION.SDK_INT >= 24 && savedHtml && !validHtml && validNdi) savedHtml = false;
+        if (!htmlOnly && Build.VERSION.SDK_INT >= 24 && savedHtml && !validHtml && validNdi) savedHtml = false;
         else if (!savedHtml && !validNdi && validHtml) savedHtml = true;
         setSourceMode(savedHtml, true);
     }
@@ -220,6 +225,15 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         htmlMonitor.resume();
         if (!htmlMode && ndiAvailable && !currentNdiSource.isEmpty()) startNdiPlayback();
         scanSources();
+        StartupJournal.get(this).finishStartup();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // A Home/launcher redirect can deliver onNewIntent to the existing task
+        // without another onStart; it must not leave a false pending startup.
+        StartupJournal.get(this).finishStartup();
     }
 
     @Override
@@ -265,6 +279,12 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         if (modeInitialized && htmlMode == html) return;
         modeInitialized = true;
         htmlMode = html;
+        if (!html) {
+            StartupJournal journal = StartupJournal.get(this);
+            long operation = journal.beginOperation("Inicializando o receptor NDI");
+            try { ndiAvailable = NdiReceiver.isNdiAvailable(); }
+            finally { journal.finishOperation(operation); }
+        }
         discoveryRequested = false;
         ((TextView) findViewById(R.id.source_mode_button)).setText(html ? R.string.mode_html : R.string.mode_ndi);
         sourceList.setVisibility(View.VISIBLE);
@@ -465,26 +485,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     }
 
     private void applyControlInsets(WindowInsets insets) {
-        int left, top, right, bottom;
-        if (Build.VERSION.SDK_INT >= 30) {
-            android.graphics.Insets safe = insets.getInsets(
-                    WindowInsets.Type.systemBars() | WindowInsets.Type.displayCutout());
-            left = safe.left;
-            top = safe.top;
-            right = safe.right;
-            bottom = safe.bottom;
-        } else {
-            left = insets.getSystemWindowInsetLeft();
-            top = insets.getSystemWindowInsetTop();
-            right = insets.getSystemWindowInsetRight();
-            bottom = insets.getSystemWindowInsetBottom();
-            if (Build.VERSION.SDK_INT >= 28 && insets.getDisplayCutout() != null) {
-                left = Math.max(left, insets.getDisplayCutout().getSafeInsetLeft());
-                top = Math.max(top, insets.getDisplayCutout().getSafeInsetTop());
-                right = Math.max(right, insets.getDisplayCutout().getSafeInsetRight());
-                bottom = Math.max(bottom, insets.getDisplayCutout().getSafeInsetBottom());
-            }
-        }
+        int[] safe = ControlInsets.read(insets);
+        int left = safe[0], top = safe[1], right = safe[2], bottom = safe[3];
         safeInsetLeft = left;
         safeInsetRight = right;
         FrameLayout.LayoutParams panel = (FrameLayout.LayoutParams) sourcePanel.getLayoutParams();
@@ -561,7 +563,9 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
 
     private void showDeviceDiagnostics() {
         if (diagnosticsDialog != null && diagnosticsDialog.isShowing()) return;
-        String device = DeviceDiagnostics.describe(this, ndiAvailable);
+        String previous = StartupJournal.get(this).previousReport();
+        String device = DeviceDiagnostics.describe(this, ndiAvailable)
+                + (previous.isEmpty() ? "" : "\n\n" + previous);
         TextView details = new TextView(this);
         int padding = Math.round(16 * getResources().getDisplayMetrics().density);
         details.setPadding(padding, padding, padding, padding);
@@ -726,7 +730,12 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
                 htmlMode || generation != discoveryGeneration) return;
         DISCOVERY_WORKER.execute(() -> {
             if (destroyed || generation != discoveryGeneration) return;
-            String[] result = NdiReceiver.findSources(timeoutMs);
+            StartupJournal journal = StartupJournal.get(this);
+            long operation = firstNdiDiscovery ? journal.beginOperation("Primeira busca de fontes NDI") : 0;
+            firstNdiDiscovery = false;
+            String[] result;
+            try { result = NdiReceiver.findSources(timeoutMs); }
+            finally { if (operation != 0) journal.finishOperation(operation); }
             controlsHandler.post(() -> {
                 if (destroyed || !activityVisible || generation != discoveryGeneration ||
                         sourcePanel.getVisibility() != View.VISIBLE) return;
