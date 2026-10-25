@@ -12,7 +12,7 @@ public class BootReceiver extends BroadcastReceiver {
                 .getBoolean(MainActivity.KEY_START_ON_BOOT, true);
         if (!enabled) return;
 
-        Intent launch = new Intent(context, MainActivity.class);
+        Intent launch = new Intent(context, StartupActivity.class);
         launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         context.startActivity(launch);
     }

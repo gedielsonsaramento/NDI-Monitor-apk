@@ -1,3 +1,13 @@
+# 1.4.4 — Abertura independente e recuperação em TV Box (25/10/2026)
+
+- Primeira configuração em API 23–25 começa em HTML sem inicializar NDI; preserva a restauração de uma fonte NDI já selecionada.
+- HTML, callbacks de superfície e limpeza não carregam o runtime NDI por conta própria.
+- Entrada independente para launcher, tela inicial e boot, com relatório local e opção de abrir apenas HTML após abertura interrompida.
+- Checkpoints limitados à abertura, inicialização e primeira descoberta; registro de exceção Java mantém o tratamento normal do Android. Nenhuma telemetria.
+- Tipos de recorte/insets das APIs 28/30 ficam isolados da Activity carregada em Android antigo.
+- APK TVBox conserva pacote e certificado de teste da 1.4.3. Bibliotecas nativas, áudio e exibição HTML não foram alterados.
+- Candidata para investigar o fechamento antes do menu relatado na H6+ com Android 7.1.2; a causa e o funcionamento real ainda dependem do relatório/teste do aparelho.
+
 # 1.4.2 — Descoberta de saídas nomeadas e exibição HTML de monitor
 
 ## 1.4.3 — teste de compatibilidade em TV Box (22/10/2026)

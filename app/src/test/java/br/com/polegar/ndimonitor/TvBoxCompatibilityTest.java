@@ -47,6 +47,10 @@ public class TvBoxCompatibilityTest {
 
     @Before public void reset() {
         ReflectionHelpers.setStaticField(NdiReceiver.class, "loadFailure", null);
+        ReflectionHelpers.setStaticField(NdiReceiver.class, "initializationAttempted", false);
+        ReflectionHelpers.setStaticField(NdiReceiver.class, "available", false);
+        ReflectionHelpers.setStaticField(NdiReceiver.class, "callbackTarget", null);
+        ReflectionHelpers.setStaticField(NdiReceiver.class, "pendingSurface", null);
         UnloadableReceiver.calls = 0;
         MainActivityModeTest.FakeHtmlDiscovery.starts = 0;
         RuntimeEnvironment.getApplication().getSharedPreferences(MainActivity.PREFERENCES, Context.MODE_PRIVATE)
@@ -60,9 +64,7 @@ public class TvBoxCompatibilityTest {
             assertEquals(View.VISIBLE, activity.findViewById(R.id.html_container).getVisibility());
             assertEquals(View.GONE, activity.findViewById(R.id.source_panel).getVisibility());
             assertEquals(0, MainActivityModeTest.FakeHtmlDiscovery.starts);
-            assertFalse(NdiReceiver.isNdiAvailable());
-            if (android.os.Build.VERSION.SDK_INT == 23) assertEquals(0, UnloadableReceiver.calls);
-            else assertEquals(1, UnloadableReceiver.calls);
+            assertEquals(0, UnloadableReceiver.calls);
             activity.onBackPressed();
             activity.findViewById(R.id.monitor_settings_button).performClick();
             android.app.AlertDialog settings = ShadowAlertDialog.getLatestAlertDialog();
@@ -75,6 +77,7 @@ public class TvBoxCompatibilityTest {
             assertEquals(URL, activity.getSharedPreferences(MainActivity.PREFERENCES, Context.MODE_PRIVATE)
                     .getString(MainActivity.KEY_HTML_URL, ""));
             assertEquals(0, MainActivityModeTest.FakeHtmlDiscovery.starts);
+            assertEquals(0, UnloadableReceiver.calls);
         }
     }
 

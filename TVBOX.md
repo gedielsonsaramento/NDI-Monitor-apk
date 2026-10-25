@@ -1,58 +1,45 @@
-# Teste em TV Box — Monitor de Retorno 1.4.3
+# Teste em TV Box — Monitor de Retorno 1.4.4
 
-Revisão candidata de 22/10/2026. Foram relatados erro de análise/instalação, fechamento contínuo e HTML comprimido no canto. O usuário identificou a última imagem como HTML dentro do app 1.4.2 e informou Android 6. O APK 1.4.2 entregue declara mínimo API 24 e não pode ser instalado normalmente em API 23. A edição de teste acrescenta leitura do Android Release e do nível de API para esclarecer essa diferença no próprio aparelho, sem presumir modelo ou firmware a partir do nome comercial da box.
+Revisão candidata de 25/10/2026. A foto identifica modelo **H6+**, Android anunciado **7.1.2**, compilação **NHG47L.20200724 dev-keys**, kernel 3.14.29. O app 1.4.3-TVBox fecha antes do menu. Ainda não há stack trace nem confirmação da API/ABI efetiva dessa box; a foto não prova a causa do fechamento.
 
-## Instalar a edição de teste
+## Instalar e abrir
 
-1. Use `Monitor-de-Retorno-1.4.3-TVBox-teste.apk`.
-2. O ícone se chama **Monitor de Retorno — TV Box**. O pacote é `br.com.polegar.ndimonitor.tvboxtest`; instala em paralelo à edição habitual e usa preferências próprias.
-3. Abra esse ícone. Em Android 6 / API 23, o app inicia no modo HTML e não inicializa as bibliotecas NDI de API 24.
-4. Selecione a saída HTML descoberta. Se necessário, informe uma vez o endereço exibido no Spresenter. O endereço informado neste teste foi `http://192.168.2.60:5050/output/retono`; o trecho `retono` é literal, conforme o destino do usuário.
-5. Depois da seleção, a busca para. Ao reabrir, a mesma origem e a escolha de exibição são restauradas.
+1. Use `Monitor-de-Retorno-1.4.4-TVBox-teste.apk`.
+2. Abra o ícone **Monitor de Retorno — TV Box**. O pacote `br.com.polegar.ndimonitor.tvboxtest` e o certificado da 1.4.3-TVBox foram mantidos para atualizar essa edição. A instalação habitual, como 1.4.2, permanece separada.
+3. Sem configuração anterior, API 23–25 entra em HTML sem carregar NDI. Uma fonte NDI já selecionada é restaurada normalmente.
+4. Se aparecer a recuperação, fotografe o relatório antes de continuar e escolha **Abrir apenas HTML**. Queda de energia ou encerramento também podem interromper a abertura; somente um checkpoint não comprova uma falha nativa.
+5. Escolha a saída HTML ou informe uma vez o endereço, por exemplo `http://192.168.2.60:5050/output/retono`. O nome `retono` é literal, informado pelo usuário.
+6. Após confirmar uma fonte, a busca para. Ao reabrir, o modo, a origem e o enquadramento salvos são retomados.
+7. Para testar NDI em API 24+, abra o seletor **HTML → NDI**. Se fechar nessa etapa, abra o app novamente e fotografe o relatório da recuperação.
 
-## Conferir a exibição
+A recuperação HTML não apaga a origem NDI. Uma nova fonte confirmada salva o novo modo/origem. Nenhum relatório é enviado automaticamente.
 
-No modo HTML, abra **engrenagem → Exibição HTML → Monitor 16:9 — compatibilidade TV Box**. Essa opção é o padrão inicial em API 23–25. Mantém a densidade real do WebView e escala o canvas de 1920 × 1080 CSS proporcionalmente até caber na tela, sem forçar desenho por CPU.
+## Diagnóstico e enquadramento
 
-As opções **Monitor 16:9 — ajustar à tela** e **Layout original da página** continuam disponíveis. A escolha fica salva. Trocar a opção reabre somente o mesmo endereço, sem começar uma nova busca de rede.
+Abra **engrenagem → Diagnóstico do aparelho** e fotografe o conteúdo. Inclui versão/pacote, fabricante/modelo, Android Release/API, ABIs, densidade, estado NDI, motor WebView, área CSS, suporte a Grid/variáveis/clamp e eventual relatório da abertura anterior.
 
-Se as letras continuarem comprimidas, abra **engrenagem → Diagnóstico do aparelho** e fotografe o conteúdo (role a caixa para mostrar o restante, se necessário). Abra essa tela em cada box com problema. Ela mostra:
+**Exibição HTML → Monitor 16:9 — compatibilidade TV Box** continua sendo o padrão inicial em API 23–25. Preserva a densidade do firmware e ajusta o canvas de 1920 × 1080 CSS proporcionalmente. As alternativas de ajuste 16:9 e página original continuam disponíveis. Um WebView antigo pode não implementar o CSS/JavaScript do tema.
 
-- versão/pacote do app, modelo, Android Release e API;
-- arquiteturas e densidade informadas pelo firmware;
-- estado de carregamento da biblioteca NDI;
-- identificação do motor WebView e área nativa/CSS da página;
-- suporte do motor a CSS Grid, variáveis CSS e `clamp()` e eventual último erro JavaScript.
+## Se continuar fechando antes de mostrar o relatório
 
-O diagnóstico é local, sob demanda e de leitura: não transmite dados, muda a página ou pesquisa fontes. Um motor antigo pode não entender o CSS/JavaScript do tema, mesmo quando o endereço abre. O modo de compatibilidade não acrescenta recursos ausentes no motor. O diagnóstico permite decidir se o ajuste deve ser no app, no componente web da box ou no tema do retorno.
-
-## Limites
-
-- HTML: mínimo API 23. NDI: mínimo API 24, ARM32/ARM64 e biblioteca carregável nesse aparelho.
-- API mínima não comprova desempenho ou compatibilidade com todo firmware.
-- `LinkageError` é tratado; falhas nativas como SIGSEGV/SIGILL ainda precisam de log.
-- Não houve acesso remoto à rede local ou às boxes. A correção da imagem real ainda precisa ser confirmada nelas.
-- Essa edição de desenvolvimento não é um pacote de produção para a Play Store.
-
-## Se o app fechar antes do diagnóstico
-
-Com ADB já configurado no PC e a depuração autorizada na box, a saída da instalação ajuda a separar versão mínima, certificado, arquitetura e arquivo inválido:
+Com ADB configurado no PC e a depuração autorizada na box:
 
 ```powershell
-adb install -r Monitor-de-Retorno-1.4.3-TVBox-teste.apk
-adb logcat -d -v threadtime AndroidRuntime:E libc:F DEBUG:F NDIMonitor:V '*:S' > tvbox-log.txt
+adb install -r Monitor-de-Retorno-1.4.4-TVBox-teste.apk
+adb shell am start -n br.com.polegar.ndimonitor.tvboxtest/br.com.polegar.ndimonitor.StartupActivity
+adb logcat -d -b crash -b main -v threadtime AndroidRuntime:E libc:F DEBUG:F NDIMonitorNative:V '*:S' > tvbox-log.txt
 ```
 
-Não é preciso limpar dados ou remover a edição habitual para usar o pacote de teste em paralelo.
+Não limpe os buffers antes da coleta: podem conter a causa da falha anterior. Os comandos suportados variam conforme o firmware. Confira o arquivo antes de compartilhar e remova dados pessoais/tokens.
 
-## Compilação
+## Limites e compilação
 
-Com SDK NDI e ferramentas nativas instalados normalmente:
+HTML exige API 23 e WebView funcional; NDI exige API 24, ARM32/ARM64 e runtime compatível com o aparelho. O registro Java não intercepta SIGSEGV/SIGILL. Uma operação interrompida pode ser identificada pelo checkpoint, mas a análise nativa completa depende do Logcat/tombstone.
+
+Não houve acesso à H6+, às outras boxes ou à LAN do usuário. A revisão não comprova a solução do fechamento, do enquadramento ou do áudio associado a letras. Nenhum pacote foi enviado à Play ou publicado como release.
 
 ```bash
 ./gradlew testDebugUnitTest lintDebug assembleTvboxTest
 ```
 
-O build opcional `-PmonitorPrebuiltNativeDir=/caminho/nativo` permite depuração com as mesmas quatro bibliotecas de um APK previamente verificado. Não reconstrói o código C++, exige ARM32/ARM64 completos e desabilita a variante release. Nessa validação, as bibliotecas foram recuperadas do APK 1.4.2 de SHA-256 `2449ee838f926a27a613dc4055061940865df32a26821c747d7d220aa9c086c8`, sem alteração de bytes. Os avisos do SDK também são preservados.
-
-Veja [VALIDACAO_1.4.3.md](VALIDACAO_1.4.3.md) para os resultados finais.
+O reuso opcional `-PmonitorPrebuiltNativeDir=/caminho/nativo` continua restrito a depuração, exige as quatro bibliotecas ARM32/ARM64 e desabilita release. São as mesmas bibliotecas/avisos do APK 1.4.3-TVBox verificado. Veja [VALIDACAO_1.4.4.md](VALIDACAO_1.4.4.md).

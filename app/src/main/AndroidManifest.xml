@@ -14,6 +14,7 @@
     <uses-feature android:name="android.software.webview" android:required="false" />
 
     <application
+        android:name=".MonitorApplication"
         android:allowBackup="false"
         android:icon="@drawable/ic_monitor"
         android:banner="@drawable/tv_banner"
@@ -25,9 +26,13 @@
         <activity
             android:name=".MainActivity"
             android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
-            android:exported="true"
+            android:exported="false"
             android:launchMode="singleTask"
-            android:screenOrientation="sensorLandscape">
+            android:screenOrientation="sensorLandscape" />
+        <activity
+            android:name=".StartupActivity"
+            android:exported="true"
+            android:theme="@android:style/Theme.Material.Light.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -38,7 +43,7 @@
         <!-- Optional Home target: Android only uses it after the user chooses it. -->
         <activity-alias
             android:name=".MonitorHome"
-            android:targetActivity=".MainActivity"
+            android:targetActivity=".StartupActivity"
             android:exported="true"
             android:label="@string/app_name">
             <intent-filter>

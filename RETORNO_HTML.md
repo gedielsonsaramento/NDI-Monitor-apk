@@ -8,6 +8,8 @@ retorno HTML do Spresenter. A exibição usa um modo por vez em cada aparelho.
 
 A revisão **1.4.3** acrescenta HTML em Android 6 (API 23), proteção quando a biblioteca NDI não carrega, exibição 16:9 com densidade do próprio firmware e diagnóstico sob demanda. NDI permanece restrito a API 24 ou superior. Veja o procedimento de teste em [TVBOX.md](TVBOX.md).
 
+Na **1.4.4**, abrir HTML não inicializa o NDI em nenhuma versão do Android. Uma primeira configuração em API 23–25 começa em HTML; uma fonte NDI previamente escolhida continua sendo restaurada. A recuperação oferece **Abrir apenas HTML** se a abertura anterior foi interrompida. Os endereços, a descoberta e o enquadramento HTML mantêm o comportamento anterior.
+
 ## Abrir o retorno
 
 1. Ative um destino **Saída HTML** em **Retorno (Stage)** no Spresenter e confira

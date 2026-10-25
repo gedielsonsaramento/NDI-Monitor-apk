@@ -1,12 +1,12 @@
 # Monitor de Retorno
 
-## Manual completo do projeto - versão 1.4.3
+## Manual completo do projeto - versão 1.4.4
 
-Aplicativo Android para receber NDI® Standard full-bandwidth ou abrir um retorno HTML pela rede local. Nome de produto provisório: Monitor de Retorno. Mantenedor: Gedielson Saramento. Documentação técnica revisada em 22/10/2026, horário do Brasil.
+Aplicativo Android para receber NDI® Standard full-bandwidth ou abrir um retorno HTML pela rede local. Nome de produto provisório: Monitor de Retorno. Mantenedor: Gedielson Saramento. Documentação técnica revisada em 25/10/2026, horário do Brasil.
 
 NDI® is a registered trademark of Vizrt NDI AB. https://ndi.video/
 
-Esta revisão é uma versão de teste. O resultado de compilação, os testes executados e o que ainda precisa de equipamento real estão em VALIDACAO_1.4.3.md. A existência de um APK ou AAB compilado não significa publicação ou aprovação na Google Play.
+Esta revisão é uma versão de teste. O resultado de compilação, os testes executados e o que ainda precisa de equipamento real estão em VALIDACAO_1.4.4.md. A existência de um APK ou AAB compilado não significa publicação ou aprovação na Google Play.
 
 Repositório: https://github.com/gedielsonsaramento/NDI-Monitor-apk
 
@@ -54,13 +54,19 @@ O aplicativo não cria a apresentação, não controla os slides e não substitu
 | Orientação | Horizontal, com proporção preservada no vídeo NDI |
 | Operação | Toque, mouse ou controle remoto com setas e OK/Enter |
 | Pacote Android | br.com.polegar.ndimonitor |
-| Versão | versionName 1.4.3, versionCode 8; teste de box: 1.4.3-tvbox |
+| Versão | versionName 1.4.4, versionCode 9; teste de box: 1.4.4-tvbox |
 
 O Android 5.1 do servidor Samsung não é compatível com este APK. Não há pacote x86/x86_64 nesta revisão. O funcionamento de vídeo, áudio, boot e WebView varia conforme o hardware e o firmware: a versão mínima não comprova compatibilidade com todas as TV Boxes.
 
 Uma rede local funcionando é suficiente para o uso habitual de fontes locais. O conteúdo de uma página HTML pode exigir internet se carregar fontes, imagens, scripts ou outros recursos externos.
 
-### Compatibilidade de TV Box na revisão 1.4.3
+### Compatibilidade de TV Box na revisão 1.4.4
+
+Na primeira configuração em API 23–25, sem modo ou fonte NDI salvos, a tela abre em HTML. O NDI só é inicializado ao entrar no modo NDI. Os callbacks de superfície, definição de destino e limpeza deixam de carregar a biblioteca por conta própria. Uma seleção NDI já confirmada continua sendo restaurada sem buscar outras fontes. Abrir HTML em qualquer Android também deixa de inicializar NDI desnecessariamente.
+
+`StartupActivity` é a entrada do launcher, da tela inicial opcional e do boot. Não depende do receptor ou do WebView. Normalmente encaminha diretamente ao monitor; após uma abertura interrompida, mostra o relatório e oferece **Abrir apenas HTML**, nova tentativa e configurações do Android. A opção HTML de recuperação não apaga a última fonte NDI nem muda o modo persistido até uma nova fonte ser efetivamente escolhida.
+
+`StartupJournal` grava poucos checkpoints locais de início/fim da abertura, inicialização do NDI e primeira descoberta NDI. Não grava a cada quadro ou a cada pesquisa. `MonitorApplication` guarda a exceção Java, quando houver, e mantém o tratamento de falha do Android. Um sinal nativo pode deixar somente o checkpoint: ele não é apresentado como diagnóstico confirmado. Queda de energia ou encerramento durante a abertura também podem gerar recuperação. Não há envio automático de relatórios.
 
 No Android 6, somente HTML é habilitado na inicialização: todas as chamadas à ponte NDI passam por `NdiReceiver`, que verifica API 24 antes de inicializar `NativeBridge`. Falhas de ligação de biblioteca (`LinkageError`) deixam HTML e o menu acessíveis. Isso não intercepta falhas nativas de execução, como SIGSEGV; essas ainda exigem log do aparelho. Não há promessa de NDI no Android 6.
 
@@ -213,6 +219,8 @@ O código próprio não implementa conta, anúncios, analytics ou envio de logs 
 | Componente | Responsabilidade |
 | --- | --- |
 | MainActivity.java | Interface, modo, preferências, seleção, ciclo de vida, áudio e controles |
+| StartupActivity.java / StartupJournal.java / MonitorApplication.java | Entrada independente, checkpoints e relatório local após abertura interrompida |
+| ControlInsets.java | Isolamento de tipos das APIs 28/30 fora da Activity carregada em Android antigo |
 | LanHtmlDiscovery.java | Seleção de Wi-Fi/Ethernet, vínculo de rede e entrega de eventos à interface |
 | LanIpv4Subnet.java | Cálculo e limite dos candidatos IPv4, sem consultas DNS |
 | HtmlDiscoverySession.java | Até 12 trabalhadores, cancelamento e eventos incrementais |
@@ -287,7 +295,7 @@ No Windows, use gradlew.bat para o primeiro comando. O teste C++ pode rodar em L
 
 Os testes Java cobrem normalização de URL, catálogos, intervalos de busca, cancelamento, seleção sem digitar, troca de modo e geometria do painel. Os testes HTTP usam MockWebServer somente no ambiente de teste, com respostas controladas. Esse servidor e o Robolectric não são dependências do APK distribuído.
 
-O Robolectric usa Android simulado, SDK 35 nos testes de interface; compileSdk/targetSdk do app continuam 36. A primeira execução pode baixar dependências de teste. Relatórios ficam em app/build/reports/tests e app/build/reports/lint-results-debug.html. Imagens de conferência de layout ficam em app/build/reports/source-panel-previews.
+O Robolectric usa Android simulado, APIs 23/25/35 conforme o teste; compileSdk/targetSdk do app continuam 36. A primeira execução pode baixar dependências de teste. Relatórios ficam em app/build/reports/tests e app/build/reports/lint-results-debug.html. Imagens de conferência de layout ficam em app/build/reports/source-panel-previews.
 
 Para diagnóstico no aparelho, use Android Studio Logcat e registre versão do APK, Android, tipo de rede, endereço da saída e o passo que falhou. Remova tokens de URLs e dados pessoais antes de compartilhar logs. Um teste HTTP local comprova o cliente HTTP, não a descoberta de uma TV Box na rede do culto.
 
@@ -385,7 +393,7 @@ Antes de usar em um culto, registre o modelo do aparelho, versão do Android/Web
 15. Fazer um ensaio prolongado no tempo e na rede previstos para o uso real.
 Confira também que abrir apenas o menu não inicia buscas depois de selecionar. Volte do segundo plano e confirme a mesma origem. Se a fonte estiver fora do ar, confirme que as tentativas continuam direcionadas a ela, sem selecionar outra automaticamente.
 
-A validação automatizada desta revisão está em VALIDACAO_1.4.3.md. Ela não substitui esses cenários. Não há teste real concluído com todas as TV Boxes, todas as saídas Spresenter nem todos os formatos de fonte NDI.
+A validação automatizada desta revisão está em VALIDACAO_1.4.4.md. Ela não substitui esses cenários. Não há teste real concluído com todas as TV Boxes, todas as saídas Spresenter nem todos os formatos de fonte NDI.
 
 ## 18. Manutenção e referências
 

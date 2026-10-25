@@ -45,6 +45,10 @@ public class MainActivityModeTest {
     @Before public void resetDiscovery() throws Exception {
         drainWorkers();
         org.robolectric.util.ReflectionHelpers.setStaticField(NdiReceiver.class, "loadFailure", null);
+        org.robolectric.util.ReflectionHelpers.setStaticField(NdiReceiver.class, "initializationAttempted", false);
+        org.robolectric.util.ReflectionHelpers.setStaticField(NdiReceiver.class, "available", false);
+        org.robolectric.util.ReflectionHelpers.setStaticField(NdiReceiver.class, "callbackTarget", null);
+        org.robolectric.util.ReflectionHelpers.setStaticField(NdiReceiver.class, "pendingSurface", null);
         FakeHtmlDiscovery.listener = null;
         FakeHtmlDiscovery.starts = 0;
         NoNativeReceiver.available = false;
@@ -272,6 +276,22 @@ public class MainActivityModeTest {
             assertEquals(0, NoNativeReceiver.finds.get());
             assertEquals(0, FakeHtmlDiscovery.starts);
             assertEquals("PC (Retorno salvo)", prefs.getString(MainActivity.KEY_LAST_SOURCE, ""));
+        }
+    }
+
+    @Test @Config(sdk = 25)
+    public void legacyAndroidStillRestoresExplicitlySelectedNdiWithoutSearching() throws Exception {
+        android.content.SharedPreferences prefs = RuntimeEnvironment.getApplication()
+                .getSharedPreferences(MainActivity.PREFERENCES, Context.MODE_PRIVATE);
+        prefs.edit().clear().putString(MainActivity.KEY_DISPLAY_MODE, "ndi")
+                .putString(MainActivity.KEY_LAST_SOURCE, "PC (Retorno salvo)").commit();
+        NoNativeReceiver.available = true;
+        try (ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class).setup()) {
+            drainWorkers();
+            assertEquals(View.GONE, controller.get().findViewById(R.id.html_container).getVisibility());
+            assertEquals(java.util.Collections.singletonList("PC (Retorno salvo)"), NoNativeReceiver.connected);
+            assertEquals(0, NoNativeReceiver.finds.get());
+            assertEquals(0, FakeHtmlDiscovery.starts);
         }
     }
 
