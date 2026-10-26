@@ -1,3 +1,13 @@
+# 1.4.6 — Adaptação da captura HTML para a HTV com Chrome 52 (26/10/2026)
+
+- Adapta o JavaScript/CSS de uma captura fornecida pelo mantenedor na compilação, com alvo Chrome 52 e fallbacks de APIs e posicionamento por quatro bordas.
+- Em motores Chrome 52–86, só entrega um arquivo adaptado após conferir nome, origem e SHA-256 do recurso atual no servidor e do asset local. Motores atuais e recursos diferentes mantêm o carregamento original.
+- Limita a quatro verificações por renderizador, 2 MiB por recurso, origem da fonte selecionada e GET sem redirecionamento. A cache é por URL completa; fechar não bloqueia a interface aguardando rede.
+- Diagnóstico HTML informa aplicação da adaptação e passa a incluir arquivo/linha de erros de JavaScript.
+- Mantém pacote/certificado TVBox, preferências, parada da descoberta, enquadramento, fonte Android corrigida na 1.4.5 e as mesmas bibliotecas nativas/avisos NDI.
+- 114 testes Android aprovados; fixture de DOM com APIs removidas confirmou atualizações por WebSocket. Chrome 52 físico, pixels, vídeo e áudio ainda exigem teste na box.
+- Captura/programa de terceiros gerado, SDK, chaves e APKs permanecem fora do Git. Abertura do menu 1.4.5 na HTV foi confirmada nas fotos do mantenedor.
+
 # 1.4.5 — Fonte do tema compatível com o relatório da HTV (25/10/2026)
 
 - Substitui o literal global `android:fontFamily` por `android:typeface` sem serifa, que usa enumeração inteira.

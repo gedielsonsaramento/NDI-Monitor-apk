@@ -1,12 +1,12 @@
 # Monitor de Retorno
 
-## Manual completo do projeto - versão 1.4.5
+## Manual completo do projeto - versão 1.4.6
 
-Aplicativo Android para receber NDI® Standard full-bandwidth ou abrir um retorno HTML pela rede local. Nome de produto provisório: Monitor de Retorno. Mantenedor: Gedielson Saramento. Documentação técnica revisada em 25/10/2026, horário do Brasil.
+Aplicativo Android para receber NDI® Standard full-bandwidth ou abrir um retorno HTML pela rede local. Nome de produto provisório: Monitor de Retorno. Mantenedor: Gedielson Saramento. Documentação técnica revisada em 26/10/2026, horário do Brasil.
 
 NDI® is a registered trademark of Vizrt NDI AB. https://ndi.video/
 
-Esta revisão é uma versão de teste. O resultado de compilação, os testes executados e o que ainda precisa de equipamento real estão em VALIDACAO_1.4.5.md. A existência de um APK ou AAB compilado não significa publicação ou aprovação na Google Play.
+Esta revisão é uma versão de teste. O resultado de compilação, os testes executados e o que ainda precisa de equipamento real estão em VALIDACAO_1.4.6.md. A existência de um APK ou AAB compilado não significa publicação ou aprovação na Google Play.
 
 Repositório: https://github.com/gedielsonsaramento/NDI-Monitor-apk
 
@@ -54,11 +54,23 @@ O aplicativo não cria a apresentação, não controla os slides e não substitu
 | Orientação | Horizontal, com proporção preservada no vídeo NDI |
 | Operação | Toque, mouse ou controle remoto com setas e OK/Enter |
 | Pacote Android | br.com.polegar.ndimonitor |
-| Versão | versionName 1.4.5, versionCode 10; teste de box: 1.4.5-tvbox |
+| Versão | versionName 1.4.6, versionCode 11; teste de box: 1.4.6-tvbox |
 
 O Android 5.1 do servidor Samsung não é compatível com este APK. Não há pacote x86/x86_64 nesta revisão. O funcionamento de vídeo, áudio, boot e WebView varia conforme o hardware e o firmware: a versão mínima não comprova compatibilidade com todas as TV Boxes.
 
 Uma rede local funcionando é suficiente para o uso habitual de fontes locais. O conteúdo de uma página HTML pode exigir internet se carregar fontes, imagens, scripts ou outros recursos externos.
+
+### Compatibilidade HTML na revisão 1.4.6
+
+A HTV já abriu a interface 1.4.5. O diagnóstico HTML seguinte mostrou Chrome 52 e `Unexpected token function`. A captura recebida contém `main.ff832fdd.js` e `main.eb127441.css`. O programa usa 34 funções assíncronas, 88 spreads e 36 blocos catch sem parâmetro, além de APIs posteriores e do atalho CSS `inset`. Grid/clamp não aparecem nesses dois arquivos; sua ausência no diagnóstico não prova sozinha a causa.
+
+`tools/html-compat/prepare.cjs` adapta essa captura durante a compilação: Babel para Chrome 52, polyfills e conversão de 24 objetos `inset: 0` e uma atribuição `style.inset` em quatro bordas explícitas. O CSS recebe fallbacks. Não há compilador JavaScript executando na box.
+
+`HtmlLegacyCompat` atua somente em Chrome 52–86 com um perfil local preparado. Identifica os arquivos pelo nome e verifica o SHA-256 dos bytes que o servidor entrega e do asset adaptado local. Só aceita GET de subrecursos da mesma origem, sem redirecionamento, com limite de 2 MiB, tempos de conexão/leitura e até quatro verificações por renderizador. A cache em memória vale para a URL completa verificada. Fechar a página não espera a verificação terminar na thread da interface.
+
+Se arquivo, host ou pacote local não corresponder, o carregamento original continua. O adaptador não substitui o WebView nem oferece compatibilidade universal com qualquer HTML. Servidor, WebSocket e mídia continuam na origem selecionada. Não captura o áudio do computador. O diagnóstico informa quantos arquivos receberam a adaptação e inclui arquivo/linha de novos erros de JavaScript.
+
+O adaptador e as ferramentas estão no Git; captura e programa de terceiros gerado ficam fora dele. Veja o [preparo reproduzível](tools/html-compat/README.md). O APK de teste inclui a adaptação da captura recebida e conserva pacote, certificado e preferências TVBox. A validação simulada não confirma pixels, mídia ou Chrome 52 físico: repita o teste de [TVBOX.md](TVBOX.md).
 
 ### Correção de fonte na revisão 1.4.5
 
@@ -66,7 +78,7 @@ O relatório da HTV-6H confirma Android 7.1.2/API 25, ARM64 e ARM32 e app 1.4.4-
 
 No código AOSP do Android 7.1.2, essa linha lê `fontFamily`. A análise do APK 1.4.4 entregue encontrou 49 strings no pool do layout e o literal `sans` no índice 74 do pool global, correspondendo ao relatório. O tema passa a usar `android:typeface` com enumeração sem serifa, lida como inteiro, removendo a definição textual global. Não troca a classe dos botões nem altera o código de reprodução.
 
-A validação simulada é ampliada para APIs 28 e 34, correspondentes às telas de diagnóstico da BTV E10 e da TV Philco. Ela não substitui repetir o teste na HTV. A atualização mantém o relatório anterior por diagnóstico: se a recuperação mostrar app 1.4.4, toque **Abrir apenas HTML** para testar a interface 1.4.5. Confira a versão atual em **Diagnóstico do aparelho** depois que o menu abrir.
+A validação simulada foi ampliada para APIs 28 e 34, correspondentes às telas de diagnóstico da BTV E10 e da TV Philco. As fotos posteriores confirmaram a abertura do menu/diagnóstico da 1.4.5 na HTV. A atualização mantém o relatório anterior: um texto que identifica app 1.4.4 pertence à falha histórica. Confira a versão atual no início de **Diagnóstico do aparelho** e os novos erros HTML no final.
 
 ### Compatibilidade de TV Box na revisão 1.4.4
 
