@@ -66,4 +66,22 @@
         <item quantity="one">%d fonte encontrada · busca ativa</item>
         <item quantity="other">%d fontes encontradas · busca ativa</item>
     </plurals>
+    <string name="spresenter_api_title">Saídas HTML do S-Present</string>
+    <string name="spresenter_api_instructions">No S-Present, abra Configurações → API, ative a API e crie uma chave com a permissão advanced:read (leitura). Informe aqui o endereço e a chave uma vez. Atualizar passará a consultar as saídas HTML habilitadas e seus nomes atuais.</string>
+    <string name="spresenter_api_address">Endereço da API do computador</string>
+    <string name="spresenter_api_address_hint">http://IP_DO_PC:5050/api/v1</string>
+    <string name="spresenter_api_key">Chave de leitura da API</string>
+    <string name="spresenter_api_key_hint">spk_… · vazio mantém a chave deste PC</string>
+    <string name="spresenter_api_save">Salvar e buscar saídas</string>
+    <string name="spresenter_api_remove">Remover conexão da API</string>
+    <string name="spresenter_api_bad_address">Informe o IP ou a URL da API deste PC, sem parâmetros.</string>
+    <string name="spresenter_api_key_required">Informe a chave spk_ deste computador.</string>
+    <string name="spresenter_api_session">A chave ficará somente nesta sessão: o aparelho não conseguiu protegê-la para salvar.</string>
+    <string name="spresenter_api_found">Saídas HTML do PC atualizadas: %1$d. Selecione uma fonte. Nova busca em 30 s.</string>
+    <string name="spresenter_api_unauthorized">API: chave inválida ou revogada. Confira a conexão nas configurações.</string>
+    <string name="spresenter_api_forbidden">API: ative o acesso e confira a permissão advanced:read da chave.</string>
+    <string name="spresenter_api_unavailable">API indisponível neste endereço ou nesta versão do S-Present.</string>
+    <string name="spresenter_api_invalid">A API não forneceu uma lista de saídas compatível.</string>
+    <string name="spresenter_api_network">Não foi possível consultar a API do PC. Confira o endereço e a rede.</string>
+    <string name="spresenter_api_cancelled">Consulta da API cancelada.</string>
 </resources>

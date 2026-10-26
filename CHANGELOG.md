@@ -1,3 +1,13 @@
+# 1.4.8 — Catálogo dos destinos HTML do S-Present (26/10/2026)
+
+- Acrescenta configuração de um PC e chave de leitura advanced:read para consultar GET /api/v1/advanced. Lista todos os destinos network habilitados, com nomes/URLs atuais, incluindo slugs personalizados e gerados.
+- Uma resposta válida atualiza nomes, acrescenta destinos e remove entradas anteriores excluídas/desabilitadas. Preserva a última URL escolhida e exige seleção explícita de outra fonte; não migra a chave para novos IPs.
+- Prioriza a consulta na rede Wi-Fi/Ethernet do PC configurado, dentro do limite de alvos/trabalhadores/cancelamento. Outros PCs mantêm a busca anterior de caminhos conhecidos.
+- Chave somente no cabeçalho da origem configurada; sem redirecionamentos ou comandos de escrita. Limites de 1 MiB, cinco segundos e 512 registros; falhas deixam o catálogo anterior disponível e mostram o motivo.
+- Armazenamento AES/GCM/AndroidKeyStore vinculado à origem; firmware sem suporte usa apenas a sessão e informa essa condição. Remover a conexão preserva a seleção HTML.
+- Mantém a adaptação Chrome 44–86, pacote/certificado TVBox, bibliotecas nativas e áudio da 1.4.7. A captura confirmou Cannot GET /output/ no servidor, sem listagem nesse caminho.
+- [Configuração](SAIDAS_SPRESENTER.md) e [validação](VALIDACAO_1.4.8.md). API e firmware reais ainda precisam ser testados. Nenhum release ou envio à Play.
+
 # 1.4.7 — Adaptação ES5 para a BTV B9 com Chrome 44 (26/10/2026)
 
 - Estende o perfil da captura conhecida para Chrome 44–86 após a foto da B9/API 23 registrar `Unexpected token )` em `main.ff832fdd.js:2`. A 1.4.6 já abriu o menu nesse aparelho.

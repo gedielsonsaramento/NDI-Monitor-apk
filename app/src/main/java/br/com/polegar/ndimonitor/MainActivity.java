@@ -75,6 +75,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     private AlertDialog modeDialog;
     private AlertDialog htmlAddressDialog;
     private AlertDialog htmlLayoutDialog;
+    private AlertDialog spresenterDialog;
     private HtmlMonitor htmlMonitor;
     private LanHtmlDiscovery htmlDiscovery;
     private final HtmlSourceCatalog htmlSourceCatalog = new HtmlSourceCatalog();
@@ -84,6 +85,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     private int htmlScanProgress;
     private int htmlScanFound;
     private boolean htmlScanLimited;
+    private int htmlApiError;
+    private int htmlApiCount;
     private EditText htmlUrlEditor;
     private volatile boolean htmlMode;
     private boolean modeInitialized;
@@ -402,6 +405,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         int generation = htmlScanGeneration;
         htmlScanProgress = 0;
         htmlScanFound = 0;
+        htmlApiError = 0;
+        htmlApiCount = -1;
         showHtmlSources();
         sourceStatusText.setText(R.string.searching_html);
         htmlDiscovery.start(preferences.getString(KEY_HTML_URL, ""), new LanHtmlDiscovery.Listener() {
@@ -424,12 +429,26 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
                 htmlScanProgress = Math.max(htmlScanProgress, done);
                 sourceStatusText.setText(getString(R.string.html_scan_progress, htmlScanProgress, total));
             }
+            @Override public void onCatalog(String origin, List<HtmlSource> sources) {
+                if (!current()) return;
+                htmlApiCount = sources.size();
+                htmlScanFound += sources.size();
+                htmlSourceCatalog.replaceFromCatalog(origin, sources, SystemClock.elapsedRealtime());
+                showHtmlSources();
+            }
+            @Override public void onCatalogError(int message) {
+                if (!current()) return;
+                htmlApiError = message;
+                sourceStatusText.setText(message);
+            }
             @Override public void onFinished() {
                 if (!current()) return;
                 htmlSourceCatalog.finishScan(SystemClock.elapsedRealtime());
                 showHtmlSources();
-                sourceStatusText.setText(htmlScanFound == 0 ? R.string.html_none_found :
-                        htmlScanLimited ? R.string.html_found_limited : R.string.html_found);
+                if (htmlApiError != 0) sourceStatusText.setText(htmlApiError);
+                else if (htmlApiCount >= 0) sourceStatusText.setText(getString(R.string.spresenter_api_found, htmlApiCount));
+                else sourceStatusText.setText(htmlScanFound == 0 ? R.string.html_none_found :
+                            htmlScanLimited ? R.string.html_found_limited : R.string.html_found);
                 scheduleNextHtmlScan(generation);
             }
             @Override public void onUnavailable() {
@@ -525,6 +544,9 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         content.findViewById(R.id.third_party_notices_button).setOnClickListener(v ->
                 showThirdPartyNotices());
         content.findViewById(R.id.device_diagnostics_button).setOnClickListener(v -> showDeviceDiagnostics());
+        View apiButton = content.findViewById(R.id.spresenter_api_button);
+        apiButton.setVisibility(htmlMode ? View.VISIBLE : View.GONE);
+        apiButton.setOnClickListener(v -> showSpresenterConnection());
         TextView layoutButton = content.findViewById(R.id.html_layout_button);
         layoutButton.setVisibility(htmlMode ? View.VISIBLE : View.GONE);
         updateHtmlLayoutButton(layoutButton);
@@ -552,6 +574,64 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             if (!destroyed) scanSources();
         });
         settingsDialog.show();
+    }
+
+    private void showSpresenterConnection() {
+        if (spresenterDialog != null && spresenterDialog.isShowing()) return;
+        stopDiscoveryPolling();
+        SpresenterApiSettings api = new SpresenterApiSettings(this);
+        View form = getLayoutInflater().inflate(R.layout.dialog_spresenter_api, null);
+        EditText address = form.findViewById(R.id.spresenter_api_address);
+        EditText token = form.findViewById(R.id.spresenter_api_token);
+        String initial = api.origin();
+        if (initial.isEmpty()) {
+            try {
+                java.net.URI saved = java.net.URI.create(preferences.getString(KEY_HTML_URL, ""));
+                initial = new java.net.URI(saved.getScheme(), null, saved.getHost(), saved.getPort(),
+                        "", null, null).toASCIIString();
+            } catch (Exception ignored) { initial = ""; }
+        }
+        address.setText(initial);
+        spresenterDialog = new AlertDialog.Builder(this).setTitle(R.string.spresenter_api_title)
+                .setView(form).setNegativeButton(android.R.string.cancel, null).create();
+        form.findViewById(R.id.spresenter_api_save).setOnClickListener(v -> {
+            String origin;
+            try { origin = SpresenterConnection.normalizeOrigin(address.getText().toString()); }
+            catch (IllegalArgumentException invalid) { address.setError(getString(R.string.spresenter_api_bad_address)); return; }
+            String key = token.getText().toString().trim();
+            SpresenterConnection previous = api.load();
+            if (key.isEmpty() && previous != null && previous.origin.equals(origin)) key = previous.token;
+            SpresenterConnection connection;
+            try { connection = new SpresenterConnection(origin, key); }
+            catch (IllegalArgumentException invalid) { token.setError(getString(R.string.spresenter_api_key_required)); return; }
+            String oldOrigin = api.origin();
+            boolean durable = api.save(connection);
+            if (!oldOrigin.isEmpty() && !oldOrigin.equals(connection.origin)) {
+                htmlSourceCatalog.replaceFromCatalog(oldOrigin, Collections.emptyList(), SystemClock.elapsedRealtime());
+            }
+            if (!durable) android.widget.Toast.makeText(this, R.string.spresenter_api_session,
+                    android.widget.Toast.LENGTH_LONG).show();
+            startCatalogSearch();
+        });
+        View remove = form.findViewById(R.id.spresenter_api_remove);
+        remove.setVisibility(api.origin().isEmpty() ? View.GONE : View.VISIBLE);
+        remove.setOnClickListener(v -> {
+            String oldOrigin = api.origin();
+            api.clear();
+            htmlSourceCatalog.replaceFromCatalog(oldOrigin, Collections.emptyList(), SystemClock.elapsedRealtime());
+            startCatalogSearch();
+        });
+        spresenterDialog.setOnDismissListener(dialog -> spresenterDialog = null);
+        spresenterDialog.getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
+        spresenterDialog.show();
+    }
+
+    private void startCatalogSearch() {
+        discoveryRequested = true;
+        sourcePanel.setVisibility(View.VISIBLE);
+        if (spresenterDialog != null) spresenterDialog.dismiss();
+        if (settingsDialog != null) settingsDialog.dismiss();
+        else scanSources();
     }
 
     private void updateHtmlLayoutButton(TextView button) {
@@ -694,6 +774,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
                 sourcePanel.getVisibility() != View.VISIBLE ||
                 (modeDialog != null && modeDialog.isShowing()) ||
                 (htmlAddressDialog != null && htmlAddressDialog.isShowing()) ||
+                (spresenterDialog != null && spresenterDialog.isShowing()) ||
                 (settingsDialog != null && settingsDialog.isShowing())) return;
         if (htmlMode) { scanHtmlSources(); return; }
         stopDiscoveryPolling();
@@ -922,6 +1003,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         if (modeDialog != null) modeDialog.dismiss();
         if (htmlAddressDialog != null) htmlAddressDialog.dismiss();
         if (htmlLayoutDialog != null) htmlLayoutDialog.dismiss();
+        if (spresenterDialog != null) spresenterDialog.dismiss();
         BackNavigation.unregister(this, backCallback);
         if (diagnosticsDialog != null) diagnosticsDialog.dismiss();
         NdiReceiver.setCallbackTarget(null);

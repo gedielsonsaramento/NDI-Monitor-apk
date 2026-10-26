@@ -6,10 +6,16 @@ import java.net.URI;
 final class HtmlSource {
     final String url;
     final String title;
+    final String catalogOrigin;
 
     HtmlSource(String url, String title) {
+        this(url, title, "");
+    }
+
+    HtmlSource(String url, String title, String catalogOrigin) {
         this.url = HtmlSourceUrl.normalize(url);
         this.title = title == null || title.trim().isEmpty() ? "Retorno HTML" : title.trim();
+        this.catalogOrigin = catalogOrigin;
     }
 
     String displayName() {

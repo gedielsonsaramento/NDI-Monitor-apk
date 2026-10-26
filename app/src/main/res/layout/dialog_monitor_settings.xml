@@ -35,6 +35,15 @@
             android:textAllCaps="false"
             android:visibility="gone" />
 
+        <Button
+            android:id="@+id/spresenter_api_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:text="@string/spresenter_api_title"
+            android:textAllCaps="false"
+            android:visibility="gone" />
+
         <CheckBox
             android:id="@+id/boot_checkbox"
             android:layout_width="match_parent"
