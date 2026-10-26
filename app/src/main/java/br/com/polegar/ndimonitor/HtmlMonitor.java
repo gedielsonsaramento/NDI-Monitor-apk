@@ -42,6 +42,7 @@ final class HtmlMonitor {
     private boolean stageLayout = true;
     private boolean compatibilityMode;
     private String lastConsoleError = "";
+    private HtmlLegacyCompat legacyCompat;
     private View customView;
     private WebChromeClient.CustomViewCallback customViewCallback;
     private TextView failureView;
@@ -164,13 +165,14 @@ final class HtmlMonitor {
                 webView.setVerticalScrollBarEnabled(false);
                 webView.setOverScrollMode(View.OVER_SCROLL_NEVER);
             }
-            webView.setWebViewClient(Build.VERSION.SDK_INT >= 26
-                    ? new Api26WebViewClient() : new MonitorWebViewClient());
             webView.setWebChromeClient(new WebChromeClient() {
                 @Override public boolean onConsoleMessage(ConsoleMessage message) {
                     if (message.messageLevel() == ConsoleMessage.MessageLevel.ERROR) {
                         String text = message.message();
-                        lastConsoleError = text == null ? "" : text.substring(0, Math.min(240, text.length()));
+                        String source = message.sourceId();
+                        lastConsoleError = (text == null ? "" : text.substring(0, Math.min(240, text.length())))
+                                + (source == null || source.isEmpty() ? "" : "\nArquivo: "
+                                + source.substring(0, Math.min(512, source.length())) + ":" + message.lineNumber());
                     }
                     return true;
                 }
@@ -199,6 +201,14 @@ final class HtmlMonitor {
     }
 
     private class MonitorWebViewClient extends WebViewClient {
+        private final HtmlLegacyCompat compatibility;
+        MonitorWebViewClient(HtmlLegacyCompat compatibility) { this.compatibility = compatibility; }
+
+        @Override public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+            if (request.isForMainFrame()) return null;
+            return compatibility.intercept(request.getMethod(), request.getUrl().toString(), request.getRequestHeaders());
+        }
+
         // API 23 calls the String overload; API 24+ calls the request overload.
         @Override public boolean shouldOverrideUrlLoading(WebView view, String url) {
             return !HtmlSourceUrl.isWebAddress(url);
@@ -244,6 +254,7 @@ final class HtmlMonitor {
     @android.annotation.TargetApi(26)
     @android.annotation.SuppressLint("UseRequiresApi") // Only constructed by the checked API 26+ branch.
     private final class Api26WebViewClient extends MonitorWebViewClient {
+        Api26WebViewClient(HtmlLegacyCompat compatibility) { super(compatibility); }
         @Override public boolean onRenderProcessGone(WebView view, RenderProcessGoneDetail detail) {
             if (view == webView) {
                 disposeRenderer();
@@ -260,6 +271,10 @@ final class HtmlMonitor {
     private void loadCurrentAddress() {
         handler.removeCallbacks(retry);
         if (!ensureRenderer()) return;
+        if (legacyCompat != null) legacyCompat.close();
+        legacyCompat = new HtmlLegacyCompat(activity.getAssets(), webView.getSettings().getUserAgentString(), address);
+        webView.setWebViewClient(Build.VERSION.SDK_INT >= 26
+                ? new Api26WebViewClient(legacyCompat) : new MonitorWebViewClient(legacyCompat));
         hideCustomView();
         failed = false;
         lastConsoleError = "";
@@ -282,6 +297,7 @@ final class HtmlMonitor {
                 + "\nÁrea do motor: " + current.getWidth() + " × " + current.getHeight()
                 + " px; densidade " + current.getResources().getDisplayMetrics().density
                 + "\nExibição: " + (stageLayout ? compatibilityMode ? "16:9 compatibilidade" : "16:9" : "página original")
+                + (legacyCompat == null ? "" : "\n" + legacyCompat.describe())
                 + (lastConsoleError.isEmpty() ? "" : "\nErro JavaScript: " + lastConsoleError);
         java.util.concurrent.atomic.AtomicBoolean finished = new java.util.concurrent.atomic.AtomicBoolean();
         Runnable timeout = () -> {
@@ -349,6 +365,7 @@ final class HtmlMonitor {
 
     private void disposeRenderer() {
         hideCustomView();
+        if (legacyCompat != null) { legacyCompat.close(); legacyCompat = null; }
         if (webView != null) {
             WebView old = webView;
             webView = null;

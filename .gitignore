@@ -36,3 +36,7 @@ keystores/
 /app/src/main/jniLibs/*/*
 !/app/src/main/jniLibs/*/COLOQUE_LIBNDI_SO_AQUI.txt
 /app/src/main/assets/libndi_licenses.txt
+
+# Captured third-party web programs: generated locally, never commit the capture or adapted bundle.
+/app/src/main/assets/html-compat/
+/tools/html-compat/node_modules/
