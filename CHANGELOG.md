@@ -1,3 +1,11 @@
+# 1.4.5 — Fonte do tema compatível com o relatório da HTV (25/10/2026)
+
+- Substitui o literal global `android:fontFamily` por `android:typeface` sem serifa, que usa enumeração inteira.
+- Correção dirigida ao relatório real da HTV-6H/API 25: leitura da fonte no índice 74 de um pool XML com 49 strings ao inflar o botão NDI/HTML.
+- Amplia os testes existentes de compatibilidade para APIs 28 e 34, além de 23/25; a suíte de interface também mantém API 35.
+- Mantém pacote e certificado TVBox, recuperação, última fonte, busca, HTML, áudio e bibliotecas nativas da 1.4.4.
+- Funcionamento real na HTV após esta correção ainda depende do teste no aparelho.
+
 # 1.4.4 — Abertura independente e recuperação em TV Box (25/10/2026)
 
 - Primeira configuração em API 23–25 começa em HTML sem inicializar NDI; preserva a restauração de uma fonte NDI já selecionada.

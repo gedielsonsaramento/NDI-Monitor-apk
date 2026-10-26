@@ -1,13 +1,13 @@
-# Teste em TV Box — Monitor de Retorno 1.4.4
+# Teste em TV Box — Monitor de Retorno 1.4.5
 
-Revisão candidata de 25/10/2026. A foto identifica modelo **H6+**, Android anunciado **7.1.2**, compilação **NHG47L.20200724 dev-keys**, kernel 3.14.29. O app 1.4.3-TVBox fecha antes do menu. Ainda não há stack trace nem confirmação da API/ABI efetiva dessa box; a foto não prova a causa do fechamento.
+Revisão candidata de 25/10/2026. O relatório da **Amlogic HTV-6H** confirma Android **7.1.2 / API 25**, ARM64/ARM32 e compilação **NHG47L.20200724 dev-keys**. A 1.4.4 registra falha ao inflar o botão NDI/HTML: leitura da fonte `sans` pelo índice 74 de um pool XML com 49 strings. A 1.4.5 substitui a definição global textual por uma enumeração de fonte sem serifa. É necessário repetir o teste físico para confirmar a abertura.
 
 ## Instalar e abrir
 
-1. Use `Monitor-de-Retorno-1.4.4-TVBox-teste.apk`.
+1. Use `Monitor-de-Retorno-1.4.5-TVBox-teste.apk`.
 2. Abra o ícone **Monitor de Retorno — TV Box**. O pacote `br.com.polegar.ndimonitor.tvboxtest` e o certificado da 1.4.3-TVBox foram mantidos para atualizar essa edição. A instalação habitual, como 1.4.2, permanece separada.
 3. Sem configuração anterior, API 23–25 entra em HTML sem carregar NDI. Uma fonte NDI já selecionada é restaurada normalmente.
-4. Se aparecer a recuperação, fotografe o relatório antes de continuar e escolha **Abrir apenas HTML**. Queda de energia ou encerramento também podem interromper a abertura; somente um checkpoint não comprova uma falha nativa.
+4. Se aparecer a recuperação com o relatório antigo da 1.4.4, escolha **Abrir apenas HTML** para testar a nova interface. Fotografe um novo relatório se houver outra falha. Queda de energia ou encerramento também podem interromper a abertura; somente um checkpoint não comprova uma falha nativa.
 5. Escolha a saída HTML ou informe uma vez o endereço, por exemplo `http://192.168.2.60:5050/output/retono`. O nome `retono` é literal, informado pelo usuário.
 6. Após confirmar uma fonte, a busca para. Ao reabrir, o modo, a origem e o enquadramento salvos são retomados.
 7. Para testar NDI em API 24+, abra o seletor **HTML → NDI**. Se fechar nessa etapa, abra o app novamente e fotografe o relatório da recuperação.
@@ -25,7 +25,7 @@ Abra **engrenagem → Diagnóstico do aparelho** e fotografe o conteúdo. Inclui
 Com ADB configurado no PC e a depuração autorizada na box:
 
 ```powershell
-adb install -r Monitor-de-Retorno-1.4.4-TVBox-teste.apk
+adb install -r Monitor-de-Retorno-1.4.5-TVBox-teste.apk
 adb shell am start -n br.com.polegar.ndimonitor.tvboxtest/br.com.polegar.ndimonitor.StartupActivity
 adb logcat -d -b crash -b main -v threadtime AndroidRuntime:E libc:F DEBUG:F NDIMonitorNative:V '*:S' > tvbox-log.txt
 ```
@@ -42,4 +42,15 @@ Não houve acesso à H6+, às outras boxes ou à LAN do usuário. A revisão nã
 ./gradlew testDebugUnitTest lintDebug assembleTvboxTest
 ```
 
-O reuso opcional `-PmonitorPrebuiltNativeDir=/caminho/nativo` continua restrito a depuração, exige as quatro bibliotecas ARM32/ARM64 e desabilita release. São as mesmas bibliotecas/avisos do APK 1.4.3-TVBox verificado. Veja [VALIDACAO_1.4.4.md](VALIDACAO_1.4.4.md).
+O reuso opcional `-PmonitorPrebuiltNativeDir=/caminho/nativo` continua restrito a depuração, exige as quatro bibliotecas ARM32/ARM64 e desabilita release. São as mesmas bibliotecas/avisos do APK 1.4.4-TVBox verificado. Veja [VALIDACAO_1.4.5.md](VALIDACAO_1.4.5.md).
+
+## Aparelhos observados nas fotos
+
+| Aparelho | Android / API informados | Evidência disponível |
+| --- | --- | --- |
+| Amlogic HTV-6H | 7.1.2 / 25 | 1.4.4: relatório de falha ao ler a fonte do tema |
+| B9 | 6.0.1 / API ainda não lida no app | Fechamento fotografado; versão instalada/causa não confirmadas |
+| BTV E10 | 9 / 28 | 1.4.3 abre; WebView Chrome 66, clamp ausente, página original |
+| TV Philco/Skyworth | 14 / 34 | 1.4.3 abre e mostra diagnóstico; modo 16:9 |
+
+Esses registros não confirmam vídeo/áudio NDI, áudio HTML ou estabilidade em todos os aparelhos. A escolha **Monitor 16:9 — compatibilidade TV Box** continua sendo o teste de enquadramento proposto para a BTV.
