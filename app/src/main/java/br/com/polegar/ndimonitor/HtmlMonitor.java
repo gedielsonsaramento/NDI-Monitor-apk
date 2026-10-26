@@ -303,7 +303,8 @@ final class HtmlMonitor {
         Runnable timeout = () -> {
             if (finished.compareAndSet(false, true)) callback.onResult(description + "\nPágina: sem resposta ao diagnóstico");
         };
-        handler.postDelayed(timeout, 1500);
+        // Manual diagnostics only: older renderers may respond slowly during startup.
+        handler.postDelayed(timeout, 5000);
         try {
             current.evaluateJavascript(HtmlPageDiagnostics.SCRIPT, value -> {
                 if (!finished.compareAndSet(false, true)) return;

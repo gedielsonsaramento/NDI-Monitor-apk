@@ -1,12 +1,12 @@
 # Monitor de Retorno
 
-## Manual completo do projeto - versão 1.4.6
+## Manual completo do projeto - versão 1.4.7
 
 Aplicativo Android para receber NDI® Standard full-bandwidth ou abrir um retorno HTML pela rede local. Nome de produto provisório: Monitor de Retorno. Mantenedor: Gedielson Saramento. Documentação técnica revisada em 26/10/2026, horário do Brasil.
 
 NDI® is a registered trademark of Vizrt NDI AB. https://ndi.video/
 
-Esta revisão é uma versão de teste. O resultado de compilação, os testes executados e o que ainda precisa de equipamento real estão em VALIDACAO_1.4.6.md. A existência de um APK ou AAB compilado não significa publicação ou aprovação na Google Play.
+Esta revisão é uma versão de teste. O resultado de compilação, os testes executados e o que ainda precisa de equipamento real estão em VALIDACAO_1.4.7.md. A existência de um APK ou AAB compilado não significa publicação ou aprovação na Google Play.
 
 Repositório: https://github.com/gedielsonsaramento/NDI-Monitor-apk
 
@@ -54,13 +54,21 @@ O aplicativo não cria a apresentação, não controla os slides e não substitu
 | Orientação | Horizontal, com proporção preservada no vídeo NDI |
 | Operação | Toque, mouse ou controle remoto com setas e OK/Enter |
 | Pacote Android | br.com.polegar.ndimonitor |
-| Versão | versionName 1.4.6, versionCode 11; teste de box: 1.4.6-tvbox |
+| Versão | versionName 1.4.7, versionCode 12; teste de box: 1.4.7-tvbox |
 
 O Android 5.1 do servidor Samsung não é compatível com este APK. Não há pacote x86/x86_64 nesta revisão. O funcionamento de vídeo, áudio, boot e WebView varia conforme o hardware e o firmware: a versão mínima não comprova compatibilidade com todas as TV Boxes.
 
 Uma rede local funcionando é suficiente para o uso habitual de fontes locais. O conteúdo de uma página HTML pode exigir internet se carregar fontes, imagens, scripts ou outros recursos externos.
 
-### Compatibilidade HTML na revisão 1.4.6
+### Compatibilidade HTML na revisão 1.4.7
+
+A foto da BTV B9 identifica Android 6.0.1/API 23, ARM32 e app 1.4.6-TVBox com o menu/diagnóstico aberto. O WebView informa Chrome 44.0.2403.119, abaixo do limite do perfil 1.4.6, e erro `Unexpected token )` em `main.ff832fdd.js:2`. O registro de abertura interrompida não contém exceção Java e, sozinho, não comprova falha nativa. A string desktop Linux x86_64 do user agent não altera a arquitetura ARM informada pelo Android.
+
+A 1.4.7 transforma a mesma captura para ES5, validado por parser, e permite o perfil em Chrome 44–86. Babel usa alvo IE 11 para forçar a conversão de sintaxe, sem declarar suporte ao navegador IE. Antes da conversão, os bindings let/const recebem nomes próprios por escopo, evitando que var de um laço oculte o carregador externo do programa minificado. Polyfills ECMAScript são carregados antes dos módulos de APIs web; fetch, AbortController, URLSearchParams e ResizeObserver recebem fallbacks quando ausentes. O estilo é preparado para Chrome 44 e mantém a conversão de inset em quatro bordas.
+
+As verificações de origem/hash e os limites de rede descritos abaixo permanecem. O APK contém o perfil ES5 para os dois arquivos conhecidos; os arquivos gerados e a captura ficam fora do Git. O diagnóstico manual passa a aguardar até cinco segundos pela resposta da página. Nenhuma consulta periódica é adicionada. Instalação, enquadramento e atualizações de letras devem ser testados na B9 física conforme [TVBOX.md](TVBOX.md); JSDOM não comprova pixels, mídia ou firmware real.
+
+### Histórico: compatibilidade HTML na revisão 1.4.6
 
 A HTV já abriu a interface 1.4.5. O diagnóstico HTML seguinte mostrou Chrome 52 e `Unexpected token function`. A captura recebida contém `main.ff832fdd.js` e `main.eb127441.css`. O programa usa 34 funções assíncronas, 88 spreads e 36 blocos catch sem parâmetro, além de APIs posteriores e do atalho CSS `inset`. Grid/clamp não aparecem nesses dois arquivos; sua ausência no diagnóstico não prova sozinha a causa.
 
@@ -92,7 +100,7 @@ No Android 6, somente HTML é habilitado na inicialização: todas as chamadas �
 
 O modo **16:9 — compatibilidade TV Box** preserva a densidade de tela fornecida ao WebView pelo próprio firmware. Mede o canvas de 1920 × 1080 CSS nessa mesma densidade e o encaixa proporcionalmente na tela; não força software nem altera o CSS do tema. É escolhido por padrão em API 23–25 quando ainda não existe uma preferência explícita. As alternativas anteriores continuam disponíveis na engrenagem.
 
-**Diagnóstico do aparelho** mostra versão/código e pacote do app, fabricante/modelo, Android Release e API, ABIs, densidade, disponibilidade NDI, user agent do WebView, área nativa/CSS e suporte a Grid, variáveis CSS e `clamp()`. A leitura ocorre somente ao abrir essa tela. Não envia dados, faz busca de fontes nem altera o HTML. Uma resposta ausente ao JavaScript recebe um limite de 1,5 s. Consulte [TVBOX.md](TVBOX.md).
+**Diagnóstico do aparelho** mostra versão/código e pacote do app, fabricante/modelo, Android Release e API, ABIs, densidade, disponibilidade NDI, user agent do WebView, área nativa/CSS e suporte a Grid, variáveis CSS e `clamp()`. A leitura ocorre somente ao abrir essa tela. Não envia dados, faz busca de fontes nem altera o HTML. Na 1.4.7, uma resposta ausente ao JavaScript recebe um limite de cinco segundos (antes: 1,5 s). Consulte [TVBOX.md](TVBOX.md).
 
 O APK `tvboxTest` usa `.tvboxtest` e nome próprio para instalação paralela. As fontes e preferências precisam ser configuradas uma vez nessa edição e ficam salvas nela. A assinatura é de desenvolvimento; não serve para a Play Store. Para atualizações da edição habitual, continuam valendo as regras de certificado descritas a seguir.
 

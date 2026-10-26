@@ -28,7 +28,7 @@ import static org.junit.Assert.*;
 public class HtmlLegacyCompatTest {
     private static final String PAGE = "http://192.168.2.52:5050/output/retorno";
     private static final String SCRIPT = "http://192.168.2.52:5050/static/js/main.test.js";
-    private static final String AGENT = "Mozilla/5.0 Chrome/52.0.2743.100 Safari/537.36";
+    private static final String AGENT = "Mozilla/5.0 Chrome/44.0.2403.119 Safari/537.36";
     private static final byte[] ORIGINAL = bytes("captured original");
     private static final byte[] ADAPTED = bytes("compatible live program");
 
@@ -37,7 +37,7 @@ public class HtmlLegacyCompatTest {
         JSONObject r = new JSONObject().put("name", "main.test.js").put("mime", "application/javascript")
                 .put("sourceSha256", HtmlLegacyCompat.sha256(ORIGINAL))
                 .put("asset", "html-compat/test.js").put("assetSha256", HtmlLegacyCompat.sha256(ADAPTED));
-        JSONObject manifest = new JSONObject().put("schema", 1).put("minChrome", 52).put("maxChrome", 86)
+        JSONObject manifest = new JSONObject().put("schema", 1).put("minChrome", 44).put("maxChrome", 86)
                 .put("resources", new JSONArray().put(r));
         Map<String, byte[]> data = new HashMap<>();
         data.put("html-compat/manifest.json", bytes(manifest.toString()));
@@ -67,7 +67,7 @@ public class HtmlLegacyCompatTest {
     }
 
     @Test public void modernOrUnknownEnginesNeverReadAssetsOrFetch() {
-        for (String agent : new String[]{"Chrome/87.0", "Chrome/156.0", "Chrome/51.0", "unknown", null}) {
+        for (String agent : new String[]{"Chrome/87.0", "Chrome/156.0", "Chrome/43.0", "unknown", null}) {
             HtmlLegacyCompat c = new HtmlLegacyCompat(p -> { fail("asset read"); return null; },
                     (u, h) -> { fail("network request"); return null; }, agent, PAGE);
             assertNull(get(c, SCRIPT));
@@ -83,6 +83,21 @@ public class HtmlLegacyCompatTest {
             assertNull(get(c, url));
         }
         assertNull(c.intercept("POST", SCRIPT, Collections.emptyMap()));
+    }
+
+    @Test public void sameEs5ProfileSupportsObservedChrome44And52And66() throws Exception {
+        for (String agent : new String[]{AGENT, "Chrome/52.0.2743.100", "Chrome/66.0.3359.158"}) {
+            HtmlLegacyCompat c = new HtmlLegacyCompat(source(assets()), (u,h)->ORIGINAL, agent, PAGE);
+            assertNotNull(get(c,SCRIPT));
+            assertTrue(c.describe().contains("1 de 1"));
+        }
+    }
+
+    @Test public void rejectsThePreviousChrome52OnlyProfile() throws Exception {
+        Map<String,byte[]> files=assets();
+        JSONObject m=new JSONObject(new String(files.get("html-compat/manifest.json"),StandardCharsets.UTF_8));
+        m.put("minChrome",52); files.put("html-compat/manifest.json",bytes(m.toString()));
+        assertNull(get(compat(files,(u,h)->{fail("newer-only profile must not be fetched");return null;}),SCRIPT));
     }
 
     @Test public void changedProgramIsNeverReplacedWithAnOlderCapture() throws Exception {

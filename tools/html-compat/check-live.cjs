@@ -1,6 +1,6 @@
 'use strict';
 
-// Local integration fixture, not an S-Present server or a physical Chrome 52 test.
+// Local integration fixture, not an S-Present server or a physical Chrome 44/52 test.
 const fs = require('node:fs');
 const path = require('node:path');
 const http = require('node:http');
@@ -13,8 +13,8 @@ async function main() {
   if (!directory || !originalScript) throw new Error('Usage: node check-live.cjs ADAPTED_DIRECTORY ORIGINAL_SCRIPT');
   const {JSDOM, ResourceLoader, VirtualConsole} = require('jsdom');
   const original = fs.readFileSync(originalScript, 'utf8');
-  assert.throws(() => acorn.parse(original, {ecmaVersion: 2016}), SyntaxError);
-  acorn.parse(fs.readFileSync(path.join(directory, 'spresenter-chrome52.js'), 'utf8'), {ecmaVersion: 2016});
+  assert.throws(() => acorn.parse(original, {ecmaVersion: 5}), SyntaxError);
+  acorn.parse(fs.readFileSync(path.join(directory, 'spresenter-legacy.js'), 'utf8'), {ecmaVersion: 5});
   let lyric = 'Primeira letra do teste';
   const sockets = new Set(), clients = new Set(), errors = [], requests = [];
   const theme = {title: 'Local compatibility fixture', css: {background: '#000000'}, elements: [
@@ -34,8 +34,8 @@ async function main() {
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
       return res.end('<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="/main.css"><script defer src="/main.js"></script></head><body><div id="root"></div></body></html>');
     }
-    if (url.pathname === '/main.js') {res.setHeader('Content-Type', 'application/javascript');return res.end(fs.readFileSync(path.join(directory,'spresenter-chrome52.js')));}
-    if (url.pathname === '/main.css') {res.setHeader('Content-Type', 'text/css');return res.end(fs.readFileSync(path.join(directory,'spresenter-chrome52.css')));}
+    if (url.pathname === '/main.js') {res.setHeader('Content-Type', 'application/javascript');return res.end(fs.readFileSync(path.join(directory,'spresenter-legacy.js')));}
+    if (url.pathname === '/main.css') {res.setHeader('Content-Type', 'text/css');return res.end(fs.readFileSync(path.join(directory,'spresenter-legacy.css')));}
     if (url.pathname === '/stage/theme') return send({themeRef: 'local-theme'});
     if (url.pathname === '/assets/local-theme/manifest.json') return send(theme);
     if (url.pathname === '/live/0') return send(layer());
@@ -65,20 +65,21 @@ async function main() {
   let dom;
   try {
     const console = new VirtualConsole();
-    console.on('jsdomError',error=>errors.push(error.message));
+    console.on('jsdomError',error=>errors.push(error.detail?.stack || error.cause?.stack || error.message));
     console.on('error',error=>errors.push(error?.message || String(error)));
     class LocalResources extends ResourceLoader {
       fetch(url,options) {return url.startsWith(base)?super.fetch(url,options):null;}
     }
-    const fetchPolyfill=fs.readFileSync(require.resolve('whatwg-fetch/dist/fetch.umd.js'),'utf8');
     dom=await JSDOM.fromURL(base+'/slide/?output=stage&outputId=fixture&stageThemeGuid=local-theme&id=test',{
       resources:new LocalResources(),runScripts:'dangerously',pretendToBeVisual:true,virtualConsole:console,
       beforeParse(window) {
-        window.Object.entries=undefined;window.Object.values=undefined;
-        window.String.prototype.padStart=undefined;window.String.prototype.trimStart=undefined;window.String.prototype.trimEnd=undefined;
-        window.Promise.prototype.finally=undefined;
-        window.ResizeObserver=undefined;window.AbortController=undefined;window.AbortSignal=undefined;window.URLSearchParams=undefined;
-        window.eval(fetchPolyfill);
+        // Absent properties, rather than present-but-undefined methods, match old browser feature detection.
+        for(const key of ['entries','values','assign','getOwnPropertyDescriptors'])delete window.Object[key];
+        delete window.Array.from;
+        for(const key of ['includes','find','findIndex','fill'])delete window.Array.prototype[key];
+        for(const key of ['padStart','trimStart','trimEnd'])delete window.String.prototype[key];
+        delete window.Promise.prototype.finally;
+        for(const key of ['ResizeObserver','AbortController','AbortSignal','URLSearchParams','fetch'])delete window[key];
       }
     });
     const document=dom.window.document;
@@ -86,7 +87,8 @@ async function main() {
       const until=Date.now()+15000;
       while(!predicate()) {
         if(errors.length)throw new Error(JSON.stringify({errors,requests}));
-        if(Date.now()>until)throw new Error(JSON.stringify({timeout:true,errors,requests,body:document.body.textContent.slice(0,1000)}));
+        if(Date.now()>until)throw new Error(JSON.stringify({timeout:true,errors,requests,clients:clients.size,
+          body:document.body.textContent.slice(0,1000)}));
         await new Promise(resolve=>setTimeout(resolve,25));
       }
     };
@@ -103,12 +105,14 @@ async function main() {
     await wait(()=>document.getElementById('visitor')?.textContent.includes('Visitante atualizado'));
     const apis=dom.window.eval('('+(()=>({entries:typeof Object.entries,values:typeof Object.values,
       observer:typeof ResizeObserver,abort:typeof AbortController,params:typeof URLSearchParams,
-      padStart:typeof ''.padStart,finally:typeof Promise.prototype.finally})).toString()+')()');
+      padStart:typeof ''.padStart,finally:typeof Promise.prototype.finally,fetch:typeof fetch,
+      assign:typeof Object.assign,from:typeof Array.from,find:typeof [].find,
+      includes:typeof [].includes,fill:typeof [].fill})).toString()+')()');
     for(const value of Object.values(apis))assert.equal(value,'function');
     assert.deepEqual(errors,[]);
-    global.console.log(JSON.stringify({syntax:'original rejected / adapted accepted as ES2016',
+    global.console.log(JSON.stringify({syntax:'original rejected / adapted accepted as ES5',
       edges,websocketLyricUpdate:true,websocketElementUpdate:true,apis,errors,requests,
-      limitation:'JSDOM with selected APIs removed; no pixel layout, media playback or physical Chrome 52 test.'},null,2));
+      limitation:'JSDOM with selected APIs removed; no pixel layout, media playback or physical Chrome 44/52 test.'},null,2));
   } finally {
     if(dom)dom.window.close();
     for(const socket of sockets)socket.destroy();

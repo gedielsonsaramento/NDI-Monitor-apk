@@ -10,7 +10,7 @@ const presetEnv = require('postcss-preset-env');
 const esbuild = require('esbuild');
 const acorn = require('acorn');
 
-const counts = { insetObjects: 0, insetAssignments: 0 };
+const counts = { lexicalBindings: 0, insetObjects: 0, insetAssignments: 0 };
 function legacyInsets({ types: t }) {
   return { visitor: {
     ObjectProperty(p) {
@@ -43,6 +43,30 @@ function legacyInsets({ types: t }) {
   }};
 }
 
+function transformProgram(source) {
+  const ast = babel.parseSync(source, {sourceType: 'unambiguous', configFile: false, babelrc: false});
+  const seen = new Set();
+  // The minified capture reuses the Webpack loader's name in a for-let loop.
+  // Give lexical bindings distinct names before lowering, so var hoisting cannot shadow it.
+  babel.traverse(ast, {Scopable(p) {
+    for (const binding of Object.values(p.scope.bindings)) {
+      if (seen.has(binding) || !['let', 'const'].includes(binding.kind)) continue;
+      seen.add(binding);
+      const name = binding.identifier.name;
+      p.scope.rename(name, p.scope.generateUidIdentifier('legacy_' + name).name);
+      counts.lexicalBindings++;
+    }
+  }});
+  return babel.transformFromAstSync(ast, source, {
+    filename: 'captured-output.js', sourceType: 'unambiguous', configFile: false, babelrc: false,
+    comments: true, compact: true, plugins: [legacyInsets],
+    presets: [[require.resolve('@babel/preset-env'), {
+      targets: {ie: '11'}, ignoreBrowserslistConfig: true, bugfixes: true,
+      modules: 'commonjs', useBuiltIns: 'usage', corejs: require('core-js/package.json').version
+    }]]
+  }).code;
+}
+
 async function main() {
   const [scriptPath, cssPath, outputPath] = process.argv.slice(2);
   if (!scriptPath || !cssPath || !outputPath) {
@@ -52,42 +76,37 @@ async function main() {
   const css = fs.readFileSync(cssPath, 'utf8');
   const output = path.resolve(outputPath);
   fs.mkdirSync(output, {recursive: true});
-  const corejs = require('core-js/package.json').version;
-  const transformed = babel.transformSync(source, {
-    filename: 'captured-output.js', sourceType: 'unambiguous', configFile: false, babelrc: false,
-    comments: true, compact: true, plugins: [legacyInsets],
-    presets: [[require.resolve('@babel/preset-env'), {
-      targets: {chrome: '52'}, ignoreBrowserslistConfig: true, bugfixes: true,
-      modules: 'commonjs', useBuiltIns: 'usage', corejs
-    }]]
-  });
+  const transformed = transformProgram(source);
   const entry = [
+    // Web API modules also need the foundation before their own module initialization.
+    'require("core-js/stable");',
     'require("core-js/modules/web.url-search-params");',
+    'require("whatwg-fetch");',
     'require("abortcontroller-polyfill/dist/polyfill-patch-fetch");',
     'var ResizeObserverFallback = require("resize-observer-polyfill");',
     'if (!window.ResizeObserver) window.ResizeObserver = ResizeObserverFallback.default || ResizeObserverFallback;',
-    transformed.code
+    transformed
   ].join('\n');
   const built = esbuild.buildSync({
-    stdin: {contents: entry, resolveDir: __dirname, sourcefile: 'captured-output.chrome52.js'},
-    bundle: true, write: false, platform: 'browser', format: 'iife', target: 'chrome52',
+    stdin: {contents: entry, resolveDir: __dirname, sourcefile: 'captured-output.legacy.js'},
+    bundle: true, write: false, platform: 'browser', format: 'iife', target: 'es5',
     minify: true, legalComments: 'inline', define: {'process.env.NODE_ENV': '"production"'},
     nodePaths: [process.env.NODE_PATH || path.join(__dirname, 'node_modules')]
   });
   const javascript = built.outputFiles[0].text;
-  acorn.parse(javascript, {ecmaVersion: 2016});
+  acorn.parse(javascript, {ecmaVersion: 5});
   const convertedCss = await postcss([presetEnv({
-    browsers: ['Chrome 52'], stage: 2, preserve: false,
+    browsers: ['Chrome 44'], stage: 2, preserve: false,
     features: {'logical-properties-and-values': true}
   })]).process(css, {from: undefined});
   const files = [
     {name: path.basename(scriptPath).replace(/\.baixados$/, ''), mime: 'application/javascript',
-      file: 'spresenter-chrome52.js', original: source, content: javascript},
-    {name: path.basename(cssPath), mime: 'text/css', file: 'spresenter-chrome52.css',
+      file: 'spresenter-legacy.js', original: source, content: javascript},
+    {name: path.basename(cssPath), mime: 'text/css', file: 'spresenter-legacy.css',
       original: css, content: convertedCss.css}
   ];
   const sha = x => crypto.createHash('sha256').update(x).digest('hex');
-  const manifest = {schema: 1, profile: 'captura-2026-10-26', minChrome: 52, maxChrome: 86,
+  const manifest = {schema: 1, profile: 'captura-2026-10-26-es5', minChrome: 44, maxChrome: 86,
     resources: files.map(f => ({name: f.name, mime: f.mime,
       sourceSha256: sha(f.original), asset: 'html-compat/' + f.file, assetSha256: sha(f.content)}))};
   for (const file of files) fs.writeFileSync(path.join(output, file.file), file.content);
@@ -96,9 +115,9 @@ async function main() {
     'Adaptacao local do JavaScript/CSS de Captura-Retorno.zip fornecido pelo usuario.\n' +
     'O programa S-Present e seus componentes mantem os respectivos direitos e avisos originais.\n' +
     'Nao inclui o HTML salvo, dados pessoais, enderecos da LAN ou configuracoes do culto.\n' +
-    'Polyfills core-js, abortcontroller-polyfill e resize-observer-polyfill: licenca MIT.\n');
+    'Helpers/polyfills Babel, core-js, whatwg-fetch, abortcontroller-polyfill e resize-observer-polyfill: licenca MIT.\n');
   // Preserve notices from every polyfill, even when a minifier removes comments.
-  for (const mod of ['core-js', 'abortcontroller-polyfill', 'resize-observer-polyfill']) {
+  for (const mod of ['@babel/core', 'core-js', 'whatwg-fetch', 'abortcontroller-polyfill', 'resize-observer-polyfill']) {
     const dir = path.dirname(require.resolve(mod + '/package.json'));
     const license = ['LICENSE', 'LICENSE.md', 'LICENSE.txt'].map(n => path.join(dir, n)).find(fs.existsSync);
     if (!license) throw new Error('Missing license for ' + mod);
@@ -106,6 +125,7 @@ async function main() {
   }
   console.log(JSON.stringify({counts, resources: manifest.resources,
     javascriptBytes: Buffer.byteLength(javascript), cssBytes: Buffer.byteLength(convertedCss.css),
-    syntax: 'ECMAScript 2016 parsed'}, null, 2));
+    syntax: 'ECMAScript 5 parsed'}, null, 2));
 }
-main().catch(e => { console.error(e); process.exitCode = 1; });
+module.exports = {transformProgram};
+if (require.main === module) main().catch(e => { console.error(e); process.exitCode = 1; });

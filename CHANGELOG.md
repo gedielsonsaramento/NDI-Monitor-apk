@@ -1,3 +1,13 @@
+# 1.4.7 — Adaptação ES5 para a BTV B9 com Chrome 44 (26/10/2026)
+
+- Estende o perfil da captura conhecida para Chrome 44–86 após a foto da B9/API 23 registrar `Unexpected token )` em `main.ff832fdd.js:2`. A 1.4.6 já abriu o menu nesse aparelho.
+- Converte todo o programa empacotado para ES5 e acrescenta a base ECMAScript antes dos módulos de APIs web, incluindo fallback de fetch. CSS preparado para Chrome 44.
+- Renomeia bindings let/const por escopo antes da conversão: evita que o var de um laço do programa minificado oculte o carregador de módulos externo. Preserva chaves públicas e valores capturados por closures.
+- Diagnóstico manual aguarda até cinco segundos por resposta do motor antigo; não acrescenta consultas periódicas.
+- Mantém verificações de origem/hash, limites de rede/cache, pacote/certificado TVBox e bibliotecas nativas. Android 6 continua em HTML, sem NDI.
+- 117 testes Android aprovados, lint sem erros, cinco fixtures de semântica ES5 e fixture HTTP/WebSocket de letras/elementos aprovadas. JSDOM não comprova pixels, mídia ou execução no Chrome 44 físico; uma execução inicial da fixture expirou sem erro JavaScript e a repetição passou.
+- APK de teste 1.4.7-tvbox (12); [validação detalhada](VALIDACAO_1.4.7.md). Esta revisão não corrige o áudio associado a letras.
+
 # 1.4.6 — Adaptação da captura HTML para a HTV com Chrome 52 (26/10/2026)
 
 - Adapta o JavaScript/CSS de uma captura fornecida pelo mantenedor na compilação, com alvo Chrome 52 e fallbacks de APIs e posicionamento por quatro bordas.
