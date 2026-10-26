@@ -2,7 +2,7 @@
 
 Aplicativo Android independente para receber vídeo e áudio NDI® Standard full-bandwidth ou exibir um retorno HTML pela rede local em celulares e dispositivos Android de uso geral.
 
-Versão de teste: **1.4.7** (`versionCode 12`). Nome provisório: **Monitor de Retorno**. Pacote Android preservado: `br.com.polegar.ndimonitor`.
+Versão de teste: **1.4.8** (`versionCode 13`). Nome provisório: **Monitor de Retorno**. Pacote Android preservado: `br.com.polegar.ndimonitor`.
 
 Comece pela [documentação completa do projeto](DOCUMENTACAO_COMPLETA.md), com instalação, uso no controle remoto, arquitetura, compilação, testes, assinatura e preparação para publicação.
 
@@ -10,7 +10,9 @@ Projeto independente. NDI® é marca registrada da Vizrt NDI AB. Conheça a tecn
 
 ## Teste em TV Box
 
-A versão **1.4.7-tvbox** usa o pacote `br.com.polegar.ndimonitor.tvboxtest` e o nome **Monitor de Retorno — TV Box**. O APK de teste mantém o certificado das edições 1.4.3–1.4.6-TVBox e pode atualizá-las preservando suas preferências. Instala ao lado da edição habitual, como 1.4.2. Veja [TVBOX.md](TVBOX.md) para o teste e o diagnóstico do aparelho.
+A versão **1.4.8-tvbox** usa o pacote `br.com.polegar.ndimonitor.tvboxtest` e o nome **Monitor de Retorno — TV Box**. O APK de teste mantém o certificado das edições 1.4.3–1.4.7-TVBox e pode atualizá-las preservando suas preferências. Instala ao lado da edição habitual, como 1.4.2. Veja [TVBOX.md](TVBOX.md) para o teste e o diagnóstico do aparelho.
+
+A **1.4.8** acrescenta **engrenagem → Saídas HTML do S-Present**. Uma conexão de API com permissão de leitura `advanced:read` lista todos os destinos HTML habilitados do PC, atualiza nomes e descobre novos caminhos após atualizar. O endpoint `/output/` da captura retorna `Cannot GET`; a busca anterior só tentava nomes conhecidos. A consulta autenticada usa os registros reais do servidor, preserva a fonte escolhida e mantém a adaptação Chrome 44 da 1.4.7. [Configurar a listagem de saídas](SAIDAS_SPRESENTER.md).
 
 Android 6 abre HTML sem carregar as bibliotecas NDI, compiladas para API 24. Android 7 ou superior mantém o receptor NDI quando as bibliotecas carregam corretamente. A opção **16:9 — compatibilidade TV Box** usa a densidade real do motor web; é o padrão inicial em API 23–25. Não acrescenta recursos de CSS ausentes no WebView da box.
 
@@ -22,7 +24,8 @@ A HTV informou Chrome 52 e erro `Unexpected token function`. A foto seguinte da 
 
 - Dois modos no mesmo aplicativo: **NDI** e **HTML**, com modo e fonte confirmada salvos por aparelho e restaurados ao iniciar.
 - Retorno HTML com exibição de monitor 16:9: área de referência de 1920 × 1080 ajustada inteira à tela, texto em 100% e opção de layout original da página na engrenagem. Endereço e escolha de exibição salvos, recarga manual e novas tentativas após falhas de rede. [Como configurar](RETORNO_HTML.md).
-- Busca HTML em Wi-Fi/Ethernet com IPv4: procura saídas na porta 5050 com os nomes `saida-html-1`, `retorno` e `retono`, além de um nome de saída salvo elegível. Aceita o redirecionamento de exibição para `/slide/?output=stage...` no mesmo servidor. Os nomes alternativos só são tentados após HTTP 404/410; hosts sem conexão não recebem tentativas extras. Durante a busca solicitada, repete 30 s depois de cada ciclo com o painel aberto.
+- Catálogo HTML do PC configurado pela API: nomes atuais, novos destinos, várias saídas por computador e remoção de destinos desabilitados/excluídos após uma resposta válida. Configura um PC por instalação, com chave de leitura restrita à origem informada. [Como configurar](SAIDAS_SPRESENTER.md).
+- Busca HTML anterior em Wi-Fi/Ethernet IPv4 para PCs sem conexão de API: tenta a porta 5050 com os nomes `saida-html-1`, `retorno` e `retono`, além do nome salvo elegível. É uma busca de caminhos conhecidos, sem enumeração de nomes arbitrários. Aceita o redirecionamento Stage no mesmo servidor. Durante a busca solicitada, repete 30 s depois de cada ciclo com o painel aberto.
 - A busca começa na primeira configuração sem fonte ou pelo botão atualizar. Depois de selecionar, os descobridores são parados e o finder NDI é liberado. Reabrir apenas o painel não reinicia a busca; use atualizar para procurar outra fonte.
 - Ao iniciar com uma fonte salva, o aplicativo abre a mesma origem diretamente e mantém o painel fechado. A recuperação de sinal continua direcionada a essa origem.
 - Atualização manual sem apagar a lista: tolerância de ausência de 10 s para NDI e 90 s para HTML; o endereço HTML salvo permanece disponível.
@@ -107,7 +110,7 @@ Leia [QUIOSQUE.md](QUIOSQUE.md) antes de mudar a tela inicial.
 
 ## Limitações conhecidas
 
-- A busca HTML testa o caminho e a porta do exemplo; não enumera qualquer site ou todas as saídas de um PC. Em redes maiores que /24, a varredura usa somente a faixa /24 do aparelho. IPv6, nomes de host e links personalizados continuam disponíveis pelo endereço manual. Um HTML encontrado é um candidato, cuja exibição precisa ser conferida.
+- Sem a conexão de API, a busca HTML testa os caminhos conhecidos e não enumera nomes novos. O catálogo autenticado lista os destinos HTML habilitados de um PC configurado por instalação. Em redes maiores que /24, a varredura anterior usa somente a faixa /24 do aparelho. IPv6, nomes de host e links personalizados continuam disponíveis pelo endereço manual. Um HTML encontrado é um candidato, cuja exibição precisa ser conferida.
 - O áudio no modo HTML depende do conteúdo que a página fornece. A reprodução de vídeos, o áudio, o tema e a atualização do retorno devem ser validados com o Spresenter real. É necessário um componente WebView funcional no aparelho.
 - A opção de tela inicial é um **launcher opcional**, não um quiosque gerenciado completo. Não bloqueia outros aplicativos, não encerra serviços de terceiros e não garante ganho de desempenho.
 - A abertura após o boot depende do firmware e das restrições de [início de atividades em segundo plano do Android](https://developer.android.com/guide/components/activities/background-starts). Teste no aparelho escolhido; não há garantia para todo dispositivo Android 7+.
@@ -117,9 +120,11 @@ Leia [QUIOSQUE.md](QUIOSQUE.md) antes de mudar a tela inicial.
 
 ## Documentação
 
-- [Manual completo do projeto 1.4.7](DOCUMENTACAO_COMPLETA.md)
+- [Manual completo do projeto 1.4.8](DOCUMENTACAO_COMPLETA.md)
+- [Listagem dos destinos HTML do S-Present pela API](SAIDAS_SPRESENTER.md)
 - [Compatibilidade HTML de uma captura com motores antigos](tools/html-compat/README.md)
-- [Resultados e limites da validação 1.4.7](VALIDACAO_1.4.7.md)
+- [Resultados e limites da validação 1.4.8](VALIDACAO_1.4.8.md)
+- [Histórico da validação 1.4.7](VALIDACAO_1.4.7.md)
 - [Histórico da validação 1.4.6](VALIDACAO_1.4.6.md)
 - [Modo HTML e troca entre fontes](RETORNO_HTML.md)
 - [Guia de instalação e compilação](GUIA_PASSO_A_PASSO.md)

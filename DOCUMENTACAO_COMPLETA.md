@@ -1,12 +1,12 @@
 # Monitor de Retorno
 
-## Manual completo do projeto - versão 1.4.7
+## Manual completo do projeto - versão 1.4.8
 
 Aplicativo Android para receber NDI® Standard full-bandwidth ou abrir um retorno HTML pela rede local. Nome de produto provisório: Monitor de Retorno. Mantenedor: Gedielson Saramento. Documentação técnica revisada em 26/10/2026, horário do Brasil.
 
 NDI® is a registered trademark of Vizrt NDI AB. https://ndi.video/
 
-Esta revisão é uma versão de teste. O resultado de compilação, os testes executados e o que ainda precisa de equipamento real estão em VALIDACAO_1.4.7.md. A existência de um APK ou AAB compilado não significa publicação ou aprovação na Google Play.
+Esta revisão é uma versão de teste. O resultado de compilação, os testes executados e o que ainda precisa de equipamento real estão em VALIDACAO_1.4.8.md. A existência de um APK ou AAB compilado não significa publicação ou aprovação na Google Play.
 
 Repositório: https://github.com/gedielsonsaramento/NDI-Monitor-apk
 
@@ -54,13 +54,23 @@ O aplicativo não cria a apresentação, não controla os slides e não substitu
 | Orientação | Horizontal, com proporção preservada no vídeo NDI |
 | Operação | Toque, mouse ou controle remoto com setas e OK/Enter |
 | Pacote Android | br.com.polegar.ndimonitor |
-| Versão | versionName 1.4.7, versionCode 12; teste de box: 1.4.7-tvbox |
+| Versão | versionName 1.4.8, versionCode 13; teste de box: 1.4.8-tvbox |
 
 O Android 5.1 do servidor Samsung não é compatível com este APK. Não há pacote x86/x86_64 nesta revisão. O funcionamento de vídeo, áudio, boot e WebView varia conforme o hardware e o firmware: a versão mínima não comprova compatibilidade com todas as TV Boxes.
 
 Uma rede local funcionando é suficiente para o uso habitual de fontes locais. O conteúdo de uma página HTML pode exigir internet se carregar fontes, imagens, scripts ou outros recursos externos.
 
-### Compatibilidade HTML na revisão 1.4.7
+### Catálogo de destinos HTML na revisão 1.4.8
+
+A captura do servidor confirmou `Cannot GET /output/`. O app anterior tentava nomes conhecidos, usava o título genérico da página e parava no primeiro HTML de cada alvo. A nova opção **Saídas HTML do S-Present** configura uma conexão autenticada por instalação, com a permissão de leitura `advanced:read`. Consulta `GET /api/v1/advanced`, filtra `config.outputs` por tipo network e enabled diferente de false e constrói URLs com os slugs do mesmo servidor. Nomes personalizados e gerados, como canvas-2, não dependem de uma lista fixa.
+
+A resposta completa é limitada a 1 MiB, cinco segundos e 512 registros. Não segue redirecionamentos e não coloca a chave na URL, nos nomes ou no HTML. A origem exata (protocolo/host/porta) recebe o Authorization; a varredura não propaga a chave para outros IPs. A consulta usa Wi-Fi/Ethernet, preferindo a interface da sub-rede do PC, entra nos mesmos limites de trabalhadores/cancelamento e tem prioridade sobre os alvos anteriores. O PC configurado deixa de receber os palpites de caminhos conhecidos.
+
+O catálogo válido atualiza nomes e remove entradas anteriores ausentes/desabilitadas, preservando a última URL escolhida como histórico. Falhas de autenticação/rede/contrato deixam os resultados anteriores disponíveis e exibem o motivo. Selecionar uma fonte encerra a descoberta; a reabertura restaura essa fonte sem consultar ou trocar destinos em segundo plano. Se o slug mudar, o usuário seleciona a nova entrada. A chave é cifrada com AES/GCM/AndroidKeyStore, com origem como dado autenticado; firmware sem armazenamento funcional usa somente a memória da sessão e informa essa condição.
+
+O contrato foi observado no pacote S-Present 0.3.50 fornecido pelo mantenedor, cujo programa de slide corresponde byte a byte à captura original. Não foi executado o servidor ou firmware real neste ambiente. A adaptação Chrome 44–86 anterior, o NDI e o áudio permanecem. Veja [configuração e limites](SAIDAS_SPRESENTER.md) e [validação](VALIDACAO_1.4.8.md).
+
+### Histórico: compatibilidade HTML na revisão 1.4.7
 
 A foto da BTV B9 identifica Android 6.0.1/API 23, ARM32 e app 1.4.6-TVBox com o menu/diagnóstico aberto. O WebView informa Chrome 44.0.2403.119, abaixo do limite do perfil 1.4.6, e erro `Unexpected token )` em `main.ff832fdd.js:2`. O registro de abertura interrompida não contém exceção Java e, sozinho, não comprova falha nativa. A string desktop Linux x86_64 do user agent não altera a arquitetura ARM informada pelo Android.
 

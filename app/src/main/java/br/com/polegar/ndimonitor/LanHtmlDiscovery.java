@@ -26,13 +26,17 @@ final class LanHtmlDiscovery {
         void onProgress(int completed, int total);
         void onFinished();
         void onUnavailable();
+        default void onCatalog(String origin, java.util.List<HtmlSource> sources) { }
+        default void onCatalogError(int message) { }
     }
     private final ConnectivityManager connectivity;
+    private final SpresenterApiSettings apiSettings;
     private final Handler main = new Handler(Looper.getMainLooper());
     private HtmlDiscoverySession session;
     private int generation;
 
     LanHtmlDiscovery(Context context) {
+        apiSettings = new SpresenterApiSettings(context);
         connectivity = (ConnectivityManager) context.getApplicationContext()
                 .getSystemService(Context.CONNECTIVITY_SERVICE);
     }
@@ -42,6 +46,9 @@ final class LanHtmlDiscovery {
         int current = generation;
         Map<String, HtmlHttpProbe.Target> targets = new LinkedHashMap<>();
         java.util.List<String> paths = HtmlSourceUrl.discoveryPaths(savedAddress);
+        SpresenterConnection api = apiSettings.load();
+        Network apiNetwork = null;
+        Network fallbackApiNetwork = null;
         boolean limited = false;
         int networks = 0;
         try {
@@ -53,6 +60,8 @@ final class LanHtmlDiscovery {
                 LinkProperties link = connectivity.getLinkProperties(network);
                 if (link == null) continue;
                 if (++networks > 2) { limited = true; break; }
+                if (fallbackApiNetwork == null) fallbackApiNetwork = network;
+                if (api != null && apiNetwork == null && matchesApiSubnet(link, api.origin)) apiNetwork = network;
                 for (LinkAddress address : link.getLinkAddresses()) {
                     if (!(address.getAddress() instanceof Inet4Address)) continue;
                     LanIpv4Subnet subnet;
@@ -62,10 +71,13 @@ final class LanHtmlDiscovery {
                     // Only the saved host receives its full custom URL, including parameters.
                     if (HtmlSourceUrl.isWebAddress(savedAddress)) {
                         URI saved = URI.create(savedAddress);
-                        if (subnet.contains(saved.getHost())) add(targets, network, savedAddress);
+                        if (subnet.contains(saved.getHost()) && (api == null || !api.owns(savedAddress))) {
+                            add(targets, network, savedAddress);
+                        }
                     }
                     for (String host : subnet.candidates()) {
                         String root = "http://" + host + ":" + HtmlSourceUrl.DEFAULT_PORT;
+                        if (api != null && api.owns(root)) continue;
                         String[] alternatives = new String[paths.size() - 1];
                         for (int i = 1; i < paths.size(); ++i) alternatives[i - 1] = root + paths.get(i);
                         if (!add(targets, network, root + paths.get(0), alternatives)) { limited = true; break; }
@@ -73,12 +85,39 @@ final class LanHtmlDiscovery {
                 }
             }
         } catch (SecurityException unavailable) { targets.clear(); }
-        if (targets.isEmpty()) { dispatch(current, listener::onUnavailable); return; }
-        int total = targets.size();
+        java.util.List<HtmlHttpProbe.Target> work = new ArrayList<>();
+        Network selectedApiNetwork = apiNetwork != null ? apiNetwork : fallbackApiNetwork;
+        if (api != null && selectedApiNetwork != null) {
+            work.add(new HtmlHttpProbe.Target(api.endpoint(),
+                    address -> (HttpURLConnection) selectedApiNetwork.openConnection(address, Proxy.NO_PROXY)));
+        }
+        for (HtmlHttpProbe.Target target : targets.values()) {
+            if (work.size() >= MAX_TARGETS) { limited = true; break; }
+            work.add(target);
+        }
+        if (work.isEmpty()) { dispatch(current, listener::onUnavailable); return; }
+        int total = work.size();
         boolean scanLimited = limited;
         dispatch(current, () -> listener.onStarted(total, scanLimited));
+        if (api == null && !apiSettings.origin().isEmpty()) {
+            dispatch(current, () -> listener.onCatalogError(R.string.spresenter_api_key_required));
+        }
         HtmlHttpProbe probe = new HtmlHttpProbe();
-        session = new HtmlDiscoverySession(new ArrayList<>(targets.values()), probe::probe,
+        session = new HtmlDiscoverySession(work, (target, cancellation) -> {
+            if (api != null && target.url.equals(api.endpoint())) {
+                try {
+                    java.util.List<HtmlSource> sources = new SpresenterApiProbe().read(api, target.opener, cancellation);
+                    dispatch(current, () -> listener.onCatalog(api.origin, sources));
+                } catch (SpresenterApiProbe.Failure failure) {
+                    if (!cancellation.isCancelled()) dispatch(current, () -> listener.onCatalogError(failure.message));
+                } catch (java.io.IOException unavailable) {
+                    if (!cancellation.isCancelled()) dispatch(current,
+                            () -> listener.onCatalogError(R.string.spresenter_api_network));
+                }
+                return null;
+            }
+            return probe.probe(target, cancellation);
+        },
                 new HtmlDiscoverySession.Listener() {
                     @Override public void onSource(HtmlSource source) {
                         dispatch(current, () -> listener.onSource(source));
@@ -89,6 +128,19 @@ final class LanHtmlDiscovery {
                     @Override public void onFinished() { dispatch(current, listener::onFinished); }
                 });
         session.start();
+    }
+
+    static boolean matchesApiSubnet(LinkProperties link, String origin) {
+        String host = URI.create(origin).getHost();
+        for (LinkAddress address : link.getLinkAddresses()) {
+            if (!(address.getAddress() instanceof Inet4Address)) continue;
+            try {
+                if (new LanIpv4Subnet(address.getAddress().getHostAddress(), address.getPrefixLength()).contains(host)) {
+                    return true;
+                }
+            } catch (IllegalArgumentException ignored) { }
+        }
+        return false;
     }
 
     private static boolean add(Map<String, HtmlHttpProbe.Target> targets, Network network, String url,
