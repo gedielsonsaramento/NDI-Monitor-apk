@@ -1,6 +1,6 @@
 # Preparar uma captura para motores HTML antigos
 
-Esta ferramenta é usada na compilação, não no aparelho. Prepara JavaScript/CSS de uma captura para Chrome 52. O aplicativo usa o perfil somente em Chrome 52–86, após verificar os bytes que o servidor da fonte entrega.
+Esta ferramenta é usada na compilação, não no aparelho. Prepara JavaScript de uma captura como ES5 e CSS para Chrome 44. O aplicativo usa o perfil somente em Chrome 44–86, após verificar os bytes que o servidor da fonte entrega. A 1.4.7 estende o perfil anterior (Chrome 52–86) para o motor Chrome 44 fotografado na BTV B9/API 23.
 
 ## Entrada e execução
 
@@ -24,21 +24,25 @@ Não acrescente o diretório gerado nem a captura ao Git. Sem o perfil, o app ma
 
 ## Adaptação
 
-- Babel/preset-env transforma sintaxe para Chrome 52 e identifica polyfills ECMAScript utilizados.
-- core-js, abortcontroller-polyfill e resize-observer-polyfill cobrem as funções e APIs ausentes observadas.
+- Um passe de escopo renomeia bindings let/const antes de Babel: impede que var de um laço oculte o carregador de módulos externo no programa minificado. Mantém closures e chaves públicas.
+- Babel/preset-env usa alvo IE 11 para forçar sintaxe ES5 e identifica polyfills ECMAScript utilizados. Isso não declara suporte ao navegador IE. O empacotador também usa alvo ES5; Acorn confere o resultado como ECMAScript 5.
+- core-js/stable é carregado antes dos módulos de APIs web. whatwg-fetch cobre fetch quando ausente; URLSearchParams, abortcontroller-polyfill e resize-observer-polyfill cobrem as outras APIs observadas. As versões estão fixadas no lock e os avisos de licença acompanham o perfil.
 - O passe de AST converte somente `inset: 0` e `identificador.style.inset = "0"`. Outros valores/alvos exigem revisão, evitando mudar a ordem de avaliação sem análise.
-- PostCSS acrescenta fallbacks de estilo para Chrome 52. Acorn confirma que o programa gerado é aceito como ECMAScript 2016.
+- PostCSS acrescenta fallbacks de estilo para Chrome 44.
 
 WebSocket e requisições continuam no servidor selecionado. O adaptador só verifica/substitui os dois arquivos conhecidos; não encaminha mídia por um proxy nem acrescenta varredura de rede.
 
 ## Integração local
 
 ```bash
+node check-transform.cjs
 node check-live.cjs "../../app/src/main/assets/html-compat" "/captura/Slide do apresentador_files/main.ff832fdd.js.baixados"
 ```
 
-A fixture usa HTTP/WebSocket em loopback e JSDOM, remove algumas APIs modernas antes da carga e verifica polyfills e mudanças de letra/elemento por mensagens WebSocket. Confere o parser ES2016 e as quatro bordas explícitas do contêiner.
+Cinco fixtures executam o JavaScript transformado e verificam carregador externo, closures de laço, chaves públicas e dois caminhos assíncronos. Cada resultado passa pelo parser ES5.
 
-JSDOM não mede pixels nem reproduz mídia. Não é Chrome 52 nem o firmware da HTV. A tentativa de Chromium nativo neste ambiente foi bloqueada por socket local; nenhum resultado de navegador nativo é reivindicado. O teste físico continua obrigatório.
+A fixture de integração usa HTTP/WebSocket em loopback e JSDOM, remove algumas APIs modernas antes da carga e verifica polyfills e mudanças de letra/elemento por mensagens WebSocket. Propriedades ausentes são removidas com delete, preservando o comportamento de detecção por presença. Confere ES5 e as quatro bordas explícitas do contêiner.
+
+JSDOM não mede pixels nem reproduz mídia. Não é Chrome 44/52 nem o firmware das boxes. Uma execução inicial expirou sem erro JavaScript antes da carga da tela; a repetição passou. Isso não comprova estabilidade de inicialização. Nenhum resultado de navegador nativo é reivindicado. O teste físico continua obrigatório; veja [VALIDACAO_1.4.7.md](../../VALIDACAO_1.4.7.md).
 
 Referências: [Babel preset-env](https://babeljs.io/docs/babel-preset-env/), [core-js](https://core-js.io/docs/), [WebViewClient](https://developer.android.com/reference/android/webkit/WebViewClient).

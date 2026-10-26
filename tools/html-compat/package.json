@@ -2,7 +2,7 @@
   "name": "monitor-html-compat-build",
   "version": "1.0.0",
   "private": true,
-  "description": "Build-time adaptation of a user-provided HTML capture for Chrome 52",
+  "description": "Build-time ES5 adaptation of a user-provided HTML capture for Chrome 44+",
   "engines": {
     "node": ">=18"
   },
@@ -19,10 +19,10 @@
     "esbuild": "0.25.12",
     "postcss": "8.5.31",
     "postcss-preset-env": "10.6.1",
-    "resize-observer-polyfill": "1.5.1"
+    "resize-observer-polyfill": "1.5.1",
+    "whatwg-fetch": "3.6.20"
   },
   "devDependencies": {
-    "jsdom": "22.1.0",
-    "whatwg-fetch": "3.6.20"
+    "jsdom": "22.1.0"
   }
 }

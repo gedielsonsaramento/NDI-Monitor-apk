@@ -2,7 +2,7 @@
 
 Aplicativo Android independente para receber vídeo e áudio NDI® Standard full-bandwidth ou exibir um retorno HTML pela rede local em celulares e dispositivos Android de uso geral.
 
-Versão de teste: **1.4.6** (`versionCode 11`). Nome provisório: **Monitor de Retorno**. Pacote Android preservado: `br.com.polegar.ndimonitor`.
+Versão de teste: **1.4.7** (`versionCode 12`). Nome provisório: **Monitor de Retorno**. Pacote Android preservado: `br.com.polegar.ndimonitor`.
 
 Comece pela [documentação completa do projeto](DOCUMENTACAO_COMPLETA.md), com instalação, uso no controle remoto, arquitetura, compilação, testes, assinatura e preparação para publicação.
 
@@ -10,13 +10,13 @@ Projeto independente. NDI® é marca registrada da Vizrt NDI AB. Conheça a tecn
 
 ## Teste em TV Box
 
-A versão **1.4.6-tvbox** usa o pacote `br.com.polegar.ndimonitor.tvboxtest` e o nome **Monitor de Retorno — TV Box**. O APK de teste mantém o certificado das edições 1.4.3/1.4.4/1.4.5-TVBox e pode atualizá-las preservando suas preferências. Instala ao lado da edição habitual, como 1.4.2. Veja [TVBOX.md](TVBOX.md) para o teste e o diagnóstico do aparelho.
+A versão **1.4.7-tvbox** usa o pacote `br.com.polegar.ndimonitor.tvboxtest` e o nome **Monitor de Retorno — TV Box**. O APK de teste mantém o certificado das edições 1.4.3–1.4.6-TVBox e pode atualizá-las preservando suas preferências. Instala ao lado da edição habitual, como 1.4.2. Veja [TVBOX.md](TVBOX.md) para o teste e o diagnóstico do aparelho.
 
 Android 6 abre HTML sem carregar as bibliotecas NDI, compiladas para API 24. Android 7 ou superior mantém o receptor NDI quando as bibliotecas carregam corretamente. A opção **16:9 — compatibilidade TV Box** usa a densidade real do motor web; é o padrão inicial em API 23–25. Não acrescenta recursos de CSS ausentes no WebView da box.
 
 O relatório real da HTV-6H com Android 7.1.2/API 25 localizou o fechamento na leitura de `fontFamily` ao criar o botão NDI/HTML. A versão 1.4.5 substituiu a fonte textual global por `android:typeface` sem serifa, armazenado como inteiro. As fotos seguintes confirmaram a abertura do menu/diagnóstico na HTV, com biblioteca NDI inicializada; isso não confirma vídeo/áudio NDI. O relatório antigo da 1.4.4 permanece como histórico.
 
-A captura HTML dessa HTV informa Chrome 52 e erro `Unexpected token function`. O JavaScript enviado pelo mantenedor contém 34 funções assíncronas, além de sintaxe e APIs posteriores; também usa `inset` no contêiner de exibição. A **1.4.6** adiciona uma adaptação local, preparada na compilação para Chrome 52–86, dos dois arquivos dessa captura. Ela só substitui um recurso depois de verificar seu SHA-256 no servidor da fonte selecionada. Páginas novas, arquivos diferentes e motores atuais mantêm o carregamento original. Veja [como preparar a captura](tools/html-compat/README.md) e os [resultados e limites](VALIDACAO_1.4.6.md). A exibição na HTV após esta adaptação ainda precisa de teste físico.
+A HTV informou Chrome 52 e erro `Unexpected token function`. A foto seguinte da **BTV B9**, Android **6.0.1/API 23**, confirma o menu da **1.4.6** aberto, mas registra Chrome **44.0.2403.119** e `Unexpected token )` em `main.ff832fdd.js:2`. A **1.4.7** prepara os dois arquivos conhecidos dessa captura como **ES5**, com fallbacks de APIs/CSS, e estende o perfil para **Chrome 44–86**. Ela só substitui um recurso depois de verificar seu SHA-256 no servidor da fonte selecionada. Páginas novas, arquivos diferentes e motores atuais mantêm o carregamento original. Veja [como preparar a captura](tools/html-compat/README.md) e os [resultados e limites](VALIDACAO_1.4.7.md). A exibição nas boxes após esta adaptação ainda precisa de teste físico.
 
 ## Recursos
 
@@ -117,9 +117,10 @@ Leia [QUIOSQUE.md](QUIOSQUE.md) antes de mudar a tela inicial.
 
 ## Documentação
 
-- [Manual completo do projeto 1.4.6](DOCUMENTACAO_COMPLETA.md)
+- [Manual completo do projeto 1.4.7](DOCUMENTACAO_COMPLETA.md)
 - [Compatibilidade HTML de uma captura com motores antigos](tools/html-compat/README.md)
-- [Resultados e limites da validação 1.4.6](VALIDACAO_1.4.6.md)
+- [Resultados e limites da validação 1.4.7](VALIDACAO_1.4.7.md)
+- [Histórico da validação 1.4.6](VALIDACAO_1.4.6.md)
 - [Modo HTML e troca entre fontes](RETORNO_HTML.md)
 - [Guia de instalação e compilação](GUIA_PASSO_A_PASSO.md)
 - [Tela inicial opcional e como desativar](QUIOSQUE.md)

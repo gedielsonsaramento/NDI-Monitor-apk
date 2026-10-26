@@ -113,7 +113,7 @@ final class HtmlLegacyCompat {
     // Called on the UI thread: never wait for an in-flight network read.
     void close() { closed = true; }
 
-    private boolean eligible() { return chrome >= 52 && chrome <= 86 && sameOrigin(origin, origin); }
+    private boolean eligible() { return chrome >= 44 && chrome <= 86 && sameOrigin(origin, origin); }
 
     private boolean loadRegistry() {
         if (resources != null) return !resources.isEmpty();
@@ -122,7 +122,7 @@ final class HtmlLegacyCompat {
             byte[] bytes = assets.read(MANIFEST);
             if (bytes.length > 32768) throw new IOException("manifesto grande");
             JSONObject manifest = new JSONObject(new String(bytes, StandardCharsets.UTF_8));
-            if (manifest.getInt("schema") != 1 || manifest.getInt("minChrome") != 52 ||
+            if (manifest.getInt("schema") != 1 || manifest.getInt("minChrome") != 44 ||
                     manifest.getInt("maxChrome") != 86) throw new IOException("perfil desconhecido");
             JSONArray items = manifest.getJSONArray("resources");
             if (items.length() < 1 || items.length() > 4) throw new IOException("recursos inválidos");
