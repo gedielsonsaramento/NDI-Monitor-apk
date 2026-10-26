@@ -21,7 +21,7 @@ import org.robolectric.util.ReflectionHelpers;
 import static org.junit.Assert.*;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(sdk = {23, 25}, shadows = {TvBoxCompatibilityTest.UnloadableReceiver.class,
+@Config(sdk = {23, 25, 28, 34}, shadows = {TvBoxCompatibilityTest.UnloadableReceiver.class,
         MainActivityModeTest.FakeHtmlDiscovery.class})
 public class TvBoxCompatibilityTest {
     private static final String URL = "http://192.168.2.60:5050/output/retono";

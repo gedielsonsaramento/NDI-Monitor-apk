@@ -1,12 +1,12 @@
 # Monitor de Retorno
 
-## Manual completo do projeto - versão 1.4.4
+## Manual completo do projeto - versão 1.4.5
 
 Aplicativo Android para receber NDI® Standard full-bandwidth ou abrir um retorno HTML pela rede local. Nome de produto provisório: Monitor de Retorno. Mantenedor: Gedielson Saramento. Documentação técnica revisada em 25/10/2026, horário do Brasil.
 
 NDI® is a registered trademark of Vizrt NDI AB. https://ndi.video/
 
-Esta revisão é uma versão de teste. O resultado de compilação, os testes executados e o que ainda precisa de equipamento real estão em VALIDACAO_1.4.4.md. A existência de um APK ou AAB compilado não significa publicação ou aprovação na Google Play.
+Esta revisão é uma versão de teste. O resultado de compilação, os testes executados e o que ainda precisa de equipamento real estão em VALIDACAO_1.4.5.md. A existência de um APK ou AAB compilado não significa publicação ou aprovação na Google Play.
 
 Repositório: https://github.com/gedielsonsaramento/NDI-Monitor-apk
 
@@ -54,11 +54,19 @@ O aplicativo não cria a apresentação, não controla os slides e não substitu
 | Orientação | Horizontal, com proporção preservada no vídeo NDI |
 | Operação | Toque, mouse ou controle remoto com setas e OK/Enter |
 | Pacote Android | br.com.polegar.ndimonitor |
-| Versão | versionName 1.4.4, versionCode 9; teste de box: 1.4.4-tvbox |
+| Versão | versionName 1.4.5, versionCode 10; teste de box: 1.4.5-tvbox |
 
 O Android 5.1 do servidor Samsung não é compatível com este APK. Não há pacote x86/x86_64 nesta revisão. O funcionamento de vídeo, áudio, boot e WebView varia conforme o hardware e o firmware: a versão mínima não comprova compatibilidade com todas as TV Boxes.
 
 Uma rede local funcionando é suficiente para o uso habitual de fontes locais. O conteúdo de uma página HTML pode exigir internet se carregar fontes, imagens, scripts ou outros recursos externos.
+
+### Correção de fonte na revisão 1.4.5
+
+O relatório da HTV-6H confirma Android 7.1.2/API 25, ARM64 e ARM32 e app 1.4.4-TVBox. O fechamento ocorre em `setContentView`, no botão seletor NDI/HTML: `ArrayIndexOutOfBoundsException: length=49; index=74`, seguido por `StringBlock.get`, `XmlBlock.Parser.getPooledString`, `TypedArray.getString` e `TextView.java:1100`.
+
+No código AOSP do Android 7.1.2, essa linha lê `fontFamily`. A análise do APK 1.4.4 entregue encontrou 49 strings no pool do layout e o literal `sans` no índice 74 do pool global, correspondendo ao relatório. O tema passa a usar `android:typeface` com enumeração sem serifa, lida como inteiro, removendo a definição textual global. Não troca a classe dos botões nem altera o código de reprodução.
+
+A validação simulada é ampliada para APIs 28 e 34, correspondentes às telas de diagnóstico da BTV E10 e da TV Philco. Ela não substitui repetir o teste na HTV. A atualização mantém o relatório anterior por diagnóstico: se a recuperação mostrar app 1.4.4, toque **Abrir apenas HTML** para testar a interface 1.4.5. Confira a versão atual em **Diagnóstico do aparelho** depois que o menu abrir.
 
 ### Compatibilidade de TV Box na revisão 1.4.4
 
@@ -295,7 +303,7 @@ No Windows, use gradlew.bat para o primeiro comando. O teste C++ pode rodar em L
 
 Os testes Java cobrem normalização de URL, catálogos, intervalos de busca, cancelamento, seleção sem digitar, troca de modo e geometria do painel. Os testes HTTP usam MockWebServer somente no ambiente de teste, com respostas controladas. Esse servidor e o Robolectric não são dependências do APK distribuído.
 
-O Robolectric usa Android simulado, APIs 23/25/35 conforme o teste; compileSdk/targetSdk do app continuam 36. A primeira execução pode baixar dependências de teste. Relatórios ficam em app/build/reports/tests e app/build/reports/lint-results-debug.html. Imagens de conferência de layout ficam em app/build/reports/source-panel-previews.
+O Robolectric usa Android simulado, APIs 23/25/28/34/35 conforme o teste; compileSdk/targetSdk do app continuam 36. A primeira execução pode baixar dependências de teste. Relatórios ficam em app/build/reports/tests e app/build/reports/lint-results-debug.html. Imagens de conferência de layout ficam em app/build/reports/source-panel-previews.
 
 Para diagnóstico no aparelho, use Android Studio Logcat e registre versão do APK, Android, tipo de rede, endereço da saída e o passo que falhou. Remova tokens de URLs e dados pessoais antes de compartilhar logs. Um teste HTTP local comprova o cliente HTTP, não a descoberta de uma TV Box na rede do culto.
 
