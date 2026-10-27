@@ -204,7 +204,8 @@ final class SpresenterPairingServer implements AutoCloseable {
         byte[] body = html.getBytes(StandardCharsets.UTF_8);
         String headers = "HTTP/1.1 " + status + " Response\r\nContent-Type: text/html; charset=utf-8\r\n"
                 + "Content-Length: " + body.length + "\r\nConnection: close\r\nCache-Control: no-store\r\n"
-                + "Referrer-Policy: no-referrer\r\nX-Content-Type-Options: nosniff\r\nX-Frame-Options: DENY\r\n"
+                // no-referrer makes a normal browser form POST send Origin: null, which must stay rejected.
+                + "Referrer-Policy: same-origin\r\nX-Content-Type-Options: nosniff\r\nX-Frame-Options: DENY\r\n"
                 + "Content-Security-Policy: default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; "
                 + "base-uri 'none'; frame-ancestors 'none'\r\n\r\n";
         client.getOutputStream().write(headers.getBytes(StandardCharsets.US_ASCII));

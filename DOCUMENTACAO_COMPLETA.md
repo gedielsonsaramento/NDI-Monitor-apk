@@ -1,12 +1,12 @@
 # Monitor de Retorno
 
-## Manual completo do projeto - versão 1.4.9
+## Manual completo do projeto - versão 1.4.10
 
 Aplicativo Android para receber NDI® Standard full-bandwidth ou abrir um retorno HTML pela rede local. Nome de produto provisório: Monitor de Retorno. Mantenedor: Gedielson Saramento. Documentação técnica revisada em 26/10/2026, horário do Brasil.
 
 NDI® is a registered trademark of Vizrt NDI AB. https://ndi.video/
 
-Esta revisão é uma versão de teste. O resultado de compilação, os testes executados e o que ainda precisa de equipamento real estão em VALIDACAO_1.4.9.md. A existência de um APK ou AAB compilado não significa publicação ou aprovação na Google Play.
+Esta revisão é uma versão de teste. O resultado de compilação, os testes executados e o que ainda precisa de equipamento real estão em VALIDACAO_1.4.10.md. A existência de um APK ou AAB compilado não significa publicação ou aprovação na Google Play.
 
 Repositório: https://github.com/gedielsonsaramento/NDI-Monitor-apk
 
@@ -54,11 +54,15 @@ O aplicativo não cria a apresentação, não controla os slides e não substitu
 | Orientação | Horizontal, com proporção preservada no vídeo NDI |
 | Operação | Toque, mouse ou controle remoto com setas e OK/Enter |
 | Pacote Android | br.com.polegar.ndimonitor |
-| Versão | versionName 1.4.9, versionCode 14; teste de box: 1.4.9-tvbox |
+| Versão | versionName 1.4.10, versionCode 15; teste de box: 1.4.10-tvbox |
 
 O Android 5.1 do servidor Samsung não é compatível com este APK. Não há pacote x86/x86_64 nesta revisão. O funcionamento de vídeo, áudio, boot e WebView varia conforme o hardware e o firmware: a versão mínima não comprova compatibilidade com todas as TV Boxes.
 
 Uma rede local funcionando é suficiente para o uso habitual de fontes locais. O conteúdo de uma página HTML pode exigir internet se carregar fontes, imagens, scripts ou outros recursos externos.
+
+### Correção do formulário na revisão 1.4.10
+
+As fotos da box mostram que o PC alcança o endereço/porta corretos, mas o envio termina em **Abra o endereço mostrado na TV**. Foi reproduzido em Chromium: o cabeçalho Referrer-Policy no-referrer da 1.4.9 faz o POST de formulário usar Origin null, que é recusado pela validação estrita. A revisão usa same-origin; não flexibiliza a aceitação de Origin null/externo, Host ou código. O teste em navegador executa o servidor Java de produção com dados sintéticos e confirma recebimento em áreas de desktop/celular. [Validação](VALIDACAO_1.4.10.md) e [como executar o teste](tools/setup-browser-test/README.md).
 
 ### Configuração da TV pelo celular ou PC na revisão 1.4.9
 

@@ -1,3 +1,10 @@
+# 1.4.10 — Corrigir o envio da configuração pelo navegador (26/10/2026)
+
+- Corrige a recusa **Abra o endereço mostrado na TV** ao enviar o formulário no PC, mesmo com o endereço correto. A política no-referrer da 1.4.9 fazia o navegador enviar Origin null; o app recusava esse POST.
+- Usa Referrer-Policy same-origin e mantém a validação estrita de Host/Origin, código e sessão. Origin null ou externo continua recusado.
+- Acrescenta teste em Chromium com formulário real, servidor Java de produção e credencial sintética, em áreas de desktop/celular. Reproduz a recusa nas classes da 1.4.9 e verifica recebimento nas classes corrigidas.
+- Mantém pacote, certificado, preferências, catálogo HTML, código curto, duração da sessão, bibliotecas nativas e áudio. [Validação](VALIDACAO_1.4.10.md).
+
 # 1.4.9 — Configurar a box pelo celular ou PC (26/10/2026)
 
 - Acrescenta **Configurar pelo celular ou PC**: a TV mostra endereço temporário e código de seis dígitos. No navegador da mesma rede, o usuário cola o link completo do Editor remoto do S-Present. Não precisa digitar a chave no controle.
