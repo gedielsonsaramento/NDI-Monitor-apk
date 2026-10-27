@@ -35,6 +35,7 @@ public class SpresenterPairingServerTest {
             assertTrue(response.contains("method=post"));
             assertTrue(response.contains("name=link"));
             assertTrue(response.contains("Cache-Control: no-store"));
+            assertTrue(response.contains("Referrer-Policy: same-origin"));
             assertTrue(response.contains("form-action 'self'"));
             assertFalse(response.contains(server.code()));
             assertFalse(server.address().contains(server.code()));
@@ -103,6 +104,7 @@ public class SpresenterPairingServerTest {
             server.start();
             String body = form(server.code(), LINK);
             assertTrue(post(server, body, "Origin: https://other.example\r\n").startsWith("HTTP/1.1 403 "));
+            assertTrue(post(server, body, "Origin: null\r\n").startsWith("HTTP/1.1 403 "));
             assertTrue(raw(server, "GET / HTTP/1.1\r\nHost: other.example\r\n\r\n").startsWith("HTTP/1.1 403 "));
             assertTrue(post(server, body, "Origin: " + server.address() + "\r\n").startsWith("HTTP/1.1 200 "));
             assertTrue(events.received.await(3, TimeUnit.SECONDS));

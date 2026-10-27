@@ -1,0 +1,7 @@
+{
+  "name": "monitor-setup-browser-test",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Browser regression for the actual TV Box setup form",
+  "devDependencies": { "playwright": "1.62.1" }
+}

@@ -2,7 +2,7 @@
 
 Aplicativo Android independente para receber vídeo e áudio NDI® Standard full-bandwidth ou exibir um retorno HTML pela rede local em celulares e dispositivos Android de uso geral.
 
-Versão de teste: **1.4.9** (`versionCode 14`). Nome provisório: **Monitor de Retorno**. Pacote Android preservado: `br.com.polegar.ndimonitor`.
+Versão de teste: **1.4.10** (`versionCode 15`). Nome provisório: **Monitor de Retorno**. Pacote Android preservado: `br.com.polegar.ndimonitor`.
 
 Comece pela [documentação completa do projeto](DOCUMENTACAO_COMPLETA.md), com instalação, uso no controle remoto, arquitetura, compilação, testes, assinatura e preparação para publicação.
 
@@ -10,7 +10,9 @@ Projeto independente. NDI® é marca registrada da Vizrt NDI AB. Conheça a tecn
 
 ## Teste em TV Box
 
-A versão **1.4.9-tvbox** usa o pacote `br.com.polegar.ndimonitor.tvboxtest` e o nome **Monitor de Retorno — TV Box**. O APK de teste mantém o certificado das edições 1.4.3–1.4.8-TVBox e pode atualizá-las preservando suas preferências. Instala ao lado da edição habitual, como 1.4.2. Veja [TVBOX.md](TVBOX.md) para o teste e o diagnóstico do aparelho.
+A versão **1.4.10-tvbox** usa o pacote `br.com.polegar.ndimonitor.tvboxtest` e o nome **Monitor de Retorno — TV Box**. O APK de teste mantém o certificado das edições 1.4.3–1.4.9-TVBox e pode atualizá-las preservando suas preferências. Instala ao lado da edição habitual, como 1.4.2. Veja [TVBOX.md](TVBOX.md) para o teste e o diagnóstico do aparelho.
+
+A **1.4.10** corrige o envio dessa configuração: a 1.4.9 podia mostrar **Abra o endereço mostrado na TV** no navegador após enviar, mesmo com IP/porta corretos. A correção foi reproduzida e verificada em Chromium com o formulário e o servidor Java reais, sem chave particular. [Validação](VALIDACAO_1.4.10.md).
 
 A **1.4.9** permite **Configurar pelo celular ou PC**: na box, abra **HTML → engrenagem → Saídas HTML do S-Present** e escolha essa opção. Digite no navegador do PC/celular o endereço mostrado na TV, informe o código curto e cole o link completo do Editor remoto do S-Present. A TV recebe a configuração e busca as saídas, sem digitar o token no controle. [Passo a passo](SAIDAS_SPRESENTER.md).
 
@@ -122,10 +124,10 @@ Leia [QUIOSQUE.md](QUIOSQUE.md) antes de mudar a tela inicial.
 
 ## Documentação
 
-- [Manual completo do projeto 1.4.9](DOCUMENTACAO_COMPLETA.md)
+- [Manual completo do projeto 1.4.10](DOCUMENTACAO_COMPLETA.md)
 - [Listagem dos destinos HTML do S-Present pela API](SAIDAS_SPRESENTER.md)
 - [Compatibilidade HTML de uma captura com motores antigos](tools/html-compat/README.md)
-- [Resultados e limites da validação 1.4.9](VALIDACAO_1.4.9.md)
+- [Resultados e limites da validação 1.4.10](VALIDACAO_1.4.10.md)
 - [Histórico da validação 1.4.7](VALIDACAO_1.4.7.md)
 - [Histórico da validação 1.4.6](VALIDACAO_1.4.6.md)
 - [Modo HTML e troca entre fontes](RETORNO_HTML.md)

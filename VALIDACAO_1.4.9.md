@@ -2,6 +2,8 @@
 
 Candidata de 26/10/2026, `versionCode 14`, baseada na 1.4.8 (`ebe863aa480e1fdf26818dfb21df052957f7f7f9`). Pacote `br.com.polegar.ndimonitor.tvboxtest`.
 
+**Falha confirmada após a entrega:** o formulário da 1.4.9 envia `Referrer-Policy: no-referrer`, levando o navegador a enviar Origin null no POST. A validação estrita do app recusa o envio, mesmo com IP/porta corretos. Os testes abaixo não exercitavam o envio num navegador real. A correção e a reprodução em Chromium estão na [1.4.10](VALIDACAO_1.4.10.md); use essa revisão para configurar a box pelo navegador.
+
 ## Problema e mudança
 
 O usuário consegue copiar o link do Editor remoto do S-Present, mas só tem o controle da TV Box e não consegue digitar a chave longa. A revisão acrescenta **Configurar pelo celular ou PC**: endereço temporário da box e código de seis dígitos, formulário acessível pelo navegador da mesma rede e envio do link completo. A TV salva a conexão pela proteção já existente, inicia a busca e mantém a escolha de saída explícita.

@@ -1,6 +1,8 @@
 # Descobrir as saídas HTML do S-Present
 
-Disponível na candidata **1.4.9-TVBox (14)**. Configura uma conexão por instalação do app para consultar os destinos HTML habilitados de um PC e seus nomes atuais. A box pode ser configurada pelo navegador do celular ou do próprio PC, sem digitar a chave no controle.
+Disponível na candidata **1.4.10-TVBox (15)**. Configura uma conexão por instalação do app para consultar os destinos HTML habilitados de um PC e seus nomes atuais. A box pode ser configurada pelo navegador do celular ou do próprio PC, sem digitar a chave no controle.
+
+A **1.4.10** corrige a recusa **Abra o endereço mostrado na TV** durante o envio do formulário da 1.4.9, mesmo com o endereço certo. Atualize a box e abra uma nova sessão; o endereço/porta/código são temporários. Não reutilize uma aba de configuração anterior.
 
 ## Configurar uma vez
 
@@ -66,4 +68,4 @@ A captura `Erro.html` recebida em 26/10/2026 confirmou `Cannot GET /output/` no 
 
 O catálogo não confirma que a página será renderizada corretamente. A adaptação Chrome 44–86 da 1.4.7 continua no pacote. Enquadramento, mídia, áudio e estabilidade ainda exigem teste físico. Esta revisão não corrige o áudio associado às letras.
 
-Veja [TVBOX.md](TVBOX.md) e [VALIDACAO_1.4.9.md](VALIDACAO_1.4.9.md).
+Veja [TVBOX.md](TVBOX.md) e [VALIDACAO_1.4.10.md](VALIDACAO_1.4.10.md).

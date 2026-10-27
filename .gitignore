@@ -40,3 +40,4 @@ keystores/
 # Captured third-party web programs: generated locally, never commit the capture or adapted bundle.
 /app/src/main/assets/html-compat/
 /tools/html-compat/node_modules/
+/tools/setup-browser-test/node_modules/
