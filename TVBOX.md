@@ -1,8 +1,10 @@
-# Teste em TV Box — Monitor de Retorno 1.4.10
+# Instalação em TVs e boxes — S-Retorno 1.4.11
+
+A versão **1.4.11 (16)** troca o nome e o ícone do aplicativo. Na lista de apps, na tela inicial e no instalador, procure **S-Retorno**. O APK é `S-Retorno-1.4.11.apk`; a versão exibida também é `1.4.11`, sem o sufixo `-tvbox`. A assinatura e o pacote são os mesmos das edições TVBox anteriores, permitindo atualizar sem desinstalar e manter modo, fonte, enquadramento e configuração da API. Esta revisão mantém o comportamento de recepção e conexão da 1.4.10.
 
 ## Listar destinos novos do S-Present
 
-Instale a **1.4.10-TVBox (15)** sobre a edição TVBox anterior, sem desinstalar. Em HTML, use **engrenagem → Saídas HTML do S-Present → Configurar pelo celular ou PC**. A TV mostra seu próprio endereço e um código de seis dígitos. No navegador do PC ou celular da mesma rede, abra esse endereço, informe o código e cole o link completo de **Copiar link com token** do Editor remoto do S-Present. Clique em **Enviar para esta TV** e selecione a saída na lista da box. Não é necessário digitar o token com o controle.
+Instale a **1.4.11 (16)** sobre a edição TVBox anterior, sem desinstalar. Em HTML, use **engrenagem → Saídas HTML do S-Present → Configurar pelo celular ou PC**. A TV mostra seu próprio endereço e um código de seis dígitos. No navegador do PC ou celular da mesma rede, abra esse endereço, informe o código e cole o link completo de **Copiar link com token** do Editor remoto do S-Present. Clique em **Enviar para esta TV** e selecione a saída na lista da box. Não é necessário digitar o token com o controle.
 
 A 1.4.10 corrige a recusa do formulário da 1.4.9. Após atualizar, feche a aba antiga no navegador e abra uma nova sessão na TV. Use o endereço e o código atuais exibidos nessa nova sessão; a porta anterior pode mudar.
 
@@ -14,16 +16,16 @@ Revisão candidata de 26/10/2026. As fotos confirmam a abertura do menu/diagnós
 
 ## Confirmar a adaptação HTML
 
-Instale a **1.4.10-TVBox sobre a 1.4.9**, mantendo as preferências, e abra a mesma fonte HTML. Na B9/HTV, use **Exibição HTML → Monitor 16:9 — compatibilidade TV Box**. Faça uma mudança de letra ou visitante no computador e confira a atualização na tela.
+Instale a **1.4.11 sobre a edição TVBox anterior**, mantendo as preferências, e abra a mesma fonte HTML. Na B9/HTV, use **Exibição HTML → Monitor 16:9 — compatibilidade TV Box**. Faça uma mudança de letra ou visitante no computador e confira a atualização na tela.
 
-Em **Diagnóstico do aparelho**, o início deve identificar **1.4.10-tvbox (15)**. No final, procure **Compatibilidade HTML: adaptação aplicada a 2 de 2 arquivos (Chrome 44)** na B9, ou Chrome 52 na HTV. A resposta pode levar até cinco segundos. Se ficar preto ou deformado, fotografe essa parte, a mensagem de erro e a linha **Arquivo**, se houver. Feche/reabra para conferir a restauração sem busca geral.
+Em **Diagnóstico do aparelho**, o início deve identificar **1.4.11 (16)**. No final, procure **Compatibilidade HTML: adaptação aplicada a 2 de 2 arquivos (Chrome 44)** na B9, ou Chrome 52 na HTV. A resposta pode levar até cinco segundos. Se ficar preto ou deformado, fotografe essa parte, a mensagem de erro e a linha **Arquivo**, se houver. Feche/reabra para conferir a restauração sem busca geral.
 
 O perfil foi preparado de `main.ff832fdd.js` e `main.eb127441.css` de `Captura-Retorno.zip`. Em Chrome 44–86, verifica nome, origem e SHA-256 dos bytes atuais do servidor antes de usar a adaptação. Outros arquivos/builds, perfis ausentes ou motores atuais mantêm a página original. O WebSocket e a mídia continuam na fonte selecionada; não exige serviço extra no PC nem substitui o WebView. Consulte [preparo de outra captura](tools/html-compat/README.md).
 
 ## Instalar e abrir
 
-1. Use `Monitor-de-Retorno-1.4.10-TVBox-teste.apk`.
-2. Abra o ícone **Monitor de Retorno — TV Box**. O pacote `br.com.polegar.ndimonitor.tvboxtest` e o certificado da 1.4.3-TVBox foram mantidos para atualizar essa edição. A instalação habitual, como 1.4.2, permanece separada.
+1. Use `S-Retorno-1.4.11.apk`.
+2. Abra o ícone **S-Retorno**. O pacote `br.com.polegar.ndimonitor.tvboxtest` e o certificado da 1.4.3-TVBox foram mantidos para atualizar essa edição. A instalação habitual, como 1.4.2, permanece separada.
 3. Sem configuração anterior, API 23–25 entra em HTML sem carregar NDI. Uma fonte NDI já selecionada é restaurada normalmente.
 4. Se aparecer a recuperação com um relatório anterior, escolha **Abrir apenas HTML** para testar a nova interface. Fotografe um novo relatório se houver outra falha. Queda de energia ou encerramento também podem interromper a abertura; somente um checkpoint não comprova uma falha nativa.
 5. Escolha a mesma saída HTML ou informe uma vez o endereço, por exemplo `http://192.168.2.52:5050/output/retorno`. Use o IP e nome de saída atuais do PC.
@@ -43,7 +45,7 @@ Abra **engrenagem → Diagnóstico do aparelho** e fotografe o conteúdo. Inclui
 Com ADB configurado no PC e a depuração autorizada na box:
 
 ```powershell
-adb install -r Monitor-de-Retorno-1.4.10-TVBox-teste.apk
+adb install -r S-Retorno-1.4.11.apk
 adb shell am start -n br.com.polegar.ndimonitor.tvboxtest/br.com.polegar.ndimonitor.StartupActivity
 adb logcat -d -b crash -b main -v threadtime AndroidRuntime:E libc:F DEBUG:F NDIMonitorNative:V '*:S' > tvbox-log.txt
 ```

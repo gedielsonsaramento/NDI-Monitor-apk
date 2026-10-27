@@ -194,7 +194,7 @@ final class SpresenterPairingServer implements AutoCloseable {
     private static void reply(Socket client, int status, String content) throws IOException {
         String html = "<!doctype html><html lang=pt-BR><meta charset=utf-8>"
                 + "<meta name=viewport content=\"width=device-width,initial-scale=1\">"
-                + "<title>Configurar Monitor de Retorno</title><style>"
+                + "<title>Configurar S-Retorno</title><style>"
                 + "body{font:18px sans-serif;background:#11181f;color:#f3f5f7;margin:0;padding:24px}"
                 + "main{max-width:520px;margin:auto}h1{font-size:26px}label{display:block;margin:24px 0 8px}"
                 + "input,textarea,button{box-sizing:border-box;width:100%;font:inherit;padding:14px;border-radius:8px}"

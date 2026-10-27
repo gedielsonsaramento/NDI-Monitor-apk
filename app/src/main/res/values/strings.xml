@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="recovery_title">Abertura do Monitor de Retorno</string>
+    <string name="recovery_title">Abertura do S-Retorno</string>
     <string name="recovery_explanation">A abertura anterior foi interrompida. Fotografe o relatório abaixo. Você pode tentar abrir somente o retorno HTML.</string>
     <string name="recovery_html">Abrir apenas HTML</string>
     <string name="recovery_retry">Tentar abrir o monitor novamente</string>
     <string name="settings_unavailable">Configurações indisponíveis neste aparelho</string>
-    <string name="app_name">Monitor de Retorno</string>
+    <string name="app_name">S-Retorno</string>
     <string name="video_monitor">Monitor de vídeo</string>
-    <string name="starting">Iniciando monitor…</string>
+    <string name="starting">Iniciando S-Retorno…</string>
     <string name="open_sources">Abrir fontes e modo de exibição</string>
     <string name="close">Fechar</string>
     <string name="searching_sources">Procurando fontes NDI na rede…</string>
