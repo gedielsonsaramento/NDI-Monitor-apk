@@ -76,6 +76,9 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     private AlertDialog htmlAddressDialog;
     private AlertDialog htmlLayoutDialog;
     private AlertDialog spresenterDialog;
+    private AlertDialog spresenterPairingDialog;
+    private SpresenterPairingServer spresenterPairingServer;
+    private int spresenterPairingGeneration;
     private HtmlMonitor htmlMonitor;
     private LanHtmlDiscovery htmlDiscovery;
     private final HtmlSourceCatalog htmlSourceCatalog = new HtmlSourceCatalog();
@@ -242,6 +245,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     @Override
     protected void onStop() {
         activityVisible = false;
+        stopSpresenterPairing();
         htmlMonitor.pause();
         stopNdiPlayback();
         releaseAudio();
@@ -583,6 +587,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         View form = getLayoutInflater().inflate(R.layout.dialog_spresenter_api, null);
         EditText address = form.findViewById(R.id.spresenter_api_address);
         EditText token = form.findViewById(R.id.spresenter_api_token);
+        EditText link = form.findViewById(R.id.spresenter_editor_link);
         String initial = api.origin();
         if (initial.isEmpty()) {
             try {
@@ -594,6 +599,15 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         address.setText(initial);
         spresenterDialog = new AlertDialog.Builder(this).setTitle(R.string.spresenter_api_title)
                 .setView(form).setNegativeButton(android.R.string.cancel, null).create();
+        form.findViewById(R.id.spresenter_pairing_button).setOnClickListener(v -> showSpresenterPairing());
+        form.findViewById(R.id.spresenter_link_save).setOnClickListener(v -> {
+            try { saveSpresenterConnection(SpresenterConnection.fromEditorLink(link.getText().toString())); }
+            catch (IllegalArgumentException invalid) { link.setError(getString(R.string.spresenter_editor_link_invalid)); }
+        });
+        form.findViewById(R.id.spresenter_manual_button).setOnClickListener(v -> {
+            View manual = form.findViewById(R.id.spresenter_manual_form);
+            manual.setVisibility(manual.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
+        });
         form.findViewById(R.id.spresenter_api_save).setOnClickListener(v -> {
             String origin;
             try { origin = SpresenterConnection.normalizeOrigin(address.getText().toString()); }
@@ -604,14 +618,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             SpresenterConnection connection;
             try { connection = new SpresenterConnection(origin, key); }
             catch (IllegalArgumentException invalid) { token.setError(getString(R.string.spresenter_api_key_required)); return; }
-            String oldOrigin = api.origin();
-            boolean durable = api.save(connection);
-            if (!oldOrigin.isEmpty() && !oldOrigin.equals(connection.origin)) {
-                htmlSourceCatalog.replaceFromCatalog(oldOrigin, Collections.emptyList(), SystemClock.elapsedRealtime());
-            }
-            if (!durable) android.widget.Toast.makeText(this, R.string.spresenter_api_session,
-                    android.widget.Toast.LENGTH_LONG).show();
-            startCatalogSearch();
+            saveSpresenterConnection(connection);
         });
         View remove = form.findViewById(R.id.spresenter_api_remove);
         remove.setVisibility(api.origin().isEmpty() ? View.GONE : View.VISIBLE);
@@ -621,9 +628,89 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             htmlSourceCatalog.replaceFromCatalog(oldOrigin, Collections.emptyList(), SystemClock.elapsedRealtime());
             startCatalogSearch();
         });
-        spresenterDialog.setOnDismissListener(dialog -> spresenterDialog = null);
+        spresenterDialog.setOnDismissListener(dialog -> {
+            if (spresenterDialog != dialog) return;
+            stopSpresenterPairing();
+            link.setText("");
+            token.setText("");
+            spresenterDialog = null;
+        });
         spresenterDialog.getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
         spresenterDialog.show();
+        form.findViewById(R.id.spresenter_pairing_button).requestFocus();
+    }
+
+    private void saveSpresenterConnection(SpresenterConnection connection) {
+        SpresenterApiSettings api = new SpresenterApiSettings(this);
+        String oldOrigin = api.origin();
+        boolean durable = api.save(connection);
+        if (!oldOrigin.isEmpty() && !oldOrigin.equals(connection.origin)) {
+            htmlSourceCatalog.replaceFromCatalog(oldOrigin, Collections.emptyList(), SystemClock.elapsedRealtime());
+        }
+        if (!durable) android.widget.Toast.makeText(this, R.string.spresenter_api_session,
+                android.widget.Toast.LENGTH_LONG).show();
+        stopSpresenterPairing();
+        startCatalogSearch();
+    }
+
+    private void showSpresenterPairing() {
+        if (destroyed || !activityVisible || !htmlMode ||
+                (spresenterPairingDialog != null && spresenterPairingDialog.isShowing())) return;
+        stopSpresenterPairing();
+        String address = SpresenterSetupNetwork.address(this);
+        if (address == null) {
+            android.widget.Toast.makeText(this, R.string.spresenter_pairing_no_network,
+                    android.widget.Toast.LENGTH_LONG).show();
+            return;
+        }
+        int generation = ++spresenterPairingGeneration;
+        try {
+            spresenterPairingServer = new SpresenterPairingServer(address, new SpresenterPairingServer.Listener() {
+                @Override public void onConnection(SpresenterConnection connection) {
+                    controlsHandler.post(() -> {
+                        if (isSpresenterPairingActive(generation)) saveSpresenterConnection(connection);
+                    });
+                }
+                @Override public void onEnded() {
+                    controlsHandler.post(() -> {
+                        if (!isSpresenterPairingActive(generation)) return;
+                        stopSpresenterPairing();
+                        android.widget.Toast.makeText(MainActivity.this, R.string.spresenter_pairing_ended,
+                                android.widget.Toast.LENGTH_LONG).show();
+                    });
+                }
+            });
+            View pairing = getLayoutInflater().inflate(R.layout.dialog_spresenter_pairing, null);
+            ((TextView) pairing.findViewById(R.id.spresenter_pairing_address)).setText(spresenterPairingServer.address());
+            ((TextView) pairing.findViewById(R.id.spresenter_pairing_code)).setText(spresenterPairingServer.code());
+            spresenterPairingDialog = new AlertDialog.Builder(this).setTitle(R.string.spresenter_pairing_title)
+                    .setView(pairing).setNegativeButton(R.string.close, null).create();
+            spresenterPairingDialog.setOnDismissListener(dialog -> {
+                if (spresenterPairingDialog == dialog) stopSpresenterPairing();
+            });
+            spresenterPairingDialog.show();
+            spresenterPairingServer.start();
+        } catch (IOException | RuntimeException unavailable) {
+            stopSpresenterPairing();
+            android.widget.Toast.makeText(this, R.string.spresenter_pairing_unavailable,
+                    android.widget.Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private boolean isSpresenterPairingActive(int generation) {
+        return !destroyed && activityVisible && htmlMode && generation == spresenterPairingGeneration &&
+                spresenterPairingServer != null && spresenterPairingDialog != null &&
+                spresenterPairingDialog.isShowing();
+    }
+
+    private void stopSpresenterPairing() {
+        ++spresenterPairingGeneration;
+        SpresenterPairingServer server = spresenterPairingServer;
+        spresenterPairingServer = null;
+        if (server != null) server.close();
+        AlertDialog dialog = spresenterPairingDialog;
+        spresenterPairingDialog = null;
+        if (dialog != null) dialog.dismiss();
     }
 
     private void startCatalogSearch() {
@@ -775,6 +862,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
                 (modeDialog != null && modeDialog.isShowing()) ||
                 (htmlAddressDialog != null && htmlAddressDialog.isShowing()) ||
                 (spresenterDialog != null && spresenterDialog.isShowing()) ||
+                (spresenterPairingDialog != null && spresenterPairingDialog.isShowing()) ||
                 (settingsDialog != null && settingsDialog.isShowing())) return;
         if (htmlMode) { scanHtmlSources(); return; }
         stopDiscoveryPolling();
@@ -994,6 +1082,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     @Override
     protected void onDestroy() {
         destroyed = true;
+        stopSpresenterPairing();
         stopNdiPlayback();
         htmlMonitor.destroy();
         stopDiscoveryPolling();

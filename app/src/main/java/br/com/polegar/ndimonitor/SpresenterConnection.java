@@ -1,6 +1,8 @@
 package br.com.polegar.ndimonitor;
 
 import java.net.URI;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
 /** Credentials belong to one explicit origin, never to the LAN address range. */
@@ -14,6 +16,29 @@ final class SpresenterConnection {
             throw new IllegalArgumentException("token");
         }
         this.token = token;
+    }
+
+    /** Imports the existing editor link locally; never opens that credential-bearing URL. */
+    static SpresenterConnection fromEditorLink(String link) {
+        try {
+            String value = link == null ? "" : link.trim();
+            if (value.length() > 2048) throw new IllegalArgumentException();
+            URI uri = new URI(value);
+            if (uri.getRawFragment() != null || uri.getUserInfo() != null ||
+                    (!"/warp/".equals(uri.getRawPath()) && !"/warp".equals(uri.getRawPath()))) {
+                throw new IllegalArgumentException();
+            }
+            String query = uri.getRawQuery();
+            if (query == null || !query.startsWith("token=") || query.indexOf('&') >= 0) {
+                throw new IllegalArgumentException();
+            }
+            String key = URLDecoder.decode(query.substring(6), StandardCharsets.UTF_8.name());
+            URI root = new URI(uri.getScheme(), null, uri.getHost(), uri.getPort(), "", null, null);
+            return new SpresenterConnection(root.toASCIIString(), key);
+        } catch (Exception invalid) {
+            // Never include the supplied URL/token in an error or report.
+            throw new IllegalArgumentException("editor_link");
+        }
     }
 
     static String normalizeOrigin(String address) {

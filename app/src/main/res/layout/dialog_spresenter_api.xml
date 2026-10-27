@@ -5,6 +5,25 @@
         android:orientation="vertical" android:padding="20dp">
         <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
             android:text="@string/spresenter_api_instructions" android:textSize="14sp" />
+        <Button android:id="@+id/spresenter_pairing_button" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:minHeight="48dp" android:layout_marginTop="12dp"
+            android:focusableInTouchMode="true"
+            android:text="@string/spresenter_pairing_title" android:textAllCaps="false" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="12dp" android:text="@string/spresenter_editor_link_label" />
+        <EditText android:id="@+id/spresenter_editor_link" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:minHeight="48dp" android:singleLine="true"
+            android:inputType="textPassword|textNoSuggestions" android:importantForAutofill="no"
+            android:saveEnabled="false" android:hint="@string/spresenter_editor_link_hint"
+            android:nextFocusDown="@id/spresenter_link_save" />
+        <Button android:id="@+id/spresenter_link_save" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:minHeight="48dp"
+            android:text="@string/spresenter_editor_link_save" android:textAllCaps="false" />
+        <Button android:id="@+id/spresenter_manual_button" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:minHeight="48dp"
+            android:text="@string/spresenter_manual_title" android:textAllCaps="false" />
+        <LinearLayout android:id="@+id/spresenter_manual_form" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:orientation="vertical" android:visibility="gone">
         <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:text="@string/spresenter_api_address" />
@@ -24,6 +43,7 @@
         <Button android:id="@+id/spresenter_api_save" android:layout_width="match_parent"
             android:layout_height="wrap_content" android:minHeight="48dp"
             android:text="@string/spresenter_api_save" android:textAllCaps="false" />
+        </LinearLayout>
         <Button android:id="@+id/spresenter_api_remove" android:layout_width="match_parent"
             android:layout_height="wrap_content" android:minHeight="48dp"
             android:text="@string/spresenter_api_remove" android:textAllCaps="false" />

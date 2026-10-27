@@ -1,21 +1,36 @@
 # Descobrir as saídas HTML do S-Present
 
-Disponível na candidata **1.4.8-TVBox (13)**. Configura uma conexão de leitura por instalação do app, para consultar todos os destinos HTML habilitados desse PC e seus nomes atuais.
+Disponível na candidata **1.4.9-TVBox (14)**. Configura uma conexão por instalação do app para consultar os destinos HTML habilitados de um PC e seus nomes atuais. A box pode ser configurada pelo navegador do celular ou do próprio PC, sem digitar a chave no controle.
 
 ## Configurar uma vez
 
 No computador com o S-Present:
 
-1. Abra **Configurações → API** e ative a API.
-2. Crie uma chave para o Monitor de Retorno com a permissão **advanced:read** (leitura). Essa é a permissão exigida pela listagem usada nesta revisão.
-3. Copie o endereço da API e a chave exibida. Uma chave existente pode ser usada se já possuir essa permissão. Nenhuma permissão de escrita é necessária.
+1. Abra **Configurações → Telas**. Na saída NDI existente, expanda a setinha e escolha **Abrir editor avançado**.
+2. Na barra superior, abra **Editor remoto (rede)**, identificado pela descrição ao passar o mouse sobre o ícone.
+3. Se **Publicar na rede** já estiver ligado, use **Copiar link com token**. Se estiver desligado, essa opção habilita a API e o editor remoto na rede; ative-a somente se desejar esse acesso.
+
+O link autoriza leitura **e alteração do mapeamento das saídas**. O Monitor usa somente a consulta. Na versão S-Present 0.3.50 analisada, a criação manual em **Configurações → API** não oferece o campo `advanced:read`, embora o servidor exija essa permissão. A orientação anterior para marcar esse campo estava incorreta para essa interface. `outputs:read` sozinho não substitui essa permissão.
+
+Uma chave existente com `advanced:read` também pode ser usada na configuração manual abaixo, sem precisar habilitar o editor. O Monitor não exige permissão de escrita. Não compartilhe o link completo ou seu QR Code.
 
 No app Android:
 
-1. Selecione **HTML** e abra **engrenagem → Saídas HTML do S-Present**.
-2. Informe o endereço da API do PC. Exemplo da rede observada: `http://192.168.2.53:5050/api/v1`. Um IP sem porta usa HTTP/5050. Um endereço completo mantém a porta e o protocolo informados.
-3. Cole a chave no campo próprio e toque em **Salvar e buscar saídas**.
-4. Selecione uma saída da lista. Esse acionamento continua sendo necessário para escolher qual retorno exibir.
+1. Selecione **HTML** e abra **engrenagem → Saídas HTML do S-Present → Configurar pelo celular ou PC**.
+2. A TV mostra um endereço próprio e um código de seis dígitos. Mantenha essa tela aberta.
+3. No navegador do celular ou do PC conectado à mesma rede da box, digite o endereço mostrado **na TV**. Esse é o endereço temporário da box, diferente do endereço do S-Present.
+4. Na página, informe o código da TV e cole o **link completo** de **Copiar link com token**. Clique em **Enviar para esta TV**.
+5. O app salva a conexão e busca as saídas. Selecione a saída desejada na lista da TV. Não precisa separar ou digitar a chave com o controle.
+
+No próprio PC do S-Present, o link já está na área de transferência: basta colá-lo no formulário do navegador. No celular, obtenha o link do editor remoto e cole-o inteiro. Este projeto não acrescenta leitor de QR ou acesso à câmera.
+
+O código vale por até cinco minutos e para um único envio. Fechar a tela ou sair do app encerra a configuração. Cinco códigos incorretos também encerram a sessão. Para tentar novamente, abra a opção na TV para gerar outro código/endereço. Cada box tem sua própria sessão.
+
+## Colar o link no próprio aparelho ou configurar manualmente
+
+No celular com o Monitor instalado, é possível colar o link completo em **Ou cole o link completo neste aparelho** e tocar em **Usar link e buscar saídas**.
+
+Em **Configuração manual**, informe a API do PC, como `http://192.168.2.53:5050/api/v1`, e uma chave com `advanced:read`; toque em **Salvar e buscar saídas**. Um IP sem porta usa HTTP/5050. Um endereço completo mantém a porta e o protocolo informados.
 
 O campo da chave fica vazio ao reabrir o diálogo. Deixá-lo vazio mantém a chave existente somente para o mesmo endereço do PC. Se mudar o endereço, informe a chave novamente. **Remover conexão da API** remove essa configuração, preservando a seleção HTML existente.
 
@@ -33,7 +48,9 @@ Enquanto a busca solicitada estiver aberta, mantém o intervalo existente de 30 
 
 A conexão vale para um PC por instalação do app. Outros PCs ainda podem aparecer pela busca anterior de caminhos conhecidos; para listar todos os destinos de outro PC, altere a conexão configurada. Se o IP do PC mudar, atualize o endereço nas configurações. A chave não é enviada automaticamente aos novos IPs encontrados na varredura.
 
-A consulta faz somente **GET** no endpoint `BASE/advanced`, sendo `BASE` a URL `/api/v1` do PC. A chave vai no cabeçalho Authorization, nunca na URL de reprodução. Não segue redirecionamentos nem altera destinos, camadas, temas ou apresentações.
+A consulta faz somente **GET** no endpoint `BASE/advanced`, sendo `BASE` a URL `/api/v1` do PC. A chave vai no cabeçalho Authorization, nunca na URL de reprodução. Não segue redirecionamentos nem altera destinos, camadas, temas ou apresentações. Importar o link do editor apenas extrai a origem e a chave localmente: o app não abre a página `/warp/` para controlar o S-Present.
+
+A página temporária de configuração usa HTTP na rede local, sem serviço de nuvem. Só abre por solicitação e escuta um endereço IPv4 de Wi-Fi/Ethernet atribuído à box, em porta temporária. Recebe o link pelo corpo de um POST após conferir o código; não o coloca na URL nem o devolve na resposta. Limita cabeçalho/corpo a 8 KiB, tempo por pedido a três segundos, duração a cinco minutos e tentativas de código a cinco. Valida Host/Origin, bloqueia formulários de outras origens e não disponibiliza CORS, acesso a arquivos ou controles de apresentação. A página e as respostas usam no-store. Use uma rede local de confiança; isolamento de clientes/convidados pode impedir o acesso.
 
 Em aparelhos com AndroidKeyStore funcional, a chave é armazenada com AES/GCM, vinculada ao endereço configurado. Se o firmware não permitir esse armazenamento, o app avisa e mantém a chave somente na memória da sessão. Após encerrar o processo nesse caso, será necessário informá-la novamente. A chave não aparece na lista de fontes ou nos relatórios.
 
@@ -49,4 +66,4 @@ A captura `Erro.html` recebida em 26/10/2026 confirmou `Cannot GET /output/` no 
 
 O catálogo não confirma que a página será renderizada corretamente. A adaptação Chrome 44–86 da 1.4.7 continua no pacote. Enquadramento, mídia, áudio e estabilidade ainda exigem teste físico. Esta revisão não corrige o áudio associado às letras.
 
-Veja [TVBOX.md](TVBOX.md) e [VALIDACAO_1.4.8.md](VALIDACAO_1.4.8.md).
+Veja [TVBOX.md](TVBOX.md) e [VALIDACAO_1.4.9.md](VALIDACAO_1.4.9.md).

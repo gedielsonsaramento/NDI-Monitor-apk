@@ -2,6 +2,8 @@
 
 Candidata de 26/10/2026, `versionCode 13`, baseada na 1.4.7 (`95465c0f57da6592d567e05aadec5b2999b67bfa`). Pacote `br.com.polegar.ndimonitor.tvboxtest`.
 
+**Correção posterior da orientação de configuração:** a interface de criação manual de chaves do S-Present 0.3.50 omite `advanced:read`. A instrução de marcar essa permissão não pode ser seguida nessa interface. A revisão 1.4.9 aceita o link completo do Editor remoto e permite enviá-lo pelo celular/PC; consulte [SAIDAS_SPRESENTER.md](SAIDAS_SPRESENTER.md). Os testes abaixo continuam sendo o registro da 1.4.8 e não comprovam configuração ou funcionamento em equipamento real.
+
 ## Evidência e contrato
 
 As fotos mostram nomes de destinos personalizados e gerados pelo S-Present, como musicos, madureira e canvas-2. A busca anterior tentava caminhos predefinidos, encerrava as alternativas no primeiro HTML do PC e usava o título genérico da página. A nova captura inclui `Erro.html`, salvo de `http://192.168.2.53:5050/output/`, com a resposta **Cannot GET /output/**. Não há catálogo nesse caminho nessa instalação.

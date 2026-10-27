@@ -1,12 +1,12 @@
 # Monitor de Retorno
 
-## Manual completo do projeto - versão 1.4.8
+## Manual completo do projeto - versão 1.4.9
 
 Aplicativo Android para receber NDI® Standard full-bandwidth ou abrir um retorno HTML pela rede local. Nome de produto provisório: Monitor de Retorno. Mantenedor: Gedielson Saramento. Documentação técnica revisada em 26/10/2026, horário do Brasil.
 
 NDI® is a registered trademark of Vizrt NDI AB. https://ndi.video/
 
-Esta revisão é uma versão de teste. O resultado de compilação, os testes executados e o que ainda precisa de equipamento real estão em VALIDACAO_1.4.8.md. A existência de um APK ou AAB compilado não significa publicação ou aprovação na Google Play.
+Esta revisão é uma versão de teste. O resultado de compilação, os testes executados e o que ainda precisa de equipamento real estão em VALIDACAO_1.4.9.md. A existência de um APK ou AAB compilado não significa publicação ou aprovação na Google Play.
 
 Repositório: https://github.com/gedielsonsaramento/NDI-Monitor-apk
 
@@ -54,11 +54,19 @@ O aplicativo não cria a apresentação, não controla os slides e não substitu
 | Orientação | Horizontal, com proporção preservada no vídeo NDI |
 | Operação | Toque, mouse ou controle remoto com setas e OK/Enter |
 | Pacote Android | br.com.polegar.ndimonitor |
-| Versão | versionName 1.4.8, versionCode 13; teste de box: 1.4.8-tvbox |
+| Versão | versionName 1.4.9, versionCode 14; teste de box: 1.4.9-tvbox |
 
 O Android 5.1 do servidor Samsung não é compatível com este APK. Não há pacote x86/x86_64 nesta revisão. O funcionamento de vídeo, áudio, boot e WebView varia conforme o hardware e o firmware: a versão mínima não comprova compatibilidade com todas as TV Boxes.
 
 Uma rede local funcionando é suficiente para o uso habitual de fontes locais. O conteúdo de uma página HTML pode exigir internet se carregar fontes, imagens, scripts ou outros recursos externos.
+
+### Configuração da TV pelo celular ou PC na revisão 1.4.9
+
+A opção **HTML → engrenagem → Saídas HTML do S-Present → Configurar pelo celular ou PC** abre uma sessão local com endereço da box e código de seis dígitos. O usuário acessa esse endereço no navegador do PC/celular da mesma rede e envia o link completo do Editor remoto do S-Present. O app extrai a origem e a chave, salva pela mesma proteção da 1.4.8 e inicia a busca; a saída continua sendo escolhida pelo usuário.
+
+A sessão recebe um único envio, dura até cinco minutos e fecha ao cancelar, sair do app ou após cinco códigos incorretos. Não fica ativa na reprodução ou no boot. Usa HTTP no endereço IPv4 local de Wi-Fi/Ethernet, sem redirecionamentos, CORS ou nuvem; exige Host/Origin corretos e código, limita tamanho/tempo e não devolve credenciais. A entrada manual e a colagem do link no próprio aparelho permanecem disponíveis. [Procedimento e limites](SAIDAS_SPRESENTER.md).
+
+A criação manual de chaves da interface S-Present 0.3.50 não oferece advanced:read. A orientação anterior foi corrigida: o link do Editor remoto inclui leitura e escrita do mapeamento; o Monitor continua executando somente GET. Não é necessário criar outra chave se uma chave compatível já existe.
 
 ### Catálogo de destinos HTML na revisão 1.4.8
 
