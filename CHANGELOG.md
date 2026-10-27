@@ -1,3 +1,11 @@
+# 1.4.9 — Configurar a box pelo celular ou PC (26/10/2026)
+
+- Acrescenta **Configurar pelo celular ou PC**: a TV mostra endereço temporário e código de seis dígitos. No navegador da mesma rede, o usuário cola o link completo do Editor remoto do S-Present. Não precisa digitar a chave no controle.
+- Configuração por solicitação, um envio, cinco minutos, cinco códigos incorretos; fecha ao cancelar ou sair do app. Valida tamanho, tempo, origem e código, sem guardar a chave em URL de reprodução ou resposta da página.
+- Aceita o link completo no próprio aparelho e mantém endereço/chave em **Configuração manual**. Preserva a fonte escolhida e exige selecionar a saída após buscar.
+- Corrige a orientação da 1.4.8: a criação manual de chaves da interface S-Present 0.3.50 omite advanced:read. O link do editor oferece essa permissão e também escrita; o Monitor continua somente consultando.
+- Mantém certificado/pacote TVBox, armazenamento protegido, perfil HTML Chrome 44–86 e bibliotecas/áudio da 1.4.8. Teste em rede e boxes reais ainda é necessário. [Configuração](SAIDAS_SPRESENTER.md) e [validação](VALIDACAO_1.4.9.md).
+
 # 1.4.8 — Catálogo dos destinos HTML do S-Present (26/10/2026)
 
 - Acrescenta configuração de um PC e chave de leitura advanced:read para consultar GET /api/v1/advanced. Lista todos os destinos network habilitados, com nomes/URLs atuais, incluindo slugs personalizados e gerados.

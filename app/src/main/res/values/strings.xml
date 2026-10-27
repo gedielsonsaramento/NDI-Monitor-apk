@@ -67,10 +67,22 @@
         <item quantity="other">%d fontes encontradas · busca ativa</item>
     </plurals>
     <string name="spresenter_api_title">Saídas HTML do S-Present</string>
-    <string name="spresenter_api_instructions">No S-Present, abra Configurações → API, ative a API e crie uma chave com a permissão advanced:read (leitura). Informe aqui o endereço e a chave uma vez. Atualizar passará a consultar as saídas HTML habilitadas e seus nomes atuais.</string>
+    <string name="spresenter_api_instructions">No S-Present, abra Editor remoto (rede), na Saída Avançada, e use Copiar link com token. Envie esse link pelo celular ou PC para configurar a TV sem digitar a chave no controle.</string>
+    <string name="spresenter_pairing_title">Configurar pelo celular ou PC</string>
+    <string name="spresenter_pairing_instructions">No celular ou PC conectado à mesma rede desta TV, abra o navegador e digite este endereço:</string>
+    <string name="spresenter_pairing_code_label">Código para informar nessa página:</string>
+    <string name="spresenter_pairing_lifetime">Cole o link completo do S-Present na página e informe o código acima. Válido por até 5 minutos enquanto esta tela estiver aberta.</string>
+    <string name="spresenter_pairing_no_network">Conecte esta TV ao Wi-Fi ou cabo de rede para configurar pelo celular ou PC.</string>
+    <string name="spresenter_pairing_unavailable">Não foi possível abrir a configuração nesta rede. Confira a conexão e tente novamente.</string>
+    <string name="spresenter_pairing_ended">Configuração encerrada. Abra novamente para gerar outro código.</string>
+    <string name="spresenter_editor_link_label">Ou cole o link completo neste aparelho:</string>
+    <string name="spresenter_editor_link_hint">Link de Copiar link com token</string>
+    <string name="spresenter_editor_link_save">Usar link e buscar saídas</string>
+    <string name="spresenter_editor_link_invalid">Cole o link completo de Copiar link com token, no Editor remoto (rede).</string>
+    <string name="spresenter_manual_title">Configuração manual</string>
     <string name="spresenter_api_address">Endereço da API do computador</string>
     <string name="spresenter_api_address_hint">http://IP_DO_PC:5050/api/v1</string>
-    <string name="spresenter_api_key">Chave de leitura da API</string>
+    <string name="spresenter_api_key">Chave da API</string>
     <string name="spresenter_api_key_hint">spk_… · vazio mantém a chave deste PC</string>
     <string name="spresenter_api_save">Salvar e buscar saídas</string>
     <string name="spresenter_api_remove">Remover conexão da API</string>

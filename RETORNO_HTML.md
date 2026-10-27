@@ -12,6 +12,8 @@ Na **1.4.4**, abrir HTML não inicializa o NDI em nenhuma versão do Android. Um
 
 ## Abrir o retorno
 
+Na **1.4.9**, a box pode receber a configuração pelo celular ou PC: **engrenagem → Saídas HTML do S-Present → Configurar pelo celular ou PC**. Abra no navegador da mesma rede o endereço mostrado na TV, informe o código curto e cole o link completo do Editor remoto do S-Present. Isso evita digitar a chave no controle. Escolha a saída na lista após buscar. Veja [o passo a passo](SAIDAS_SPRESENTER.md).
+
 Na **1.4.8**, para descobrir destinos novos e seus nomes atuais, configure **engrenagem → Saídas HTML do S-Present**, com o endereço da API e uma chave `advanced:read`. Essa conexão consulta o catálogo de destinos HTML habilitados de um PC. Sem ela, a busca anterior continua limitada aos nomes conhecidos; informar um link completo permanece disponível. Veja [SAIDAS_SPRESENTER.md](SAIDAS_SPRESENTER.md).
 
 1. Ative um destino **Saída HTML** em **Retorno (Stage)** no Spresenter e confira

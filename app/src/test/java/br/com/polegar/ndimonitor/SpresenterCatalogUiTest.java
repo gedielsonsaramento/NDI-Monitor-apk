@@ -65,6 +65,7 @@ public class SpresenterCatalogUiTest {
             AlertDialog settings=ShadowAlertDialog.getLatestAlertDialog();
             settings.findViewById(R.id.spresenter_api_button).performClick();
             AlertDialog api=ShadowAlertDialog.getLatestAlertDialog();
+            api.findViewById(R.id.spresenter_manual_button).performClick();
             assertEquals(ROOT,((EditText)api.findViewById(R.id.spresenter_api_address)).getText().toString());
             api.findViewById(R.id.spresenter_api_save).performClick();
             assertNotNull(((EditText)api.findViewById(R.id.spresenter_api_token)).getError());
@@ -80,6 +81,7 @@ public class SpresenterCatalogUiTest {
             MainActivity activity=controller.get();activity.findViewById(R.id.monitor_settings_button).performClick();
             ShadowAlertDialog.getLatestAlertDialog().findViewById(R.id.spresenter_api_button).performClick();
             AlertDialog form=ShadowAlertDialog.getLatestAlertDialog();
+            form.findViewById(R.id.spresenter_manual_button).performClick();
             ((EditText)form.findViewById(R.id.spresenter_api_token)).setText("spk_example_read_only_token");
             form.findViewById(R.id.spresenter_api_save).performClick();
             org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle();
