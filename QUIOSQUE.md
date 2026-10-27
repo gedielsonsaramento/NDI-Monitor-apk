@@ -16,7 +16,7 @@ Use o conjunto completo dos arquivos atuais, incluindo:
 - app/src/main/AndroidManifest.xml
 - app/src/main/java/br/com/polegar/ndimonitor/MainActivity.java
 - app/src/main/res/layout/activity_main.xml
-- app/src/main/res/drawable/ic_monitor.xml
+- app/src/main/res/mipmap-anydpi/ic_launcher.xml
 - app/src/main/java/br/com/polegar/ndimonitor/LanHtmlDiscovery.java
 - app/src/main/res/layout/dialog_html_address.xml
 

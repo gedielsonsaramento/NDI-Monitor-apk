@@ -1,16 +1,18 @@
-# Monitor de Retorno — Android 6+ para HTML; Android 7+ para NDI
+# S-Retorno — Android 6+ para HTML; Android 7+ para NDI
 
 Aplicativo Android independente para receber vídeo e áudio NDI® Standard full-bandwidth ou exibir um retorno HTML pela rede local em celulares e dispositivos Android de uso geral.
 
-Versão de teste: **1.4.10** (`versionCode 15`). Nome provisório: **Monitor de Retorno**. Pacote Android preservado: `br.com.polegar.ndimonitor`.
+Versão atual: **1.4.11** (`versionCode 16`). Nome exibido: **S-Retorno**, anteriormente Monitor de Retorno. O pacote principal do projeto permanece `br.com.polegar.ndimonitor`.
 
 Comece pela [documentação completa do projeto](DOCUMENTACAO_COMPLETA.md), com instalação, uso no controle remoto, arquitetura, compilação, testes, assinatura e preparação para publicação.
 
 Projeto independente. NDI® é marca registrada da Vizrt NDI AB. Conheça a tecnologia em [ndi.video](https://ndi.video/). Não há indicação de patrocínio ou certificação pela NDI/Vizrt.
 
-## Teste em TV Box
+## Instalação em TVs e boxes
 
-A versão **1.4.10-tvbox** usa o pacote `br.com.polegar.ndimonitor.tvboxtest` e o nome **Monitor de Retorno — TV Box**. O APK de teste mantém o certificado das edições 1.4.3–1.4.9-TVBox e pode atualizá-las preservando suas preferências. Instala ao lado da edição habitual, como 1.4.2. Veja [TVBOX.md](TVBOX.md) para o teste e o diagnóstico do aparelho.
+A versão **1.4.11** usa o nome **S-Retorno** no celular, na TV Box, na tela inicial e no banner Android TV. O ícone tem desenho vetorial próprio, com faixas dobradas em azul e branco formando uma seta de retorno sobre uma base de monitor. Há versões tradicional, redonda, adaptativa e monocromática. [Identidade visual](artwork/README.md).
+
+O APK `S-Retorno-1.4.11.apk` mantém o pacote `br.com.polegar.ndimonitor.tvboxtest` e o certificado das edições 1.4.3–1.4.10-TVBox para atualizar essas instalações preservando as preferências. O sufixo técnico do pacote é mantido somente para compatibilidade; o nome e a versão exibidos não contêm “teste” ou “TV Box”. A edição habitual, como 1.4.2, permanece separada. Veja [TVBOX.md](TVBOX.md) e a [validação da 1.4.11](VALIDACAO_1.4.11.md).
 
 A **1.4.10** corrige o envio dessa configuração: a 1.4.9 podia mostrar **Abra o endereço mostrado na TV** no navegador após enviar, mesmo com IP/porta corretos. A correção foi reproduzida e verificada em Chromium com o formulário e o servidor Java reais, sem chave particular. [Validação](VALIDACAO_1.4.10.md).
 
