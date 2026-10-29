@@ -2,6 +2,8 @@
 
 A versão **1.4.11 (16)** troca o nome e o ícone do aplicativo. Na lista de apps, na tela inicial e no instalador, procure **S-Retorno**. O APK é `S-Retorno-1.4.11.apk`; a versão exibida também é `1.4.11`, sem o sufixo `-tvbox`. A assinatura e o pacote são os mesmos das edições TVBox anteriores, permitindo atualizar sem desinstalar e manter modo, fonte, enquadramento e configuração da API. Esta revisão mantém o comportamento de recepção e conexão da 1.4.10.
 
+**Atualização de 29/10/2026:** o mantenedor relatou funcionamento perfeito em todas as boxes testadas e também na TV Philips com Android. [Registro dos testes](TESTES_EM_APARELHOS.md) · [Baixar aplicativo e código-fonte](DOWNLOADS.md).
+
 ## Listar destinos novos do S-Present
 
 Instale a **1.4.11 (16)** sobre a edição TVBox anterior, sem desinstalar. Em HTML, use **engrenagem → Saídas HTML do S-Present → Configurar pelo celular ou PC**. A TV mostra seu próprio endereço e um código de seis dígitos. No navegador do PC ou celular da mesma rede, abra esse endereço, informe o código e cole o link completo de **Copiar link com token** do Editor remoto do S-Present. Clique em **Enviar para esta TV** e selecione a saída na lista da box. Não é necessário digitar o token com o controle.
@@ -12,7 +14,7 @@ O código expira em cinco minutos; fechar a tela/sair do app encerra a sessão. 
 
 Depois de salvar, confira todos os destinos HTML habilitados do PC. Renomeie um destino e crie outro no S-Present; pressione **↻** e confira nome/caminho atualizados. Desabilite um destino não selecionado e confira sua remoção após atualizar. Se alterar o caminho da fonte escolhida, selecione a nova entrada; o último endereço salvo é preservado como histórico. Feche/reabra o app para conferir a restauração sem busca geral. A captura `Erro.html` confirma que `/output/` não fornece uma listagem nessa instalação.
 
-Revisão candidata de 26/10/2026. As fotos confirmam a abertura do menu/diagnóstico da **1.4.5** na **Amlogic HTV-6H**, Android **7.1.2 / API 25**, e da **1.4.6** na **BTV B9**, Android **6.0.1 / API 23**. A HTV informa Chrome 52 e a B9, Chrome 44. A 1.4.7 adapta o programa/estilo da captura conhecida para ES5 e Chrome 44–86; a exibição após a adaptação ainda precisa de teste físico.
+Histórico de 26/10/2026: as fotos confirmaram a abertura do menu/diagnóstico da **1.4.5** na **Amlogic HTV-6H**, Android **7.1.2 / API 25**, e da **1.4.6** na **BTV B9**, Android **6.0.1 / API 23**. A HTV informou Chrome 52 e a B9, Chrome 44. A 1.4.7 adapta o programa/estilo da captura conhecida para ES5 e Chrome 44–86. O resultado posterior relatado pelo mantenedor está na atualização acima.
 
 ## Confirmar a adaptação HTML
 
@@ -56,7 +58,7 @@ Não limpe os buffers antes da coleta: podem conter a causa da falha anterior. O
 
 HTML exige API 23 e WebView funcional; NDI exige API 24, ARM32/ARM64 e runtime compatível com o aparelho. O registro Java não intercepta SIGSEGV/SIGILL. Uma operação interrompida pode ser identificada pelo checkpoint, mas a análise nativa completa depende do Logcat/tombstone.
 
-Não houve acesso às boxes ou à LAN do usuário. As fotos anteriores confirmaram a abertura da 1.4.5 na HTV e da 1.4.6 na B9. As novas fotos confirmam a tela de configuração pelo PC/celular e o acesso HTTP do PC à box, seguido da recusa do envio corrigida na 1.4.10. A nova revisão ainda exige teste físico de recebimento, API, HTML, enquadramento e mídia. Não comprova o recebimento do áudio associado a letras. Android 6 continua somente em HTML; a indicação NDI indisponível/API 24 é esperada. Nenhum pacote foi enviado à Play ou publicado como release.
+O mantenedor realizou os testes físicos e relatou em 29/10/2026 que todas as boxes e a TV Philips com Android funcionaram perfeitamente. Não houve acesso direto de desenvolvimento às boxes ou à LAN. As fotos anteriores e seus erros ficam preservados como histórico; o relato atual não discrimina resultados por função e não acrescenta uma confirmação específica de áudio associado a letras. Android 6 continua somente em HTML; a indicação NDI indisponível/API 24 é esperada. O APK 1.4.11 está disponível no GitHub, separado do código-fonte; não houve envio à Play.
 
 ```bash
 ./gradlew testDebugUnitTest lintDebug assembleTvboxTest
@@ -64,7 +66,7 @@ Não houve acesso às boxes ou à LAN do usuário. As fotos anteriores confirmar
 
 O reuso opcional `-PmonitorPrebuiltNativeDir=/caminho/nativo` continua restrito a depuração, exige as quatro bibliotecas ARM32/ARM64 e desabilita release. São as mesmas bibliotecas/avisos do APK 1.4.8-TVBox verificado. Veja [VALIDACAO_1.4.10.md](VALIDACAO_1.4.10.md).
 
-## Aparelhos observados nas fotos
+## Aparelhos observados nas fotos — histórico de diagnóstico
 
 | Aparelho | Android / API informados | Evidência disponível |
 | --- | --- | --- |
@@ -73,4 +75,4 @@ O reuso opcional `-PmonitorPrebuiltNativeDir=/caminho/nativo` continua restrito 
 | BTV E10 | 9 / 28 | 1.4.3 abre; WebView Chrome 66, clamp ausente, página original |
 | TV Philco/Skyworth | 14 / 34 | 1.4.3 abre e mostra diagnóstico; modo 16:9 |
 
-Esses registros não confirmam vídeo/áudio NDI, áudio HTML ou estabilidade em todos os aparelhos. A escolha **Monitor 16:9 — compatibilidade TV Box** continua sendo o teste de enquadramento proposto para a BTV.
+Essas fotos registram as versões anteriores e não substituem o relato posterior de funcionamento em [TESTES_EM_APARELHOS.md](TESTES_EM_APARELHOS.md). A TV do relato final foi chamada de Philips pelo mantenedor; o diagnóstico antigo Philco/Skyworth é mantido com sua identificação original, sem presumir que sejam o mesmo aparelho. A escolha **Monitor 16:9 — compatibilidade TV Box** continua disponível para a BTV.

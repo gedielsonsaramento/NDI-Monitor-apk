@@ -1,3 +1,11 @@
+# 1.4.11 — S-Retorno: nome, ícone e disponibilização no GitHub
+
+- Em 27/10/2026, o aplicativo passou a se chamar **S-Retorno**, com ícones vetoriais tradicional, redondo, adaptativo e monocromático, além de novo banner para Android TV.
+- Mantém o pacote e a assinatura das edições TVBox anteriores para atualização sem desinstalar. A versão exibida é **1.4.11 (16)**, sem o sufixo `-tvbox`.
+- Preserva as bibliotecas NDI, a adaptação HTML e o funcionamento de conexão da 1.4.10. Foram aprovados 194 testes existentes, lint sem erros, compilação e conferência do APK. [Validação](VALIDACAO_1.4.11.md).
+- Em **29/10/2026**, o mantenedor relatou que **todas as boxes testadas e a TV Philips com Android rodaram perfeitamente**. [Registro dos testes em aparelhos](TESTES_EM_APARELHOS.md).
+- Disponibiliza no GitHub o APK já verificado e o código-fonte ZIP da versão, com instruções de atualização e SHA-256. [Downloads](DOWNLOADS.md).
+
 # 1.4.10 — Corrigir o envio da configuração pelo navegador (26/10/2026)
 
 - Corrige a recusa **Abra o endereço mostrado na TV** ao enviar o formulário no PC, mesmo com o endereço correto. A política no-referrer da 1.4.9 fazia o navegador enviar Origin null; o app recusava esse POST.

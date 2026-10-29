@@ -4,6 +4,20 @@ Aplicativo Android independente para receber vídeo e áudio NDI® Standard full
 
 Versão atual: **1.4.11** (`versionCode 16`). Nome exibido: **S-Retorno**, anteriormente Monitor de Retorno. O pacote principal do projeto permanece `br.com.polegar.ndimonitor`.
 
+## Downloads
+
+| Arquivo | Link |
+| --- | --- |
+| Aplicativo Android 1.4.11 | [Baixar S-Retorno-1.4.11.apk](https://github.com/gedielsonsaramento/NDI-Monitor-apk/raw/refs/heads/downloads-1.4.11/S-Retorno-1.4.11.apk) |
+| Código-fonte da versão 1.4.11 | [Baixar código-fonte ZIP](https://github.com/gedielsonsaramento/NDI-Monitor-apk/archive/refs/heads/versao-1.4.11.zip) |
+| Instalação e integridade | [Instruções e SHA-256](DOWNLOADS.md) |
+
+Instale o APK sobre a edição TVBox anterior, sem desinstalar, para manter as preferências. Android 6 utiliza HTML; a recepção NDI exige Android 7 ou superior e runtime compatível.
+
+## Testes nos aparelhos do projeto
+
+Em **29/10/2026**, o mantenedor informou que **todas as boxes testadas rodaram perfeitamente, assim como a TV Philips com Android**. O relato registra o funcionamento nos equipamentos usados pelo projeto; não discrimina os testes por modo ou função. [Registro dos testes em aparelhos](TESTES_EM_APARELHOS.md).
+
 Comece pela [documentação completa do projeto](DOCUMENTACAO_COMPLETA.md), com instalação, uso no controle remoto, arquitetura, compilação, testes, assinatura e preparação para publicação.
 
 Projeto independente. NDI® é marca registrada da Vizrt NDI AB. Conheça a tecnologia em [ndi.video](https://ndi.video/). Não há indicação de patrocínio ou certificação pela NDI/Vizrt.
@@ -24,7 +38,7 @@ Android 6 abre HTML sem carregar as bibliotecas NDI, compiladas para API 24. And
 
 O relatório real da HTV-6H com Android 7.1.2/API 25 localizou o fechamento na leitura de `fontFamily` ao criar o botão NDI/HTML. A versão 1.4.5 substituiu a fonte textual global por `android:typeface` sem serifa, armazenado como inteiro. As fotos seguintes confirmaram a abertura do menu/diagnóstico na HTV, com biblioteca NDI inicializada; isso não confirma vídeo/áudio NDI. O relatório antigo da 1.4.4 permanece como histórico.
 
-A HTV informou Chrome 52 e erro `Unexpected token function`. A foto seguinte da **BTV B9**, Android **6.0.1/API 23**, confirma o menu da **1.4.6** aberto, mas registra Chrome **44.0.2403.119** e `Unexpected token )` em `main.ff832fdd.js:2`. A **1.4.7** prepara os dois arquivos conhecidos dessa captura como **ES5**, com fallbacks de APIs/CSS, e estende o perfil para **Chrome 44–86**. Ela só substitui um recurso depois de verificar seu SHA-256 no servidor da fonte selecionada. Páginas novas, arquivos diferentes e motores atuais mantêm o carregamento original. Veja [como preparar a captura](tools/html-compat/README.md) e os [resultados e limites](VALIDACAO_1.4.7.md). A exibição nas boxes após esta adaptação ainda precisa de teste físico.
+A HTV informou Chrome 52 e erro `Unexpected token function`. A foto seguinte da **BTV B9**, Android **6.0.1/API 23**, confirma o menu da **1.4.6** aberto, mas registra Chrome **44.0.2403.119** e `Unexpected token )` em `main.ff832fdd.js:2`. A **1.4.7** prepara os dois arquivos conhecidos dessa captura como **ES5**, com fallbacks de APIs/CSS, e estende o perfil para **Chrome 44–86**. Ela só substitui um recurso depois de verificar seu SHA-256 no servidor da fonte selecionada. Páginas novas, arquivos diferentes e motores atuais mantêm o carregamento original. Veja [como preparar a captura](tools/html-compat/README.md) e os [resultados e limites](VALIDACAO_1.4.7.md). O relato posterior de funcionamento nas boxes está no [registro de 29/10/2026](TESTES_EM_APARELHOS.md).
 
 ## Recursos
 
@@ -48,7 +62,7 @@ A HTV informou Chrome 52 e erro `Unexpected token function`. A foto seguinte da 
 
 Este repositório disponibiliza o código próprio do projeto sob a [licença MIT](LICENSE). Os headers, as bibliotecas e o instalador do SDK NDI **não estão incluídos**.
 
-Esta revisão prepara uma versão de teste. A distribuição com `libndi.so` deve seguir os termos de redistribuição Standard, a atribuição e os avisos de terceiros. O escopo é somente recepção Standard, software instalado em aparelhos de uso geral dos usuários, sem HX/Advanced nem hardware dedicado ou bloqueado fornecido com o app. A licença MIT do projeto não concede direitos sobre componentes NDI. Leia [LICENCA_NDI_IMPORTANTE.md](LICENCA_NDI_IMPORTANTE.md).
+O APK disponível na seção Downloads é o mesmo **1.4.11 (16)** entregue e verificado, com a assinatura de compatibilidade das edições TVBox anteriores. É uma compilação de desenvolvimento, separada do arquivo ZIP do código-fonte; não é uma publicação na Play. O binário inclui o runtime NDI e seus avisos, mas não o instalador nem os headers do SDK. A distribuição com `libndi.so` segue os termos próprios do componente, a atribuição e os avisos de terceiros. O escopo é somente recepção Standard, software instalado em aparelhos de uso geral dos usuários, sem HX/Advanced nem hardware dedicado ou bloqueado fornecido com o app. A licença MIT do projeto não concede direitos sobre componentes NDI. Leia [LICENCA_NDI_IMPORTANTE.md](LICENCA_NDI_IMPORTANTE.md).
 
 Sem o SDK, o projeto pode ser compilado em **modo de preparação**. Nesse modo, o aplicativo informa que o SDK está ausente e não recebe fontes NDI.
 
@@ -126,6 +140,9 @@ Leia [QUIOSQUE.md](QUIOSQUE.md) antes de mudar a tela inicial.
 
 ## Documentação
 
+- [Downloads, instalação e SHA-256 da 1.4.11](DOWNLOADS.md)
+- [Testes nos aparelhos relatados pelo mantenedor](TESTES_EM_APARELHOS.md)
+- [Resultados e limites da validação 1.4.11](VALIDACAO_1.4.11.md)
 - [Manual completo do projeto 1.4.10](DOCUMENTACAO_COMPLETA.md)
 - [Listagem dos destinos HTML do S-Present pela API](SAIDAS_SPRESENTER.md)
 - [Compatibilidade HTML de uma captura com motores antigos](tools/html-compat/README.md)

@@ -48,13 +48,24 @@ permitindo atualização com as preferências existentes. O identificador técni
 APK: **11.383.523 bytes**. SHA-256:
 `7c04963730e4d182b0e402e5ac8f97c914a890e6d81d1aec6a0b20484d825b6d`.
 
-## Escopo e aparelho físico
+## Escopo e testes em aparelhos — atualização de 29/10/2026
 
 A mudança é visual e de identificação. Bibliotecas NDI, perfis HTML e estado
-salvo são preservados. A verificação de vídeo/áudio, reconexão, boot e launcher
-nos aparelhos do usuário continua sendo um teste físico separado. Não houve
-acesso à LAN ou às boxes. A Philco/Skyworth Android 14 permanece fora do teste
-físico até estar disponível ao usuário.
+salvo são preservados. Na preparação de 27/10/2026, a validação física ainda
+estava pendente.
+
+Em **29/10/2026**, o mantenedor informou que **todas as boxes testadas rodaram
+perfeitamente e a TV Philips com Android também**. Esse relato posterior está
+registrado em [TESTES_EM_APARELHOS.md](TESTES_EM_APARELHOS.md). A marca da TV
+segue o relato atual; seu modelo exato não foi informado.
+
+Os testes físicos foram realizados pelo mantenedor. As verificações de
+desenvolvimento acima continuam separadas desse relato: não houve acesso
+direto à LAN ou aos aparelhos, e o relato não detalha uma matriz por função,
+como áudio associado a letras, reconexão ou abertura após o boot.
+
+O APK disponibilizado no GitHub é o mesmo arquivo verificado acima, sem
+recompilação nesta atualização de documentação.
 
 Instale sobre a edição TVBox anterior, sem desinstalar. Confira o nome e o ícone
 **S-Retorno**, a versão **1.4.11 (16)** no diagnóstico e a retomada da fonte

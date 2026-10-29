@@ -2,7 +2,7 @@
 
 A [licença MIT](LICENSE) escolhida pelo mantenedor se aplica ao código próprio deste projeto. Ela não relicencia headers, bibliotecas, ferramentas, documentação ou marcas do SDK NDI.
 
-Este repositório não inclui esses arquivos proprietários. Cada usuário deve obter o SDK oficial separadamente, conferir o contrato que acompanha sua versão e decidir pessoalmente se aceita seus termos.
+O código-fonte distribuído não inclui esses arquivos proprietários. O APK compilado é disponibilizado separadamente no ramo de downloads e contém o runtime NDI e os avisos aplicáveis, sem distribuir o instalador ou os headers do SDK. Para compilar com NDI, cada usuário deve obter o SDK oficial separadamente, conferir o contrato que acompanha sua versão e decidir pessoalmente se aceita seus termos.
 
 ## Antes de distribuir um APK
 
@@ -10,7 +10,7 @@ O APK com recepção real incorpora `libndi.so`. O escopo deste aplicativo é so
 
 Confira o contrato existente na raiz da sua cópia do SDK e as [orientações oficiais de licenciamento](https://docs.ndi.video/all/developing-with-ndi/sdk/licensing), inclusive as condições para componentes redistribuíveis, avisos, atribuição e direitos de terceiros. A documentação também orienta entrar em contato com a NDI para usar “NDI” no nome de um produto.
 
-O nome visível provisório é **Monitor de Retorno**, sem NDI no nome de produto. O identificador técnico de pacote é preservado para compatibilidade de atualizações. A marca permanece na indicação de compatibilidade e na atribuição.
+O nome visível é **S-Retorno**, sem NDI no nome de produto. O identificador técnico de pacote é preservado para compatibilidade de atualizações. A marca permanece na indicação de compatibilidade e na atribuição.
 
 A opção voluntária de tela inicial não bloqueia outros aplicativos. Este projeto não fornece hardware dedicado, bloqueado ou vendido em conjunto com o app. Acrescentar HX/Advanced ou passar a fornecer esse tipo de equipamento exige nova revisão dos termos com a NDI.
 
