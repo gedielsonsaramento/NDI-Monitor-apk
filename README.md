@@ -1,5 +1,7 @@
 # S-Retorno — Android 6+ para HTML; Android 7+ para NDI
 
+![S-Retorno — Monitor de palco para NDI e HTML](artwork/s-retorno-social.png)
+
 Aplicativo Android independente para receber vídeo e áudio NDI® Standard full-bandwidth ou exibir um retorno HTML pela rede local em celulares e dispositivos Android de uso geral.
 
 Versão atual: **1.4.11** (`versionCode 16`). Nome exibido: **S-Retorno**, anteriormente Monitor de Retorno. O pacote principal do projeto permanece `br.com.polegar.ndimonitor`.

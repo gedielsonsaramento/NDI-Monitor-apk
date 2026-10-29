@@ -13,6 +13,9 @@ nem outros arquivos gráficos extraídos do S-Present.
 - Base: `#B9D5FF`.
 - [Ícone em SVG](s-retorno-icon.svg).
 - [Banner Android TV em SVG](s-retorno-banner.svg).
+- [Imagem de apresentação do repositório em PNG, 1280 × 640](s-retorno-social.png).
+- [Imagem de apresentação editável em SVG](s-retorno-social.svg).
+- [Ícone em PNG, 512 × 512](s-retorno-icon.png).
 
 O nome é o mesmo nos recursos principal e TVBox. O pacote de atualização continua
 `br.com.polegar.ndimonitor.tvboxtest` por compatibilidade com instalações existentes;
