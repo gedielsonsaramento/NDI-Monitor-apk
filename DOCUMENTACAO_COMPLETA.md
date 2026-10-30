@@ -8,7 +8,7 @@ NDI® is a registered trademark of Vizrt NDI AB. https://ndi.video/
 
 Esta revisão é uma versão de teste. O resultado de compilação, os testes executados e o que ainda precisa de equipamento real estão em VALIDACAO_1.4.10.md. A existência de um APK ou AAB compilado não significa publicação ou aprovação na Google Play.
 
-Repositório: https://github.com/gedielsonsaramento/NDI-Monitor-apk
+Repositório: https://github.com/gedielsonsaramento/S-Retorno.apk
 
 ### Conteúdo deste manual
 

@@ -33,3 +33,15 @@ Os arquivos SVG e VectorDrawable compartilham as mesmas geometrias e cores.
 Os contornos de letras do banner foram gerados com DejaVu Sans Bold. A licença
 correspondente está em [LICENSE-DejaVu.txt](LICENSE-DejaVu.txt). Não há arquivo
 de fonte embutido no APK.
+
+## Imagem de compartilhamento no GitHub
+
+A capa do README e a prévia usada ao compartilhar o link são configurações diferentes.
+O arquivo `s-retorno-social.png` está pronto, em 1280 × 640 pixels, com fundo sólido.
+
+1. [Baixe a imagem PNG](https://github.com/gedielsonsaramento/S-Retorno.apk/raw/refs/heads/main/artwork/s-retorno-social.png).
+2. Nas [configurações do repositório](https://github.com/gedielsonsaramento/S-Retorno.apk/settings), encontre **Social preview / Visualização social**.
+3. Escolha **Edit → Upload an image…** e envie o PNG.
+
+Essa configuração exige acesso autenticado às configurações do GitHub; editar o README
+não a altera automaticamente. [Instruções oficiais do GitHub](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/customizing-your-repositorys-social-media-preview).
