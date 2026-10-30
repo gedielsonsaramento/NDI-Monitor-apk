@@ -2,10 +2,10 @@
 
 | Download | Arquivo |
 | --- | --- |
-| Aplicativo para Android | [S-Retorno-1.4.11.apk](https://github.com/gedielsonsaramento/NDI-Monitor-apk/raw/refs/heads/downloads-1.4.11/S-Retorno-1.4.11.apk) |
-| Código-fonte da versão | [S-Retorno-1.4.11-fonte.zip](https://github.com/gedielsonsaramento/NDI-Monitor-apk/archive/refs/heads/versao-1.4.11.zip) |
-| Arquivos e checksum do aplicativo | [Ramo downloads-1.4.11](https://github.com/gedielsonsaramento/NDI-Monitor-apk/tree/downloads-1.4.11) |
-| Navegar no código da versão | [Ramo versao-1.4.11](https://github.com/gedielsonsaramento/NDI-Monitor-apk/tree/versao-1.4.11) |
+| Aplicativo para Android | [S-Retorno-1.4.11.apk](https://github.com/gedielsonsaramento/S-Retorno.apk/raw/refs/heads/downloads-1.4.11/S-Retorno-1.4.11.apk) |
+| Código-fonte da versão | [S-Retorno-1.4.11-fonte.zip](https://github.com/gedielsonsaramento/S-Retorno.apk/archive/refs/heads/versao-1.4.11.zip) |
+| Arquivos e checksum do aplicativo | [Ramo downloads-1.4.11](https://github.com/gedielsonsaramento/S-Retorno.apk/tree/downloads-1.4.11) |
+| Navegar no código da versão | [Ramo versao-1.4.11](https://github.com/gedielsonsaramento/S-Retorno.apk/tree/versao-1.4.11) |
 
 O GitHub gera o ZIP do código com o nome do repositório e do ramo. Ele contém o código próprio e as instruções de compilação; o APK fica separado no ramo de downloads. O SDK NDI, chaves de assinatura, credenciais e capturas privadas não fazem parte do ZIP do código.
 

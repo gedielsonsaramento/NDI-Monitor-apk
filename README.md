@@ -8,8 +8,8 @@ Versão atual: **1.4.11** (`versionCode 16`). Nome exibido: **S-Retorno**, anter
 
 | Arquivo | Link |
 | --- | --- |
-| Aplicativo Android 1.4.11 | [Baixar S-Retorno-1.4.11.apk](https://github.com/gedielsonsaramento/NDI-Monitor-apk/raw/refs/heads/downloads-1.4.11/S-Retorno-1.4.11.apk) |
-| Código-fonte da versão 1.4.11 | [Baixar código-fonte ZIP](https://github.com/gedielsonsaramento/NDI-Monitor-apk/archive/refs/heads/versao-1.4.11.zip) |
+| Aplicativo Android 1.4.11 | [Baixar S-Retorno-1.4.11.apk](https://github.com/gedielsonsaramento/S-Retorno.apk/raw/refs/heads/downloads-1.4.11/S-Retorno-1.4.11.apk) |
+| Código-fonte da versão 1.4.11 | [Baixar código-fonte ZIP](https://github.com/gedielsonsaramento/S-Retorno.apk/archive/refs/heads/versao-1.4.11.zip) |
 | Instalação e integridade | [Instruções e SHA-256](DOWNLOADS.md) |
 
 Instale o APK sobre a edição TVBox anterior, sem desinstalar, para manter as preferências. Android 6 utiliza HTML; a recepção NDI exige Android 7 ou superior e runtime compatível.
