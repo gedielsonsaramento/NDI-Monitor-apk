@@ -1,3 +1,13 @@
+# 1.4.12 — Relatar problemas e preparar suporte com métricas (30/10/2026)
+
+- Acrescenta **Relatar problema** nas configurações e na tela de recuperação, com categoria, medidas de memória/CPU/rede do próprio app e cópia manual do relatório.
+- Prepara envio manual e compartilhamento automático opcional por HTTPS para o servidor próprio futuro. O APK disponibilizado tem destino vazio: não há envio remoto nem amostragem automática enquanto o servidor não estiver configurado.
+- Usa identificador aleatório de instalação, versão e falhas com campos limitados. Exclui fontes, tokens, conteúdo, identificadores de hardware e mensagens completas das exceções.
+- Limita a frequência a um batimento por minuto em primeiro plano, com fila de falhas limitada, espera crescente em falhas de comunicação e interrupção do envio ao desativar.
+- Android 11+ pode identificar falhas nativas/ANRs pelo motivo de saída do próprio processo. Android antigo registra interrupções como não confirmadas; não confunde falta de comunicação com crash.
+- Mantém pacote, certificado de atualização, bibliotecas NDI, perfil HTML e permissões anteriores. Servidor, painel e testes físicos desta versão ainda pendentes.
+- [Funcionamento e contrato](SUPORTE_METRICAS.md) · [Validação](historico/VALIDACAO_1.4.12.md).
+
 # Documentação — página simplificada para instalar e usar (30/10/2026)
 
 - Destaca o download do APK pronto, com instalação e atualização em passos curtos.

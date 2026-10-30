@@ -17,6 +17,7 @@ Para baixar, instalar e usar o aplicativo, comece pelo [guia da página principa
 - [Manual técnico completo](DOCUMENTACAO_COMPLETA.md).
 - [Guia de integração do SDK e compilação](GUIA_PASSO_A_PASSO.md).
 - [Licenças dos componentes NDI](LICENCA_NDI_IMPORTANTE.md).
+- [Relatos de problemas, métricas e contrato do servidor](SUPORTE_METRICAS.md).
 - [Histórico de alterações](CHANGELOG.md).
 - [Histórico das validações](historico/README.md).
 - [Identidade visual](../artwork/README.md).

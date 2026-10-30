@@ -12,6 +12,7 @@ import android.widget.TextView;
 public final class StartupActivity extends Activity {
     static final String EXTRA_HTML_ONLY = "monitor_html_only";
     private StartupJournal journal;
+    private SupportDialog supportDialog;
 
     @Override protected void onCreate(Bundle state) {
         super.onCreate(state);
@@ -30,6 +31,10 @@ public final class StartupActivity extends Activity {
         content.addView(explanation);
         addButton(content, R.string.recovery_html, () -> openMonitor(true));
         addButton(content, R.string.recovery_retry, () -> openMonitor(false));
+        addButton(content, R.string.support_report, () -> {
+            if (supportDialog == null) supportDialog = new SupportDialog(this, MonitorApplication.support(this));
+            supportDialog.show();
+        }).setId(R.id.support_report_button);
         addButton(content, R.string.android_settings, () -> {
             try { startActivity(new Intent(android.provider.Settings.ACTION_SETTINGS)); }
             catch (android.content.ActivityNotFoundException unavailable) {
@@ -46,12 +51,13 @@ public final class StartupActivity extends Activity {
         setContentView(content);
     }
 
-    private void addButton(LinearLayout parent, int label, Runnable action) {
+    private Button addButton(LinearLayout parent, int label, Runnable action) {
         Button button = new Button(this);
         button.setText(label);
         button.setMinHeight(Math.round(48 * getResources().getDisplayMetrics().density));
         button.setOnClickListener(view -> action.run());
         parent.addView(button, new LinearLayout.LayoutParams(-1, -2));
+        return button;
     }
 
     private void openMonitor(boolean htmlOnly) {
@@ -63,5 +69,10 @@ public final class StartupActivity extends Activity {
         launch.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         startActivity(launch);
         finish();
+    }
+
+    @Override protected void onDestroy() {
+        if (supportDialog != null) supportDialog.close();
+        super.onDestroy();
     }
 }

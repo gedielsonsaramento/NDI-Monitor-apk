@@ -96,4 +96,28 @@
     <string name="spresenter_api_invalid">A API não forneceu uma lista de saídas compatível.</string>
     <string name="spresenter_api_network">Não foi possível consultar a API do PC. Confira o endereço e a rede.</string>
     <string name="spresenter_api_cancelled">Consulta da API cancelada.</string>
+    <string name="support_report">Relatar problema</string>
+    <string name="support_intro">Informe o tipo de problema e envie ou copie as medidas de consumo do próprio app.</string>
+    <string name="support_category_label">Tipo de problema:</string>
+    <string-array name="support_categories">
+        <item>Imagem</item>
+        <item>Áudio</item>
+        <item>Conexão</item>
+        <item>Abertura ou travamento</item>
+        <item>Outro</item>
+    </string-array>
+    <string name="support_measuring">Medindo o consumo do app…</string>
+    <string name="support_metric_unavailable">Indisponível</string>
+    <string name="support_metrics_text">Memória do app: %1$s\nCPU do app: %2$s\nRede recebida: %3$s\nRede enviada: %4$s</string>
+    <string name="support_report_heading">Relato de problema — S-Retorno %1$s</string>
+    <string name="support_send">Enviar relatório</string>
+    <string name="support_copy">Copiar relatório</string>
+    <string name="support_copied">Relatório copiado</string>
+    <string name="support_server_pending">Servidor de suporte em preparação. Por enquanto, copie o relatório para compartilhar com o suporte.</string>
+    <string name="support_server_ready">Envio ao suporte do S-Retorno por conexão HTTPS.</string>
+    <string name="support_automatic">Compartilhar falhas e métricas automaticamente</string>
+    <string name="support_data_scope">Opcional. Compartilha somente um identificador aleatório da instalação, a versão do app, falhas e medidas de memória, CPU e tráfego de rede do próprio app. Ao desativar, os envios automáticos param e os dados pendentes são apagados.</string>
+    <string name="support_sending">Enviando relatório…</string>
+    <string name="support_sent">Relatório recebido pelo servidor</string>
+    <string name="support_send_failed">Envio não confirmado. Copie o relatório ou tente novamente.</string>
 </resources>

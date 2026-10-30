@@ -6,7 +6,7 @@ Use sua TV, TV Box ou celular Android como monitor de retorno para igrejas e eve
 
 ## Baixar o aplicativo
 
-### [⬇️ Baixar S-Retorno 1.4.11 — APK pronto para instalar](https://github.com/gedielsonsaramento/S-Retorno.apk/raw/refs/heads/downloads-1.4.11/S-Retorno-1.4.11.apk)
+### [⬇️ Baixar S-Retorno 1.4.12 — APK pronto para instalar](https://github.com/gedielsonsaramento/S-Retorno.apk/raw/refs/heads/downloads-1.4.12/S-Retorno-1.4.12.apk)
 
 O arquivo acima já vem pronto para instalar e usar no aparelho.
 
@@ -56,18 +56,24 @@ O app salva a fonte escolhida e a abre novamente na próxima inicialização. Pa
 
 Em aparelhos com **Android 7 ou superior**, deixe o transmissor NDI ativo no computador, selecione **NDI** no app, toque em **↻** para procurar fontes e escolha a desejada.
 
+## Relatar um problema
+
+Abra **engrenagem → Relatar problema**, escolha o tipo de falha e use **Copiar relatório**. O relatório mostra a versão e o consumo de memória, CPU e rede do próprio app.
+
+O envio ao suporte e o compartilhamento automático estão preparados para um servidor próprio, ainda em construção. **Nesta versão, não há envio remoto de métricas.** Quando o servidor estiver disponível, o compartilhamento será opcional e visível no app.
+
 ## Testes e atualizações semanais
 
 **Realizamos testes e disponibilizamos novas atualizações toda semana** para melhorar o funcionamento, a compatibilidade e a estabilidade do aplicativo.
 
 Nos testes relatados pelo mantenedor, todas as boxes utilizadas e a TV Philips com Android funcionaram corretamente. [Ver o registro dos testes](docs/TESTES_EM_APARELHOS.md).
 
-Se encontrar uma dificuldade, abra **engrenagem → Diagnóstico do aparelho**, anote a versão do app e do Android e [relate o problema aqui](https://github.com/gedielsonsaramento/S-Retorno.apk/issues).
+Se encontrar uma dificuldade, copie o relatório do app e [relate o problema aqui](https://github.com/gedielsonsaramento/S-Retorno.apk/issues).
 
 <details>
 <summary>Código-fonte e documentação técnica</summary>
 
-- [Baixar o código-fonte da versão 1.4.11 — ZIP](https://github.com/gedielsonsaramento/S-Retorno.apk/archive/refs/heads/versao-1.4.11.zip)
+- [Baixar o código-fonte da versão 1.4.12 — ZIP](https://github.com/gedielsonsaramento/S-Retorno.apk/archive/refs/heads/versao-1.4.12.zip)
 - [Documentação completa e instruções de compilação](docs/README.md)
 - [Detalhes do download e integridade do APK](docs/DOWNLOADS.md)
 - [Histórico de alterações](docs/CHANGELOG.md)

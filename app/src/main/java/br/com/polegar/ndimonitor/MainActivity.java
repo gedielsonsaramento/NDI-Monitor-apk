@@ -116,6 +116,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     private int safeInsetRight;
     private Object backCallback;
     private AlertDialog diagnosticsDialog;
+    private SupportDialog supportDialog;
     private final Handler controlsHandler = new Handler(Looper.getMainLooper());
     private final Runnable hideControls = () -> {
         if (sourcePanel.getVisibility() != View.VISIBLE) {
@@ -548,6 +549,10 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         content.findViewById(R.id.third_party_notices_button).setOnClickListener(v ->
                 showThirdPartyNotices());
         content.findViewById(R.id.device_diagnostics_button).setOnClickListener(v -> showDeviceDiagnostics());
+        content.findViewById(R.id.support_report_button).setOnClickListener(v -> {
+            if (supportDialog == null) supportDialog = new SupportDialog(this, MonitorApplication.support(this));
+            supportDialog.show();
+        });
         View apiButton = content.findViewById(R.id.spresenter_api_button);
         apiButton.setVisibility(htmlMode ? View.VISIBLE : View.GONE);
         apiButton.setOnClickListener(v -> showSpresenterConnection());
@@ -1095,6 +1100,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         if (spresenterDialog != null) spresenterDialog.dismiss();
         BackNavigation.unregister(this, backCallback);
         if (diagnosticsDialog != null) diagnosticsDialog.dismiss();
+        if (supportDialog != null) supportDialog.close();
         NdiReceiver.setCallbackTarget(null);
         releaseAudio();
         if (multicastLock != null && multicastLock.isHeld()) multicastLock.release();
