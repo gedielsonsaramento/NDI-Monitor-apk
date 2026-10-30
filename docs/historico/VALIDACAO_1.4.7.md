@@ -40,6 +40,6 @@ APK: **11.596.231 bytes**. SHA-256: `dfa662e848d9d6c7d9cc5fb74db3b10c6286e8a6331
 
 Não houve acesso à LAN ou à B9/HTV física. Não foi executado Chrome 44 nativo neste ambiente. JSDOM não verifica pixels, fontes, desempenho, reprodução de mídia ou firmware. O parser ES5 confirma sintaxe, sem garantir todas as APIs e comportamentos do motor.
 
-Instale sobre a 1.4.6, abra a mesma fonte HTML e confira **adaptação aplicada a 2 de 2 arquivos (Chrome 44)** no diagnóstico. Teste letra/visitante, enquadramento, reabertura e estabilidade conforme [TVBOX.md](TVBOX.md). Builds diferentes do servidor exigem outra captura e perfil; não há compatibilidade universal com qualquer página.
+Instale sobre a 1.4.6, abra a mesma fonte HTML e confira **adaptação aplicada a 2 de 2 arquivos (Chrome 44)** no diagnóstico. Teste letra/visitante, enquadramento, reabertura e estabilidade conforme [TVBOX.md](../TVBOX.md). Builds diferentes do servidor exigem outra captura e perfil; não há compatibilidade universal com qualquer página.
 
 Android 6 permanece somente em HTML. NDI/API 24+, áudio associado a letras, mídia e reconexão exigem validação própria no equipamento final. Esta alteração não corrige o áudio da letra. Captura, programa adaptado de terceiros, SDK, chaves e APKs ficam fora do Git. Nenhum release ou envio à Play foi feito.

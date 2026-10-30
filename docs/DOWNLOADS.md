@@ -20,6 +20,9 @@ O APK mantém o identificador técnico `br.com.polegar.ndimonitor.tvboxtest`, em
 
 Requer ARM32 ou ARM64. **Android 6 / API 23: HTML. Android 7 / API 24 ou superior: HTML e NDI**, sujeito ao runtime e ao conteúdo da fonte.
 
+<details>
+<summary>Integridade do APK e informações para desenvolvedores</summary>
+
 ## Integridade do APK
 
 - Tamanho: **11.383.523 bytes**.
@@ -38,10 +41,12 @@ No Linux:
 sha256sum S-Retorno-1.4.11.apk
 ```
 
-O binário é o mesmo da [validação 1.4.11](VALIDACAO_1.4.11.md), sem recompilação para esta publicação. O relato de funcionamento nas boxes e na TV Philips com Android está em [TESTES_EM_APARELHOS.md](TESTES_EM_APARELHOS.md).
+O binário é o mesmo da [validação 1.4.11](historico/VALIDACAO_1.4.11.md), sem recompilação para esta publicação. O relato de funcionamento nas boxes e na TV Philips com Android está em [TESTES_EM_APARELHOS.md](TESTES_EM_APARELHOS.md).
 
 ## Compilar o código
 
-Abra a raiz que contém `settings.gradle` e siga os requisitos e comandos do [README](README.md#compilar) ou do [guia passo a passo](GUIA_PASSO_A_PASSO.md). Para recepção real, instale separadamente o SDK oficial NDI. A assinatura usada em uma compilação própria determina se ela pode atualizar uma instalação existente.
+Abra a raiz que contém `settings.gradle` e siga os requisitos e comandos do [README](DESENVOLVIMENTO.md#compilar) ou do [guia passo a passo](GUIA_PASSO_A_PASSO.md). Para recepção real, instale separadamente o SDK oficial NDI. A assinatura usada em uma compilação própria determina se ela pode atualizar uma instalação existente.
 
-O código próprio está sob a [licença MIT](LICENSE); o runtime NDI e seus avisos têm termos próprios. [Informações sobre os componentes NDI](LICENCA_NDI_IMPORTANTE.md).
+O código próprio está sob a [licença MIT](../LICENSE); o runtime NDI e seus avisos têm termos próprios. [Informações sobre os componentes NDI](LICENCA_NDI_IMPORTANTE.md).
+
+</details>

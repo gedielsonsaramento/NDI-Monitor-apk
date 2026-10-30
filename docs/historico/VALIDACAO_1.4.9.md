@@ -42,4 +42,4 @@ Instale sobre a edição TVBox anterior sem desinstalar. Na box, abra **HTML →
 
 Não houve acesso à LAN do usuário, às boxes, ao navegador do PC ou à API ativa com chave real. Os testes simulados/loopback não comprovam o comportamento do navegador físico, do AndroidKeyStore do firmware, o enquadramento ou a reprodução de mídia/áudio. O problema de áudio associado às letras continua pendente. Nenhum release, merge ou envio à Play foi realizado.
 
-Veja [passo a passo](SAIDAS_SPRESENTER.md), [TVBOX.md](TVBOX.md) e o histórico do catálogo na [1.4.8](VALIDACAO_1.4.8.md).
+Veja [passo a passo](../SAIDAS_SPRESENTER.md), [TVBOX.md](../TVBOX.md) e o histórico do catálogo na [1.4.8](VALIDACAO_1.4.8.md).

@@ -21,6 +21,6 @@ O relato confirma o resultado geral nos aparelhos testados. Ele não é uma matr
 
 Os requisitos técnicos continuam: **Android 6 utiliza HTML; NDI requer Android 7 / API 24 ou superior**, ARM compatível e carregamento correto do runtime. O resultado da B9 não deve ser interpretado como recepção NDI no Android 6.
 
-As verificações de desenvolvimento da versão estão em [VALIDACAO_1.4.11.md](VALIDACAO_1.4.11.md): 194 testes existentes aprovados, lint sem erros, compilação e assinatura/integridade do APK conferidas. Essas verificações foram realizadas separadamente dos testes físicos relatados pelo mantenedor.
+As verificações de desenvolvimento da versão estão em [VALIDACAO_1.4.11.md](historico/VALIDACAO_1.4.11.md): 194 testes existentes aprovados, lint sem erros, compilação e assinatura/integridade do APK conferidas. Essas verificações foram realizadas separadamente dos testes físicos relatados pelo mantenedor.
 
 [Baixar aplicativo e código-fonte](DOWNLOADS.md).

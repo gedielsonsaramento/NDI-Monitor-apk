@@ -2,7 +2,7 @@
 
 Candidata de 26/10/2026, `versionCode 13`, baseada na 1.4.7 (`95465c0f57da6592d567e05aadec5b2999b67bfa`). Pacote `br.com.polegar.ndimonitor.tvboxtest`.
 
-**Correção posterior da orientação de configuração:** a interface de criação manual de chaves do S-Present 0.3.50 omite `advanced:read`. A instrução de marcar essa permissão não pode ser seguida nessa interface. A revisão 1.4.9 aceita o link completo do Editor remoto e permite enviá-lo pelo celular/PC; consulte [SAIDAS_SPRESENTER.md](SAIDAS_SPRESENTER.md). Os testes abaixo continuam sendo o registro da 1.4.8 e não comprovam configuração ou funcionamento em equipamento real.
+**Correção posterior da orientação de configuração:** a interface de criação manual de chaves do S-Present 0.3.50 omite `advanced:read`. A instrução de marcar essa permissão não pode ser seguida nessa interface. A revisão 1.4.9 aceita o link completo do Editor remoto e permite enviá-lo pelo celular/PC; consulte [SAIDAS_SPRESENTER.md](../SAIDAS_SPRESENTER.md). Os testes abaixo continuam sendo o registro da 1.4.8 e não comprovam configuração ou funcionamento em equipamento real.
 
 ## Evidência e contrato
 
@@ -41,6 +41,6 @@ APK: **11.376.804 bytes**. SHA-256: `ee831f8fb0c058ccfe2a3101f00eec54fc76425f3c3
 
 ## Validação ainda necessária
 
-Não houve acesso ao PC/LAN, à API ativa com chave real ou às boxes. Os testes de rede usam um servidor controlado com o contrato observado. É necessário habilitar a API, configurar uma chave advanced:read no próprio aparelho e testar criação/renomeação/desativação dos destinos reais conforme [SAIDAS_SPRESENTER.md](SAIDAS_SPRESENTER.md).
+Não houve acesso ao PC/LAN, à API ativa com chave real ou às boxes. Os testes de rede usam um servidor controlado com o contrato observado. É necessário habilitar a API, configurar uma chave advanced:read no próprio aparelho e testar criação/renomeação/desativação dos destinos reais conforme [SAIDAS_SPRESENTER.md](../SAIDAS_SPRESENTER.md).
 
-O catálogo não confirma renderização, enquadramento, mídia ou estabilidade na B9/HTV. Essas verificações físicas continuam conforme [TVBOX.md](TVBOX.md). NDI e áudio não foram alterados; o áudio associado a letras segue pendente. Nenhum release ou envio à Play foi feito. Capturas, asar, SDK, chaves e APKs ficam fora do Git.
+O catálogo não confirma renderização, enquadramento, mídia ou estabilidade na B9/HTV. Essas verificações físicas continuam conforme [TVBOX.md](../TVBOX.md). NDI e áudio não foram alterados; o áudio associado a letras segue pendente. Nenhum release ou envio à Play foi feito. Capturas, asar, SDK, chaves e APKs ficam fora do Git.

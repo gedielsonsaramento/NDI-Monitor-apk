@@ -40,4 +40,4 @@ gradle --no-daemon --console=plain --max-workers=3 -PmonitorPrebuiltNativeDir=/c
 
 Não houve acesso físico à H6+, às demais boxes, ao motor Chromium real ou à rede do usuário. Os testes simulam exceção/interrupção; não reproduzem o fechamento relatado. A revisão pode contornar a inicialização e permitir obter evidência, mas ainda não comprova NDI funcional nesse firmware, enquadramento HTML ou áudio associado a letras. `SIGSEGV`/`SIGILL` não são convertidos em exceções Java: um checkpoint pode indicar apenas a etapa interrompida, inclusive por desligamento, e a causa nativa completa requer Logcat/tombstone.
 
-Procedimento: [TVBOX.md](TVBOX.md). Manual: [DOCUMENTACAO_COMPLETA.md](DOCUMENTACAO_COMPLETA.md).
+Procedimento: [TVBOX.md](../TVBOX.md). Manual: [DOCUMENTACAO_COMPLETA.md](../DOCUMENTACAO_COMPLETA.md).

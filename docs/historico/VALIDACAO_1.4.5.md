@@ -42,4 +42,4 @@ Robolectric não reproduz todo o carregador de recursos do firmware da HTV e os 
 
 O relatório anterior da 1.4.4 é mantido após atualizar. Se aparecer, escolher **Abrir apenas HTML** para testar a nova tela. Em caso de nova falha, fotografar o último `Caused by` e conferir a versão registrada. A causa na B9 permanece sem relatório confirmado. Não há correção adicional do áudio associado a letras ou do CSS HTML nesta revisão.
 
-[Procedimento de teste](TVBOX.md) · [Manual completo](DOCUMENTACAO_COMPLETA.md).
+[Procedimento de teste](../TVBOX.md) · [Manual completo](../DOCUMENTACAO_COMPLETA.md).

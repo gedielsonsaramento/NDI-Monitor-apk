@@ -62,7 +62,7 @@ Uma rede local funcionando é suficiente para o uso habitual de fontes locais. O
 
 ### Correção do formulário na revisão 1.4.10
 
-As fotos da box mostram que o PC alcança o endereço/porta corretos, mas o envio termina em **Abra o endereço mostrado na TV**. Foi reproduzido em Chromium: o cabeçalho Referrer-Policy no-referrer da 1.4.9 faz o POST de formulário usar Origin null, que é recusado pela validação estrita. A revisão usa same-origin; não flexibiliza a aceitação de Origin null/externo, Host ou código. O teste em navegador executa o servidor Java de produção com dados sintéticos e confirma recebimento em áreas de desktop/celular. [Validação](VALIDACAO_1.4.10.md) e [como executar o teste](tools/setup-browser-test/README.md).
+As fotos da box mostram que o PC alcança o endereço/porta corretos, mas o envio termina em **Abra o endereço mostrado na TV**. Foi reproduzido em Chromium: o cabeçalho Referrer-Policy no-referrer da 1.4.9 faz o POST de formulário usar Origin null, que é recusado pela validação estrita. A revisão usa same-origin; não flexibiliza a aceitação de Origin null/externo, Host ou código. O teste em navegador executa o servidor Java de produção com dados sintéticos e confirma recebimento em áreas de desktop/celular. [Validação](historico/VALIDACAO_1.4.10.md) e [como executar o teste](../tools/setup-browser-test/README.md).
 
 ### Configuração da TV pelo celular ou PC na revisão 1.4.9
 
@@ -80,7 +80,7 @@ A resposta completa é limitada a 1 MiB, cinco segundos e 512 registros. Não se
 
 O catálogo válido atualiza nomes e remove entradas anteriores ausentes/desabilitadas, preservando a última URL escolhida como histórico. Falhas de autenticação/rede/contrato deixam os resultados anteriores disponíveis e exibem o motivo. Selecionar uma fonte encerra a descoberta; a reabertura restaura essa fonte sem consultar ou trocar destinos em segundo plano. Se o slug mudar, o usuário seleciona a nova entrada. A chave é cifrada com AES/GCM/AndroidKeyStore, com origem como dado autenticado; firmware sem armazenamento funcional usa somente a memória da sessão e informa essa condição.
 
-O contrato foi observado no pacote S-Present 0.3.50 fornecido pelo mantenedor, cujo programa de slide corresponde byte a byte à captura original. Não foi executado o servidor ou firmware real neste ambiente. A adaptação Chrome 44–86 anterior, o NDI e o áudio permanecem. Veja [configuração e limites](SAIDAS_SPRESENTER.md) e [validação](VALIDACAO_1.4.8.md).
+O contrato foi observado no pacote S-Present 0.3.50 fornecido pelo mantenedor, cujo programa de slide corresponde byte a byte à captura original. Não foi executado o servidor ou firmware real neste ambiente. A adaptação Chrome 44–86 anterior, o NDI e o áudio permanecem. Veja [configuração e limites](SAIDAS_SPRESENTER.md) e [validação](historico/VALIDACAO_1.4.8.md).
 
 ### Histórico: compatibilidade HTML na revisão 1.4.7
 
@@ -100,7 +100,7 @@ A HTV já abriu a interface 1.4.5. O diagnóstico HTML seguinte mostrou Chrome 5
 
 Se arquivo, host ou pacote local não corresponder, o carregamento original continua. O adaptador não substitui o WebView nem oferece compatibilidade universal com qualquer HTML. Servidor, WebSocket e mídia continuam na origem selecionada. Não captura o áudio do computador. O diagnóstico informa quantos arquivos receberam a adaptação e inclui arquivo/linha de novos erros de JavaScript.
 
-O adaptador e as ferramentas estão no Git; captura e programa de terceiros gerado ficam fora dele. Veja o [preparo reproduzível](tools/html-compat/README.md). O APK de teste inclui a adaptação da captura recebida e conserva pacote, certificado e preferências TVBox. A validação simulada não confirma pixels, mídia ou Chrome 52 físico: repita o teste de [TVBOX.md](TVBOX.md).
+O adaptador e as ferramentas estão no Git; captura e programa de terceiros gerado ficam fora dele. Veja o [preparo reproduzível](../tools/html-compat/README.md). O APK de teste inclui a adaptação da captura recebida e conserva pacote, certificado e preferências TVBox. A validação simulada não confirma pixels, mídia ou Chrome 52 físico: repita o teste de [TVBOX.md](TVBOX.md).
 
 ### Correção de fonte na revisão 1.4.5
 

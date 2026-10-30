@@ -56,7 +56,7 @@ estava pendente.
 
 Em **29/10/2026**, o mantenedor informou que **todas as boxes testadas rodaram
 perfeitamente e a TV Philips com Android também**. Esse relato posterior está
-registrado em [TESTES_EM_APARELHOS.md](TESTES_EM_APARELHOS.md). A marca da TV
+registrado em [TESTES_EM_APARELHOS.md](../TESTES_EM_APARELHOS.md). A marca da TV
 segue o relato atual; seu modelo exato não foi informado.
 
 Os testes físicos foram realizados pelo mantenedor. As verificações de

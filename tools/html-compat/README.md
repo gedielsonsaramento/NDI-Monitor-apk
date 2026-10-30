@@ -43,6 +43,6 @@ Cinco fixtures executam o JavaScript transformado e verificam carregador externo
 
 A fixture de integração usa HTTP/WebSocket em loopback e JSDOM, remove algumas APIs modernas antes da carga e verifica polyfills e mudanças de letra/elemento por mensagens WebSocket. Propriedades ausentes são removidas com delete, preservando o comportamento de detecção por presença. Confere ES5 e as quatro bordas explícitas do contêiner.
 
-JSDOM não mede pixels nem reproduz mídia. Não é Chrome 44/52 nem o firmware das boxes. Uma execução inicial expirou sem erro JavaScript antes da carga da tela; a repetição passou. Isso não comprova estabilidade de inicialização. Nenhum resultado de navegador nativo é reivindicado. O teste físico continua obrigatório; veja [VALIDACAO_1.4.7.md](../../VALIDACAO_1.4.7.md).
+JSDOM não mede pixels nem reproduz mídia. Não é Chrome 44/52 nem o firmware das boxes. Uma execução inicial expirou sem erro JavaScript antes da carga da tela; a repetição passou. Isso não comprova estabilidade de inicialização. Nenhum resultado de navegador nativo é reivindicado. O teste físico continua obrigatório; veja [VALIDACAO_1.4.7.md](../../docs/historico/VALIDACAO_1.4.7.md).
 
 Referências: [Babel preset-env](https://babeljs.io/docs/babel-preset-env/), [core-js](https://core-js.io/docs/), [WebViewClient](https://developer.android.com/reference/android/webkit/WebViewClient).

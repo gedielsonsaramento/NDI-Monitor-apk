@@ -10,7 +10,7 @@ Foi reproduzido com o `SpresenterPairingServer` real da 1.4.9, executado em Java
 
 A correção troca somente a política da página para **same-origin**. O navegador passa a informar a origem real no envio da própria página. Host, Origin, código, validade, limites e envio único continuam sendo verificados; Origin null ou externo permanece recusado. Não abre CORS nem flexibiliza a autenticação para corrigir a falha.
 
-O comportamento da política está definido no [Fetch Standard — append a request Origin header](https://fetch.spec.whatwg.org/#append-a-request-origin-header). O teste executável está em [tools/setup-browser-test](tools/setup-browser-test/README.md).
+O comportamento da política está definido no [Fetch Standard — append a request Origin header](https://fetch.spec.whatwg.org/#append-a-request-origin-header). O teste executável está em [tools/setup-browser-test](../../tools/setup-browser-test/README.md).
 
 ## Resultado do envio no navegador
 

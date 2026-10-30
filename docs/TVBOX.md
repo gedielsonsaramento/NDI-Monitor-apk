@@ -22,7 +22,7 @@ Instale a **1.4.11 sobre a edição TVBox anterior**, mantendo as preferências,
 
 Em **Diagnóstico do aparelho**, o início deve identificar **1.4.11 (16)**. No final, procure **Compatibilidade HTML: adaptação aplicada a 2 de 2 arquivos (Chrome 44)** na B9, ou Chrome 52 na HTV. A resposta pode levar até cinco segundos. Se ficar preto ou deformado, fotografe essa parte, a mensagem de erro e a linha **Arquivo**, se houver. Feche/reabra para conferir a restauração sem busca geral.
 
-O perfil foi preparado de `main.ff832fdd.js` e `main.eb127441.css` de `Captura-Retorno.zip`. Em Chrome 44–86, verifica nome, origem e SHA-256 dos bytes atuais do servidor antes de usar a adaptação. Outros arquivos/builds, perfis ausentes ou motores atuais mantêm a página original. O WebSocket e a mídia continuam na fonte selecionada; não exige serviço extra no PC nem substitui o WebView. Consulte [preparo de outra captura](tools/html-compat/README.md).
+O perfil foi preparado de `main.ff832fdd.js` e `main.eb127441.css` de `Captura-Retorno.zip`. Em Chrome 44–86, verifica nome, origem e SHA-256 dos bytes atuais do servidor antes de usar a adaptação. Outros arquivos/builds, perfis ausentes ou motores atuais mantêm a página original. O WebSocket e a mídia continuam na fonte selecionada; não exige serviço extra no PC nem substitui o WebView. Consulte [preparo de outra captura](../tools/html-compat/README.md).
 
 ## Instalar e abrir
 
@@ -64,7 +64,7 @@ O mantenedor realizou os testes físicos e relatou em 29/10/2026 que todas as bo
 ./gradlew testDebugUnitTest lintDebug assembleTvboxTest
 ```
 
-O reuso opcional `-PmonitorPrebuiltNativeDir=/caminho/nativo` continua restrito a depuração, exige as quatro bibliotecas ARM32/ARM64 e desabilita release. São as mesmas bibliotecas/avisos do APK 1.4.8-TVBox verificado. Veja [VALIDACAO_1.4.10.md](VALIDACAO_1.4.10.md).
+O reuso opcional `-PmonitorPrebuiltNativeDir=/caminho/nativo` continua restrito a depuração, exige as quatro bibliotecas ARM32/ARM64 e desabilita release. São as mesmas bibliotecas/avisos do APK 1.4.8-TVBox verificado. Veja [VALIDACAO_1.4.10.md](historico/VALIDACAO_1.4.10.md).
 
 ## Aparelhos observados nas fotos — histórico de diagnóstico
 

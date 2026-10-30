@@ -1,8 +1,16 @@
+# Documentação — página simplificada para instalar e usar (30/10/2026)
+
+- Destaca o download do APK pronto, com instalação e atualização em passos curtos.
+- Explica a configuração das saídas HTML e a busca de novas fontes pelo botão do painel.
+- Resume a compatibilidade: Android 6 para HTML; Android 7 ou superior para HTML e NDI.
+- Informa a rotina de testes e atualizações semanais do projeto.
+- Reúne documentos técnicos e históricos em `docs/`, preservando o código-fonte e o APK 1.4.11.
+
 # 1.4.11 — S-Retorno: nome, ícone e disponibilização no GitHub
 
 - Em 27/10/2026, o aplicativo passou a se chamar **S-Retorno**, com ícones vetoriais tradicional, redondo, adaptativo e monocromático, além de novo banner para Android TV.
 - Mantém o pacote e a assinatura das edições TVBox anteriores para atualização sem desinstalar. A versão exibida é **1.4.11 (16)**, sem o sufixo `-tvbox`.
-- Preserva as bibliotecas NDI, a adaptação HTML e o funcionamento de conexão da 1.4.10. Foram aprovados 194 testes existentes, lint sem erros, compilação e conferência do APK. [Validação](VALIDACAO_1.4.11.md).
+- Preserva as bibliotecas NDI, a adaptação HTML e o funcionamento de conexão da 1.4.10. Foram aprovados 194 testes existentes, lint sem erros, compilação e conferência do APK. [Validação](historico/VALIDACAO_1.4.11.md).
 - Em **29/10/2026**, o mantenedor relatou que **todas as boxes testadas e a TV Philips com Android rodaram perfeitamente**. [Registro dos testes em aparelhos](TESTES_EM_APARELHOS.md).
 - Disponibiliza no GitHub o APK já verificado e o código-fonte ZIP da versão, com instruções de atualização e SHA-256. [Downloads](DOWNLOADS.md).
 
@@ -11,7 +19,7 @@
 - Corrige a recusa **Abra o endereço mostrado na TV** ao enviar o formulário no PC, mesmo com o endereço correto. A política no-referrer da 1.4.9 fazia o navegador enviar Origin null; o app recusava esse POST.
 - Usa Referrer-Policy same-origin e mantém a validação estrita de Host/Origin, código e sessão. Origin null ou externo continua recusado.
 - Acrescenta teste em Chromium com formulário real, servidor Java de produção e credencial sintética, em áreas de desktop/celular. Reproduz a recusa nas classes da 1.4.9 e verifica recebimento nas classes corrigidas.
-- Mantém pacote, certificado, preferências, catálogo HTML, código curto, duração da sessão, bibliotecas nativas e áudio. [Validação](VALIDACAO_1.4.10.md).
+- Mantém pacote, certificado, preferências, catálogo HTML, código curto, duração da sessão, bibliotecas nativas e áudio. [Validação](historico/VALIDACAO_1.4.10.md).
 
 # 1.4.9 — Configurar a box pelo celular ou PC (26/10/2026)
 
@@ -19,7 +27,7 @@
 - Configuração por solicitação, um envio, cinco minutos, cinco códigos incorretos; fecha ao cancelar ou sair do app. Valida tamanho, tempo, origem e código, sem guardar a chave em URL de reprodução ou resposta da página.
 - Aceita o link completo no próprio aparelho e mantém endereço/chave em **Configuração manual**. Preserva a fonte escolhida e exige selecionar a saída após buscar.
 - Corrige a orientação da 1.4.8: a criação manual de chaves da interface S-Present 0.3.50 omite advanced:read. O link do editor oferece essa permissão e também escrita; o Monitor continua somente consultando.
-- Mantém certificado/pacote TVBox, armazenamento protegido, perfil HTML Chrome 44–86 e bibliotecas/áudio da 1.4.8. Teste em rede e boxes reais ainda é necessário. [Configuração](SAIDAS_SPRESENTER.md) e [validação](VALIDACAO_1.4.9.md).
+- Mantém certificado/pacote TVBox, armazenamento protegido, perfil HTML Chrome 44–86 e bibliotecas/áudio da 1.4.8. Teste em rede e boxes reais ainda é necessário. [Configuração](SAIDAS_SPRESENTER.md) e [validação](historico/VALIDACAO_1.4.9.md).
 
 # 1.4.8 — Catálogo dos destinos HTML do S-Present (26/10/2026)
 
@@ -29,7 +37,7 @@
 - Chave somente no cabeçalho da origem configurada; sem redirecionamentos ou comandos de escrita. Limites de 1 MiB, cinco segundos e 512 registros; falhas deixam o catálogo anterior disponível e mostram o motivo.
 - Armazenamento AES/GCM/AndroidKeyStore vinculado à origem; firmware sem suporte usa apenas a sessão e informa essa condição. Remover a conexão preserva a seleção HTML.
 - Mantém a adaptação Chrome 44–86, pacote/certificado TVBox, bibliotecas nativas e áudio da 1.4.7. A captura confirmou Cannot GET /output/ no servidor, sem listagem nesse caminho.
-- [Configuração](SAIDAS_SPRESENTER.md) e [validação](VALIDACAO_1.4.8.md). API e firmware reais ainda precisam ser testados. Nenhum release ou envio à Play.
+- [Configuração](SAIDAS_SPRESENTER.md) e [validação](historico/VALIDACAO_1.4.8.md). API e firmware reais ainda precisam ser testados. Nenhum release ou envio à Play.
 
 # 1.4.7 — Adaptação ES5 para a BTV B9 com Chrome 44 (26/10/2026)
 
@@ -39,7 +47,7 @@
 - Diagnóstico manual aguarda até cinco segundos por resposta do motor antigo; não acrescenta consultas periódicas.
 - Mantém verificações de origem/hash, limites de rede/cache, pacote/certificado TVBox e bibliotecas nativas. Android 6 continua em HTML, sem NDI.
 - 117 testes Android aprovados, lint sem erros, cinco fixtures de semântica ES5 e fixture HTTP/WebSocket de letras/elementos aprovadas. JSDOM não comprova pixels, mídia ou execução no Chrome 44 físico; uma execução inicial da fixture expirou sem erro JavaScript e a repetição passou.
-- APK de teste 1.4.7-tvbox (12); [validação detalhada](VALIDACAO_1.4.7.md). Esta revisão não corrige o áudio associado a letras.
+- APK de teste 1.4.7-tvbox (12); [validação detalhada](historico/VALIDACAO_1.4.7.md). Esta revisão não corrige o áudio associado a letras.
 
 # 1.4.6 — Adaptação da captura HTML para a HTV com Chrome 52 (26/10/2026)
 

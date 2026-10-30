@@ -1,6 +1,6 @@
 # Código próprio e SDK NDI® têm licenças distintas
 
-A [licença MIT](LICENSE) escolhida pelo mantenedor se aplica ao código próprio deste projeto. Ela não relicencia headers, bibliotecas, ferramentas, documentação ou marcas do SDK NDI.
+A [licença MIT](../LICENSE) escolhida pelo mantenedor se aplica ao código próprio deste projeto. Ela não relicencia headers, bibliotecas, ferramentas, documentação ou marcas do SDK NDI.
 
 O código-fonte distribuído não inclui esses arquivos proprietários. O APK compilado é disponibilizado separadamente no ramo de downloads e contém o runtime NDI e os avisos aplicáveis, sem distribuir o instalador ou os headers do SDK. Para compilar com NDI, cada usuário deve obter o SDK oficial separadamente, conferir o contrato que acompanha sua versão e decidir pessoalmente se aceita seus termos.
 
