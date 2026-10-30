@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <item name="support_category" type="id" />
-    <item name="support_metrics" type="id" />
-    <item name="support_send_button" type="id" />
-    <item name="support_copy_button" type="id" />
-    <item name="support_status" type="id" />
-    <item name="support_auto_checkbox" type="id" />
-</resources>
