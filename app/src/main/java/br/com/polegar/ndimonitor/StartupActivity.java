@@ -5,14 +5,12 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
 import android.widget.TextView;
 
-/** Native-free entry point that can display a report even if MainActivity fails. */
+/** Native-free recovery with simple retry actions; technical records stay in the journal. */
 public final class StartupActivity extends Activity {
     static final String EXTRA_HTML_ONLY = "monitor_html_only";
     private StartupJournal journal;
-    private SupportDialog supportDialog;
 
     @Override protected void onCreate(Bundle state) {
         super.onCreate(state);
@@ -31,10 +29,6 @@ public final class StartupActivity extends Activity {
         content.addView(explanation);
         addButton(content, R.string.recovery_html, () -> openMonitor(true));
         addButton(content, R.string.recovery_retry, () -> openMonitor(false));
-        addButton(content, R.string.support_report, () -> {
-            if (supportDialog == null) supportDialog = new SupportDialog(this, MonitorApplication.support(this));
-            supportDialog.show();
-        }).setId(R.id.support_report_button);
         addButton(content, R.string.android_settings, () -> {
             try { startActivity(new Intent(android.provider.Settings.ACTION_SETTINGS)); }
             catch (android.content.ActivityNotFoundException unavailable) {
@@ -42,12 +36,6 @@ public final class StartupActivity extends Activity {
                         android.widget.Toast.LENGTH_LONG).show();
             }
         });
-        TextView details = new TextView(this);
-        details.setText(journal.previousReport());
-        details.setTextIsSelectable(true);
-        ScrollView scroll = new ScrollView(this);
-        scroll.addView(details);
-        content.addView(scroll, new LinearLayout.LayoutParams(-1, 0, 1));
         setContentView(content);
     }
 
@@ -71,8 +59,4 @@ public final class StartupActivity extends Activity {
         finish();
     }
 
-    @Override protected void onDestroy() {
-        if (supportDialog != null) supportDialog.close();
-        super.onDestroy();
-    }
 }

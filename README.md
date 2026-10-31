@@ -56,11 +56,11 @@ O app salva a fonte escolhida e a abre novamente na próxima inicialização. Pa
 
 Em aparelhos com **Android 7 ou superior**, deixe o transmissor NDI ativo no computador, selecione **NDI** no app, toque em **↻** para procurar fontes e escolha a desejada.
 
-## Relatar um problema
+## Diagnóstico pela Central — próxima revisão
 
-Abra **engrenagem → Relatar problema**, escolha o tipo de falha e use **Copiar relatório**. O relatório mostra a versão e o consumo de memória, CPU e rede do próprio app.
+A simplificação da interface está preparada para a próxima revisão integrada à **Central de Retornos**: diagnósticos, métricas e relatórios técnicos serão consultados no painel do S-Present. A TV/box oferece os controles de operação e, quando necessário, uma recuperação simples para tentar novamente ou abrir somente HTML.
 
-O envio ao suporte e o compartilhamento automático estão preparados para um servidor próprio, ainda em construção. **Nesta versão, não há envio remoto de métricas.** Quando o servidor estiver disponível, o compartilhamento será opcional e visível no app.
+O APK 1.4.12 disponível acima continua sendo o já publicado. Esta alteração de código ainda precisa ser integrada ao fonte completo da **1.5.1** e validada com a Central antes de gerar outro APK. [Escopo e validação da alteração](docs/INTERFACE_CENTRAL.md).
 
 ## Testes e atualizações semanais
 

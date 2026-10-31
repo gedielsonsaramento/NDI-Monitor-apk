@@ -53,7 +53,7 @@ public class StartupRecoveryTest {
         assertEquals(0, TvBoxCompatibilityTest.UnloadableReceiver.calls);
     }
 
-    @Test public void interruptedNativeInitializationShowsReportBeforeMainAndCanChooseHtml() {
+    @Test public void interruptedNativeInitializationOffersHtmlWithoutShowingTechnicalReport() {
         StartupJournal original = new StartupJournal(context);
         original.beginStartup();
         original.beginOperation("Inicializando o receptor NDI");
@@ -64,7 +64,10 @@ public class StartupRecoveryTest {
         try (ActivityController<StartupActivity> controller = Robolectric.buildActivity(StartupActivity.class).setup()) {
             StartupActivity activity = controller.get();
             assertNull(Shadows.shadowOf(activity).getNextStartedActivity());
-            assertTrue(textIn(activity.getWindow().getDecorView(), "Última etapa"));
+            assertFalse(textIn(activity.getWindow().getDecorView(), "Última etapa"));
+            assertFalse(textIn(activity.getWindow().getDecorView(), "Inicializando o receptor NDI"));
+            assertFalse(textIn(activity.getWindow().getDecorView(), activity.getString(R.string.support_report)));
+            assertTrue(nextProcess.previousReport().contains("Inicializando o receptor NDI"));
             buttonIn(activity.getWindow().getDecorView(), activity.getString(R.string.recovery_html)).performClick();
             Intent launch = Shadows.shadowOf(activity).getNextStartedActivity();
             assertEquals(MainActivity.class.getName(), launch.getComponent().getClassName());

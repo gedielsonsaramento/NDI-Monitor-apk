@@ -1,5 +1,7 @@
 # Suporte e métricas — preparação do S-Retorno 1.4.12
 
+**Registro da implementação original da 1.4.12.** A simplificação de interface preparada em 31/10/2026 retira os atalhos de relatório e diagnóstico da box, para consulta pela Central de Retornos. Os detalhes abaixo descrevem o suporte legado; a integração sobre o fonte completo da 1.5.1 e a validação do painel continuam pendentes. Veja [Interface do app e Central](INTERFACE_CENTRAL.md).
+
 O aplicativo passa a ter **engrenagem → Relatar problema**, disponível também na recuperação de abertura. O usuário escolhe um tipo de problema e pode copiar um relatório local com versão e consumo do próprio app.
 
 O painel e o servidor próprios ainda serão construídos. O APK desta preparação tem o endereço de suporte vazio: **não envia dados nem inicia consultas periódicas de métricas**. O botão de envio e o compartilhamento automático ficam indisponíveis até haver um destino HTTPS configurado. A cópia manual do relatório continua funcionando.
