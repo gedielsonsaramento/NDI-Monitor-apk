@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="recovery_title">Abertura do S-Retorno</string>
-    <string name="recovery_explanation">A abertura anterior foi interrompida. Fotografe o relatório abaixo. Você pode tentar abrir somente o retorno HTML.</string>
+    <string name="recovery_explanation">A abertura anterior foi interrompida. Tente abrir novamente ou use apenas o retorno HTML.</string>
     <string name="recovery_html">Abrir apenas HTML</string>
     <string name="recovery_retry">Tentar abrir o monitor novamente</string>
     <string name="settings_unavailable">Configurações indisponíveis neste aparelho</string>
@@ -22,7 +22,7 @@
     <string name="ndi_attribution">NDI® is a registered trademark of Vizrt NDI AB.\nhttps://ndi.video/</string>
     <string name="third_party_notices">Licenças de terceiros</string>
     <string name="third_party_notices_unavailable">Avisos indisponíveis nesta compilação de preparação.</string>
-    <string name="ndi_sdk_missing">NDI indisponível neste aparelho. Use HTML ou consulte Diagnóstico do aparelho nas configurações.</string>
+    <string name="ndi_sdk_missing">NDI indisponível neste aparelho. Você pode usar o modo HTML.</string>
     <string name="device_diagnostics">Diagnóstico do aparelho</string>
     <string name="device_diagnostics_reading">%1$s\n\nLendo a página HTML…</string>
     <string name="device_diagnostics_result">%1$s\n\n%2$s</string>

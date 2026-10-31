@@ -55,22 +55,6 @@
             android:text="@string/start_on_boot" />
 
         <Button
-            android:id="@+id/support_report_button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:minHeight="48dp"
-            android:text="@string/support_report"
-            android:textAllCaps="false" />
-
-        <Button
-            android:id="@+id/device_diagnostics_button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:minHeight="48dp"
-            android:text="@string/device_diagnostics"
-            android:textAllCaps="false" />
-
-        <Button
             android:id="@+id/third_party_notices_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

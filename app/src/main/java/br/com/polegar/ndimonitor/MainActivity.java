@@ -115,8 +115,6 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     private int safeInsetLeft;
     private int safeInsetRight;
     private Object backCallback;
-    private AlertDialog diagnosticsDialog;
-    private SupportDialog supportDialog;
     private final Handler controlsHandler = new Handler(Looper.getMainLooper());
     private final Runnable hideControls = () -> {
         if (sourcePanel.getVisibility() != View.VISIBLE) {
@@ -548,11 +546,6 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         });
         content.findViewById(R.id.third_party_notices_button).setOnClickListener(v ->
                 showThirdPartyNotices());
-        content.findViewById(R.id.device_diagnostics_button).setOnClickListener(v -> showDeviceDiagnostics());
-        content.findViewById(R.id.support_report_button).setOnClickListener(v -> {
-            if (supportDialog == null) supportDialog = new SupportDialog(this, MonitorApplication.support(this));
-            supportDialog.show();
-        });
         View apiButton = content.findViewById(R.id.spresenter_api_button);
         apiButton.setVisibility(htmlMode ? View.VISIBLE : View.GONE);
         apiButton.setOnClickListener(v -> showSpresenterConnection());
@@ -731,32 +724,6 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
                 !preferences.getBoolean(KEY_HTML_STAGE_LAYOUT, true) ? R.string.html_layout_page
                         : preferences.getBoolean(KEY_HTML_COMPATIBILITY, Build.VERSION.SDK_INT <= 25)
                                 ? R.string.html_layout_compatibility : R.string.html_layout_monitor)));
-    }
-
-    private void showDeviceDiagnostics() {
-        if (diagnosticsDialog != null && diagnosticsDialog.isShowing()) return;
-        String previous = StartupJournal.get(this).previousReport();
-        String device = DeviceDiagnostics.describe(this, ndiAvailable)
-                + (previous.isEmpty() ? "" : "\n\n" + previous);
-        TextView details = new TextView(this);
-        int padding = Math.round(16 * getResources().getDisplayMetrics().density);
-        details.setPadding(padding, padding, padding, padding);
-        details.setTextIsSelectable(true);
-        details.setText(getString(R.string.device_diagnostics_reading, device));
-        android.widget.ScrollView scroll = new android.widget.ScrollView(this);
-        scroll.addView(details);
-        diagnosticsDialog = new AlertDialog.Builder(this)
-                .setTitle(R.string.device_diagnostics)
-                .setView(scroll)
-                .setPositiveButton(R.string.close, null).create();
-        diagnosticsDialog.setOnDismissListener(dialog -> diagnosticsDialog = null);
-        diagnosticsDialog.show();
-        AlertDialog activeDialog = diagnosticsDialog;
-        htmlMonitor.describePage(page -> {
-            if (!destroyed && diagnosticsDialog == activeDialog && activeDialog.isShowing()) {
-                details.setText(getString(R.string.device_diagnostics_result, device, page));
-            }
-        });
     }
 
     private void showThirdPartyNotices() {
@@ -1099,8 +1066,6 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         if (htmlLayoutDialog != null) htmlLayoutDialog.dismiss();
         if (spresenterDialog != null) spresenterDialog.dismiss();
         BackNavigation.unregister(this, backCallback);
-        if (diagnosticsDialog != null) diagnosticsDialog.dismiss();
-        if (supportDialog != null) supportDialog.close();
         NdiReceiver.setCallbackTarget(null);
         releaseAudio();
         if (multicastLock != null && multicastLock.isHeld()) multicastLock.release();

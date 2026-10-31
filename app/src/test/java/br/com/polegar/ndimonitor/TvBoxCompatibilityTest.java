@@ -58,7 +58,7 @@ public class TvBoxCompatibilityTest {
                 .putString(MainActivity.KEY_HTML_URL, URL).commit();
     }
 
-    @Test public void nativeLoadFailureDoesNotPreventHtmlRestoreOrDeviceDiagnostics() {
+    @Test public void nativeLoadFailureDoesNotPreventHtmlRestoreOrSimpleSettings() {
         try (ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class).setup()) {
             MainActivity activity = controller.get();
             assertEquals(View.VISIBLE, activity.findViewById(R.id.html_container).getVisibility());
@@ -68,11 +68,12 @@ public class TvBoxCompatibilityTest {
             activity.onBackPressed();
             activity.findViewById(R.id.monitor_settings_button).performClick();
             android.app.AlertDialog settings = ShadowAlertDialog.getLatestAlertDialog();
-            assertTrue(settings.findViewById(R.id.device_diagnostics_button).performClick());
-            android.app.AlertDialog diagnostics = ShadowAlertDialog.getLatestAlertDialog();
-            assertTrue(diagnostics.isShowing());
+            assertTrue(settings.isShowing());
+            assertNull(settings.findViewById(activity.getResources().getIdentifier(
+                    "device_diagnostics_button", "id", activity.getPackageName())));
+            assertNull(settings.findViewById(activity.getResources().getIdentifier(
+                    "support_report_button", "id", activity.getPackageName())));
             assertTrue(DeviceDiagnostics.describe(activity, false).contains("API " + android.os.Build.VERSION.SDK_INT));
-            diagnostics.dismiss();
             settings.dismiss();
             assertEquals(URL, activity.getSharedPreferences(MainActivity.PREFERENCES, Context.MODE_PRIVATE)
                     .getString(MainActivity.KEY_HTML_URL, ""));
