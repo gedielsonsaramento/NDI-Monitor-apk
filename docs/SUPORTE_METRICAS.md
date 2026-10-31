@@ -1,6 +1,6 @@
 # Suporte e métricas — preparação do S-Retorno 1.4.12
 
-**Registro da implementação original da 1.4.12.** A simplificação de interface preparada em 31/10/2026 retira os atalhos de relatório e diagnóstico da box, para consulta pela Central de Retornos. Os detalhes abaixo descrevem o suporte legado; a integração sobre o fonte completo da 1.5.1 e a validação do painel continuam pendentes. Veja [Interface do app e Central](INTERFACE_CENTRAL.md).
+**Registro histórico da implementação da 1.4.12.** Na 1.5.2, os atalhos de relatório e diagnóstico saíram da interface da box. A consulta local de ocorrências e métricas acontece pela Central de Retornos 0.1.2 do Spresenter. As telas e os envios descritos abaixo pertencem à implementação anterior; o APK atual mantém o suporte remoto desativado. Veja [Interface do app e Central](INTERFACE_CENTRAL.md).
 
 O aplicativo passa a ter **engrenagem → Relatar problema**, disponível também na recuperação de abertura. O usuário escolhe um tipo de problema e pode copiar um relatório local com versão e consumo do próprio app.
 
@@ -42,7 +42,7 @@ O registrador Java mantém o tratamento normal do Android e apenas enfileira os 
 
 Android 11/API 30 ou superior pode informar o motivo da saída do processo. O app consulta apenas esse motivo, sem ler traces ou tombstones, para distinguir Java, falha nativa, ANR e encerramentos por recursos. Uma parada explícita do usuário não vira falha.
 
-Nas versões antigas, uma sessão que não encerrou normalmente pode gerar `session_interrupted`. Isso **não confirma uma falha nativa**: queda de energia ou encerramento forçado também podem deixar o marcador. O painel deve apresentar interrupções separadamente dos crashes confirmados.
+A partir da 1.5.1, um marcador de sessão incompleta **não gera relatório automático**. As TVs e boxes da igreja são desligadas diariamente, e a falta de encerramento pode representar apenas o corte de energia. Eventos `session_interrupted` pendentes de versões anteriores são descartados antes do envio. Falhas Java registradas e motivos confirmados pelo Android continuam elegíveis.
 
 Somente saídas posteriores à autorização são elegíveis. O motivo já observado não é contado novamente. Exceções Java registradas pelo próprio app não são duplicadas pelo histórico do Android.
 
@@ -67,7 +67,7 @@ Destino de exemplo: `POST https://monitor.seudominio.com/api/v1/telemetry`.
 }
 ```
 
-`kind`: `heartbeat`, `manual_report`, `java_crash`, `native_crash`, `anr`, `memory_pressure`, `initialization_failure`, `resource_limit` ou `session_interrupted`.
+`kind` atual: `heartbeat`, `manual_report`, `java_crash`, `native_crash`, `anr`, `memory_pressure`, `initialization_failure` ou `resource_limit`. O esquema ainda reconhece `session_interrupted` para compatibilidade com versões antigas, mas o app 1.5.1 não o produz como relatório automático.
 
 Em `manual_report`, há `category`: `video`, `audio`, `connection`, `startup` ou `other`. Falhas podem incluir `failure.exception_class`, `failure.app_frames`, `failure.fingerprint` ou uma origem estática em `failure.source`. Não há campo de texto livre ou mensagem de exceção.
 
@@ -79,7 +79,7 @@ O endpoint de recebimento deve permitir apenas escrita, com limites globais e po
 
 ## Como o painel poderá contar aparelhos
 
-Atualize o último batimento e as últimas métricas de cada `installation_id`. Conte como ativas as instalações com comunicação recente, por exemplo nos últimos três minutos. Falta de comunicação significa **sem comunicação**, não crash confirmado.
+Atualize o último batimento e as últimas métricas de cada `installation_id`. Conte como ativas as instalações com comunicação recente, por exemplo nos últimos três minutos. Falta de comunicação significa **sem comunicação**, não crash confirmado. Na rotina diária da igreja, desligamentos e religamentos não devem incrementar contadores de erro.
 
 A contagem é de instalações, não um inventário de hardware. Desinstalar, apagar dados ou desativar o compartilhamento pode gerar outro identificador no futuro. Reinstalações não são vinculadas a uma identidade física.
 

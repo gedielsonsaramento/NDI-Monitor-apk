@@ -85,6 +85,25 @@ void call_video_format(int width, int height, double fps) {
     if (attached) g_vm->DetachCurrentThread();
 }
 
+void call_performance(const std::string& source, int64_t captured, int64_t dropped, int queued) {
+    bool attached = false;
+    JNIEnv* env = get_env(attached);
+    if (!env) return;
+    std::lock_guard<std::mutex> lock(g_callback_mutex);
+    if (g_callback) {
+        jclass cls = env->GetObjectClass(g_callback);
+        jmethodID method = env->GetMethodID(cls, "onNativePerformance", "(Ljava/lang/String;JJI)V");
+        if (method) {
+            jstring name = env->NewStringUTF(source.c_str());
+            env->CallVoidMethod(g_callback, method, name, static_cast<jlong>(captured), static_cast<jlong>(dropped), queued);
+            env->DeleteLocalRef(name);
+        }
+        env->DeleteLocalRef(cls);
+        if (env->ExceptionCheck()) env->ExceptionClear();
+    }
+    if (attached) g_vm->DetachCurrentThread();
+}
+
 void call_audio(const std::vector<int16_t>& pcm, int sample_rate, int channels) {
     if (pcm.empty()) return;
     bool attached = false;
@@ -182,6 +201,8 @@ void capture_loop(std::string source_name) {
     int last_width = 0;
     int last_height = 0;
     int empty_captures = 0;
+    int64_t captured_frames = 0;
+    auto next_stats = std::chrono::steady_clock::now();
 
     while (g_running.load()) {
         NDIlib_video_frame_v2_t video{};
@@ -194,6 +215,7 @@ void capture_loop(std::string source_name) {
         switch (type) {
             case NDIlib_frame_type_video: {
                 empty_captures = 0;
+                ++captured_frames;
                 render_frame(video);
                 if (video.xres != last_width || video.yres != last_height) {
                     last_width = video.xres;
@@ -225,6 +247,15 @@ void capture_loop(std::string source_name) {
                 break;
             default:
                 break;
+        }
+        const auto now = std::chrono::steady_clock::now();
+        if (now >= next_stats) {
+            NDIlib_recv_performance_t total{}, dropped{};
+            NDIlib_recv_queue_t queue{};
+            NDIlib_recv_get_performance(receiver, &total, &dropped);
+            NDIlib_recv_get_queue(receiver, &queue);
+            call_performance(source_name, captured_frames, dropped.video_frames, queue.video_frames);
+            next_stats = now + std::chrono::seconds(1);
         }
     }
 

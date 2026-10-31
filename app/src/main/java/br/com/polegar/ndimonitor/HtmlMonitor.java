@@ -49,6 +49,7 @@ final class HtmlMonitor {
     private boolean enabled;
     private boolean paused = true;
     private boolean failed;
+    private boolean loading;
     private String address = "";
     private int retries;
     private final Runnable loadTimeout = () -> {
@@ -73,6 +74,17 @@ final class HtmlMonitor {
         this.address = address == null ? "" : address;
         retries = 0;
         if (!paused && !this.address.isEmpty()) loadCurrentAddress();
+    }
+
+    String state() {
+        if (!enabled || paused || address.isEmpty()) return "inactive";
+        if (webView == null) return "unavailable";
+        return failed ? "waiting_source" : loading ? "loading" : "loaded";
+    }
+
+    void clearResourceCache() {
+        if (webView != null) webView.clearCache(true);
+        reload();
     }
 
     void reload() {
@@ -220,12 +232,14 @@ final class HtmlMonitor {
         @Override public void onPageStarted(WebView view, String url, android.graphics.Bitmap icon) {
             if (!isCurrent(view) || !HtmlSourceUrl.isWebAddress(url)) return;
             failed = false;
+            loading = true;
             listener.onStatus(R.string.html_loading);
         }
 
         @Override public void onPageFinished(WebView view, String url) {
             if (!isCurrent(view) || failed || !HtmlSourceUrl.isWebAddress(url)) return;
             retries = 0;
+            loading = false;
             handler.removeCallbacks(loadTimeout);
             hideFailure();
             listener.onStatus(R.string.html_open);
@@ -277,6 +291,7 @@ final class HtmlMonitor {
                 ? new Api26WebViewClient(legacyCompat) : new MonitorWebViewClient(legacyCompat));
         hideCustomView();
         failed = false;
+        loading = true;
         lastConsoleError = "";
         hideFailure();
         listener.onStatus(R.string.html_loading);

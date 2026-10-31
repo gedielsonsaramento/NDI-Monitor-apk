@@ -214,12 +214,12 @@ final class SpresenterPairingServer implements AutoCloseable {
     }
 
     private static String page() {
-        return "<h1>Configurar esta TV</h1><p>No S-Present, use <b>Copiar link com token</b> no Editor remoto (rede). "
+        return "<h1>Configurar esta TV</h1><p>No Spresenter, use <b>Copiar link com token</b> no Editor remoto (rede). "
                 + "Cole o link completo abaixo e informe o código mostrado na TV.</p>"
                 + "<form action=/configurar method=post autocomplete=off>"
                 + "<label for=code>Código da TV</label><input id=code name=code inputmode=numeric pattern=\"[0-9]{6}\" "
                 + "maxlength=6 minlength=6 autocomplete=off required>"
-                + "<label for=link>Link completo do S-Present</label><textarea id=link name=link rows=4 maxlength=2048 "
+                + "<label for=link>Link completo do Spresenter</label><textarea id=link name=link rows=4 maxlength=2048 "
                 + "autocomplete=off autocapitalize=off spellcheck=false required></textarea>"
                 + "<button type=submit>Enviar para esta TV</button></form>"
                 + "<p>A página funciona por até 5 minutos, enquanto a configuração estiver aberta na TV.</p>";

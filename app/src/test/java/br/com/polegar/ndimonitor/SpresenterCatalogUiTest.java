@@ -98,4 +98,55 @@ public class SpresenterCatalogUiTest {
             assertEquals(saved,prefs.getString(MainActivity.KEY_HTML_URL,""));
         }
     }
+
+    @Test public void addingAnotherPcPreservesBothCatalogsAndTheSelectedHtml() {
+        String saved = ROOT + "/output/musicos", other = "http://10.20.80.10:5050";
+        prefs.edit().putString(MainActivity.KEY_HTML_URL, saved).commit();
+        try (ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class).setup()) {
+            MainActivity activity = controller.get();
+            String[] pcs = {ROOT, other};
+            for (int i = 0; i < pcs.length; i++) {
+                activity.findViewById(R.id.monitor_settings_button).performClick();
+                ShadowAlertDialog.getLatestAlertDialog().findViewById(R.id.spresenter_api_button).performClick();
+                AlertDialog form = ShadowAlertDialog.getLatestAlertDialog();
+                form.findViewById(R.id.spresenter_manual_button).performClick();
+                ((EditText) form.findViewById(R.id.spresenter_api_address)).setText(pcs[i]);
+                ((EditText) form.findViewById(R.id.spresenter_api_token)).setText("spk_example_multi_ui_pc_" + i);
+                form.findViewById(R.id.spresenter_api_save).performClick();
+                org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle();
+                MainActivityModeTest.FakeHtmlDiscovery.listener.onCatalog(pcs[i],
+                        List.of(new HtmlSource(pcs[i] + "/output/musicos", "Músicos", pcs[i])));
+            }
+            assertEquals(2, new SpresenterApiSettings(activity).origins().size());
+            MainActivityModeTest.FakeHtmlDiscovery.listener.onFinished();
+            assertEquals(2, ((ListView) activity.findViewById(R.id.source_list)).getAdapter().getCount());
+            assertEquals(activity.getString(R.string.spresenter_api_found, 2),
+                    ((TextView) activity.findViewById(R.id.source_status_text)).getText().toString());
+            assertEquals(saved, prefs.getString(MainActivity.KEY_HTML_URL, ""));
+        }
+    }
+
+    @Test public void extraRangeIsValidatedAndSavedWithoutChangingPlayback() {
+        String saved = ROOT + "/output/musicos";
+        prefs.edit().putString(MainActivity.KEY_HTML_URL, saved).commit();
+        try (ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class).setup()) {
+            MainActivity activity = controller.get();
+            activity.findViewById(R.id.monitor_settings_button).performClick();
+            ShadowAlertDialog.getLatestAlertDialog().findViewById(R.id.spresenter_api_button).performClick();
+            AlertDialog form = ShadowAlertDialog.getLatestAlertDialog();
+            form.findViewById(R.id.html_search_range_toggle).performClick();
+            EditText range = form.findViewById(R.id.html_search_prefix);
+            range.setText("8.8.8");
+            form.findViewById(R.id.html_search_range_save).performClick();
+            assertNotNull(range.getError()); assertTrue(form.isShowing());
+            assertFalse(prefs.contains(HtmlSearchSettings.EXTRA_PREFIX));
+            range.setText("192.168.7");
+            form.findViewById(R.id.html_search_range_save).performClick();
+            org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle();
+            assertFalse(form.isShowing());
+            assertEquals("192.168.7", prefs.getString(HtmlSearchSettings.EXTRA_PREFIX, ""));
+            assertEquals(saved, prefs.getString(MainActivity.KEY_HTML_URL, ""));
+            assertEquals(1, MainActivityModeTest.FakeHtmlDiscovery.starts);
+        }
+    }
 }

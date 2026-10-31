@@ -54,6 +54,9 @@ async function main() {
     const accept = crypto.createHash('sha1').update(req.headers['sec-websocket-key']+'258EAFA5-E914-47DA-95CA-C5AB0DC85B11').digest('base64');
     socket.write('HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: '+accept+'\r\n\r\n');
     clients.add(socket);socket.on('close',()=>clients.delete(socket));socket.on('error',()=>{});
+    // The host publishes live state after a client connects. Without this event,
+    // the fixture races the initial HTTP responses against the WebSocket open.
+    setTimeout(()=>{if(clients.has(socket))emit('refresh.live.0',{});},50);
   });
   const emit = (key,data) => {
     const payload=Buffer.from(JSON.stringify({key,data}));
@@ -110,9 +113,30 @@ async function main() {
       includes:typeof [].includes,fill:typeof [].fill})).toString()+')()');
     for(const value of Object.values(apis))assert.equal(value,'function');
     assert.deepEqual(errors,[]);
+    let browserLayout=null;
+    if(process.env.CHROME_BIN) {
+      const {chromium}=require('playwright');
+      const browser=await chromium.launch({executablePath:process.env.CHROME_BIN,headless:true,args:['--no-sandbox']});
+      try {
+        const page=await browser.newPage({viewport:{width:1920,height:1080}});
+        await page.goto(base+'/slide/?output=stage&outputId=fixture&stageThemeGuid=local-theme&id=browser');
+        await page.locator('#main-letra').filter({hasText:'Segunda letra'}).waitFor();
+        browserLayout=await page.evaluate(()=>{
+          const box=id=>{const r=document.getElementById(id).getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height};};
+          return {theme:box('theme'),lyric:box('main-letra'),visitor:box('visitor')};
+        });
+        assert.equal(browserLayout.theme.width,1920);assert.equal(browserLayout.theme.height,1080);
+        assert(browserLayout.lyric.width>=1600,'Lyric must retain a wide stage area');
+        for(const box of Object.values(browserLayout)) {
+          assert(box.x>=0&&box.y>=0&&box.x+box.width<=1921&&box.y+box.height<=1081);
+        }
+        lyric='Atualização no navegador';emit('refresh.live.0',{});
+        await page.locator('#main-letra').filter({hasText:lyric}).waitFor();
+      } finally {await browser.close();}
+    }
     global.console.log(JSON.stringify({syntax:'original rejected / adapted accepted as ES5',
-      edges,websocketLyricUpdate:true,websocketElementUpdate:true,apis,errors,requests,
-      limitation:'JSDOM with selected APIs removed; no pixel layout, media playback or physical Chrome 44/52 test.'},null,2));
+      edges,websocketLyricUpdate:true,websocketElementUpdate:true,apis,errors,requests,browserLayout,
+      limitation:'JSDOM with selected APIs removed; optional current Chromium layout. No media playback or physical Chrome 44/52 test.'},null,2));
   } finally {
     if(dom)dom.window.close();
     for(const socket of sockets)socket.destroy();

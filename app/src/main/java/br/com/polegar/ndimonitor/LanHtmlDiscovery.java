@@ -1,6 +1,7 @@
 package br.com.polegar.ndimonitor;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.LinkAddress;
 import android.net.LinkProperties;
@@ -19,7 +20,7 @@ import java.util.Map;
 
 /** Binds discovery requests to Wi-Fi/Ethernet, even when mobile data is the default network. */
 final class LanHtmlDiscovery {
-    static final int MAX_TARGETS = 512;
+    static final int MAX_TARGETS = 768;
     interface Listener {
         void onStarted(int targets, boolean limited);
         void onSource(HtmlSource source);
@@ -31,24 +32,35 @@ final class LanHtmlDiscovery {
     }
     private final ConnectivityManager connectivity;
     private final SpresenterApiSettings apiSettings;
+    private final SharedPreferences preferences;
     private final Handler main = new Handler(Looper.getMainLooper());
     private HtmlDiscoverySession session;
     private int generation;
 
     LanHtmlDiscovery(Context context) {
         apiSettings = new SpresenterApiSettings(context);
+        preferences = context.getSharedPreferences(MainActivity.PREFERENCES, Context.MODE_PRIVATE);
         connectivity = (ConnectivityManager) context.getApplicationContext()
                 .getSystemService(Context.CONNECTIVITY_SERVICE);
     }
 
     void start(String savedAddress, Listener listener) {
+        start(savedAddress, listener, false);
+    }
+
+    void startPublic(String savedAddress, Listener listener) {
+        start(savedAddress, listener, true);
+    }
+
+    private void start(String savedAddress, Listener listener, boolean publicOnly) {
         stop();
         int current = generation;
         Map<String, HtmlHttpProbe.Target> targets = new LinkedHashMap<>();
         java.util.List<String> paths = HtmlSourceUrl.discoveryPaths(savedAddress);
-        SpresenterConnection api = apiSettings.load();
-        Network apiNetwork = null;
+        java.util.List<SpresenterConnection> apis = publicOnly ? java.util.Collections.emptyList() : apiSettings.loadAll();
+        Map<String, Network> apiNetworks = new LinkedHashMap<>();
         Network fallbackApiNetwork = null;
+        Network savedNetwork = null;
         boolean limited = false;
         int networks = 0;
         try {
@@ -61,35 +73,54 @@ final class LanHtmlDiscovery {
                 if (link == null) continue;
                 if (++networks > 2) { limited = true; break; }
                 if (fallbackApiNetwork == null) fallbackApiNetwork = network;
-                if (api != null && apiNetwork == null && matchesApiSubnet(link, api.origin)) apiNetwork = network;
+                for (SpresenterConnection api : apis) {
+                    if (!apiNetworks.containsKey(api.origin) && matchesApiSubnet(link, api.origin)) {
+                        apiNetworks.put(api.origin, network);
+                    }
+                }
+                if (savedNetwork == null && HtmlSourceUrl.isWebAddress(savedAddress)
+                        && matchesApiSubnet(link, savedAddress)) savedNetwork = network;
                 for (LinkAddress address : link.getLinkAddresses()) {
                     if (!(address.getAddress() instanceof Inet4Address)) continue;
                     LanIpv4Subnet subnet;
                     try { subnet = new LanIpv4Subnet(address.getAddress().getHostAddress(), address.getPrefixLength()); }
                     catch (IllegalArgumentException notLocal) { continue; }
                     limited |= subnet.prefix < 24;
-                    // Only the saved host receives its full custom URL, including parameters.
-                    if (HtmlSourceUrl.isWebAddress(savedAddress)) {
-                        URI saved = URI.create(savedAddress);
-                        if (subnet.contains(saved.getHost()) && (api == null || !api.owns(savedAddress))) {
-                            add(targets, network, savedAddress);
-                        }
-                    }
                     for (String host : subnet.candidates()) {
                         String root = "http://" + host + ":" + HtmlSourceUrl.DEFAULT_PORT;
-                        if (api != null && api.owns(root)) continue;
+                        if (ownedBy(apis, root)) continue;
                         String[] alternatives = new String[paths.size() - 1];
                         for (int i = 1; i < paths.size(); ++i) alternatives[i - 1] = root + paths.get(i);
                         if (!add(targets, network, root + paths.get(0), alternatives)) { limited = true; break; }
                     }
                 }
             }
-        } catch (SecurityException unavailable) { targets.clear(); }
+        } catch (SecurityException unavailable) { targets.clear(); fallbackApiNetwork = null; apiNetworks.clear(); }
+        // Explicitly chosen extra ranges are public probes, never authenticated API guesses.
+        if (fallbackApiNetwork != null) try {
+            String prefix = HtmlSearchSettings.normalize(preferences.getString(HtmlSearchSettings.EXTRA_PREFIX, ""));
+            if (!prefix.isEmpty()) for (String host : new LanIpv4Subnet(prefix + ".0", 24).candidates()) {
+                String root = "http://" + host + ":" + HtmlSourceUrl.DEFAULT_PORT;
+                if (ownedBy(apis, root)) continue;
+                String[] alternatives = new String[paths.size() - 1];
+                for (int i = 1; i < paths.size(); ++i) alternatives[i - 1] = root + paths.get(i);
+                if (!add(targets, fallbackApiNetwork, root + paths.get(0), alternatives)) { limited = true; break; }
+            }
+        } catch (IllegalArgumentException invalid) { }
         java.util.List<HtmlHttpProbe.Target> work = new ArrayList<>();
-        Network selectedApiNetwork = apiNetwork != null ? apiNetwork : fallbackApiNetwork;
-        if (api != null && selectedApiNetwork != null) {
+        Map<String, SpresenterConnection> apiTargets = new LinkedHashMap<>();
+        for (SpresenterConnection api : apis) {
+            Network selected = apiNetworks.containsKey(api.origin) ? apiNetworks.get(api.origin) : fallbackApiNetwork;
+            if (selected == null) continue;
             work.add(new HtmlHttpProbe.Target(api.endpoint(),
-                    address -> (HttpURLConnection) selectedApiNetwork.openConnection(address, Proxy.NO_PROXY)));
+                    address -> (HttpURLConnection) selected.openConnection(address, Proxy.NO_PROXY)));
+            apiTargets.put(api.endpoint(), api);
+        }
+        if (fallbackApiNetwork != null && HtmlSourceUrl.isWebAddress(savedAddress) && !ownedBy(apis, savedAddress)) {
+            // The selected URL is also retried through a routed LAN, outside the local /24.
+            Network selected = savedNetwork != null ? savedNetwork : fallbackApiNetwork;
+            work.add(new HtmlHttpProbe.Target(savedAddress,
+                    address -> (HttpURLConnection) selected.openConnection(address, Proxy.NO_PROXY)));
         }
         for (HtmlHttpProbe.Target target : targets.values()) {
             if (work.size() >= MAX_TARGETS) { limited = true; break; }
@@ -99,12 +130,13 @@ final class LanHtmlDiscovery {
         int total = work.size();
         boolean scanLimited = limited;
         dispatch(current, () -> listener.onStarted(total, scanLimited));
-        if (api == null && !apiSettings.origin().isEmpty()) {
+        if (!publicOnly && apiSettings.origins().size() > apis.size()) {
             dispatch(current, () -> listener.onCatalogError(R.string.spresenter_api_key_required));
         }
         HtmlHttpProbe probe = new HtmlHttpProbe();
         session = new HtmlDiscoverySession(work, (target, cancellation) -> {
-            if (api != null && target.url.equals(api.endpoint())) {
+            SpresenterConnection api = apiTargets.get(target.url);
+            if (api != null) {
                 try {
                     java.util.List<HtmlSource> sources = new SpresenterApiProbe().read(api, target.opener, cancellation);
                     dispatch(current, () -> listener.onCatalog(api.origin, sources));
@@ -128,6 +160,11 @@ final class LanHtmlDiscovery {
                     @Override public void onFinished() { dispatch(current, listener::onFinished); }
                 });
         session.start();
+    }
+
+    private static boolean ownedBy(java.util.List<SpresenterConnection> connections, String address) {
+        for (SpresenterConnection connection : connections) if (connection.owns(address)) return true;
+        return false;
     }
 
     static boolean matchesApiSubnet(LinkProperties link, String origin) {

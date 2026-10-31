@@ -16,8 +16,8 @@ android {
         applicationId 'br.com.polegar.ndimonitor'
         minSdk 23
         targetSdk 36
-        versionCode 17
-        versionName '1.4.12'
+        versionCode 20
+        versionName '1.5.2'
         buildConfigField 'String', 'SUPPORT_ENDPOINT', groovy.json.JsonOutput.toJson(supportEndpoint)
 
         ndk {
@@ -111,4 +111,25 @@ tasks.register('verifyReleaseNdiSdk') {
 }
 tasks.matching { it.name == 'preReleaseBuild' }.configureEach {
     dependsOn tasks.named('verifyReleaseNdiSdk')
+}
+
+// TV packages must carry the old-WebView adaptations, not just the adapter code.
+tasks.register('verifyHtmlCompat') {
+    doLast {
+        def manifestFile = file('src/main/assets/html-compat/manifest.json')
+        if (!manifestFile.isFile()) throw new GradleException('Perfil HTML ausente: prepare tools/html-compat antes de empacotar para TV.')
+        def profile = new groovy.json.JsonSlurper().parse(manifestFile)
+        if (profile.schema != 1 || profile.resources.size() != 2) throw new GradleException('Perfil HTML invalido.')
+        profile.resources.each { resource ->
+            if (!(resource.asset ==~ /html-compat\/[A-Za-z0-9._-]+/) || resource.asset.contains('..'))
+                throw new GradleException('Caminho HTML invalido.')
+            def asset = file("src/main/assets/${resource.asset}")
+            if (!asset.isFile() || java.security.MessageDigest.getInstance('SHA-256').digest(asset.bytes).encodeHex().toString() != resource.assetSha256)
+                throw new GradleException("Perfil HTML incompleto ou alterado: ${resource.asset}")
+        }
+        if (!file('src/main/assets/html-compat/NOTICE.txt').isFile()) throw new GradleException('Avisos do perfil HTML ausentes.')
+    }
+}
+tasks.matching { it.name in ['mergeTvboxTestAssets', 'mergeReleaseAssets'] }.configureEach {
+    dependsOn tasks.named('verifyHtmlCompat')
 }

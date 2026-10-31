@@ -7,6 +7,14 @@ import android.os.Bundle;
 
 public final class MonitorApplication extends Application {
     private SupportRuntime support;
+    private LocalControlStore localControl;
+
+    static LocalControlStore local(Context context) {
+        Context app = context.getApplicationContext();
+        if (app instanceof MonitorApplication && ((MonitorApplication) app).localControl != null)
+            return ((MonitorApplication) app).localControl;
+        return new LocalControlStore(app);
+    }
 
     static SupportRuntime support(Context context) {
         Context app = context.getApplicationContext();
@@ -17,6 +25,9 @@ public final class MonitorApplication extends Application {
 
     @Override public void onCreate() {
         super.onCreate();
+        localControl = new LocalControlStore(this);
+        try { localControl.reviewPreviousExit(SupportExitHistory.reader(this).latest()); }
+        catch (RuntimeException unavailable) { /* Android versions without exit history use interruption markers. */ }
         StartupJournal journal = StartupJournal.get(this);
         support = new SupportRuntime(this, BuildConfig.SUPPORT_ENDPOINT, BuildConfig.VERSION_NAME,
                 journal.needsRecovery());
@@ -39,6 +50,8 @@ public final class MonitorApplication extends Application {
         Thread.setDefaultUncaughtExceptionHandler((thread, error) -> {
             try { journal.recordCrash(thread, error); }
             catch (Throwable unavailable) { /* Always retain Android's crash handling. */ }
+            try { localControl.event("java_crash"); localControl.background(); }
+            catch (Throwable unavailable) { /* Keep Android crash handling. */ }
             try { support.recordJavaCrash(error); }
             catch (Throwable unavailable) { /* Support must never replace Android's crash handling. */ }
             if (previous != null) previous.uncaughtException(thread, error);

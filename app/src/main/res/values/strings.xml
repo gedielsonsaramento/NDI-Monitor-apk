@@ -45,7 +45,7 @@
     <string name="html_scan_progress">Busca HTML · endereços %1$d/%2$d</string>
     <string name="html_none_found">Nenhum novo retorno HTML. Confira o PC e a rede ou informe o endereço. Nova busca em 30 s.</string>
     <string name="html_found">HTML encontrado. Selecione para conferir o retorno. Nova busca em 30 s.</string>
-    <string name="html_found_limited">HTML encontrado nesta faixa da rede. Selecione o retorno. Nova busca em 30 s.</string>
+    <string name="html_found_limited">Busca HTML limitada às faixas selecionadas. Escolha um retorno. Nova busca em 30 s.</string>
     <string name="html_no_lan">Conecte-se por Wi-Fi ou Ethernet com IPv4 para buscar HTML, ou informe o endereço.</string>
     <string name="html_loading">Abrindo retorno HTML…</string>
     <string name="html_open">Página do retorno HTML aberta</string>
@@ -66,18 +66,18 @@
         <item quantity="one">%d fonte encontrada · busca ativa</item>
         <item quantity="other">%d fontes encontradas · busca ativa</item>
     </plurals>
-    <string name="spresenter_api_title">Saídas HTML do S-Present</string>
-    <string name="spresenter_api_instructions">No S-Present, abra Editor remoto (rede), na Saída Avançada, e use Copiar link com token. Envie esse link pelo celular ou PC para configurar a TV sem digitar a chave no controle.</string>
+    <string name="spresenter_api_title">Saídas HTML do Spresenter</string>
+    <string name="spresenter_api_instructions">No Spresenter, abra Editor remoto (rede) e use Copiar link com token. Envie esse link pelo celular ou PC para configurar a TV sem digitar a chave no controle. Cadastre um computador por vez; os PCs anteriores serão mantidos na lista.</string>
     <string name="spresenter_pairing_title">Configurar pelo celular ou PC</string>
     <string name="spresenter_pairing_instructions">No celular ou PC conectado à mesma rede desta TV, abra o navegador e digite este endereço:</string>
     <string name="spresenter_pairing_code_label">Código para informar nessa página:</string>
-    <string name="spresenter_pairing_lifetime">Cole o link completo do S-Present na página e informe o código acima. Válido por até 5 minutos enquanto esta tela estiver aberta.</string>
+    <string name="spresenter_pairing_lifetime">Cole o link completo do Spresenter na página e informe o código acima. Válido por até 5 minutos enquanto esta tela estiver aberta.</string>
     <string name="spresenter_pairing_no_network">Conecte esta TV ao Wi-Fi ou cabo de rede para configurar pelo celular ou PC.</string>
     <string name="spresenter_pairing_unavailable">Não foi possível abrir a configuração nesta rede. Confira a conexão e tente novamente.</string>
     <string name="spresenter_pairing_ended">Configuração encerrada. Abra novamente para gerar outro código.</string>
     <string name="spresenter_editor_link_label">Ou cole o link completo neste aparelho:</string>
     <string name="spresenter_editor_link_hint">Link de Copiar link com token</string>
-    <string name="spresenter_editor_link_save">Usar link e buscar saídas</string>
+    <string name="spresenter_editor_link_save">Adicionar PC e buscar saídas</string>
     <string name="spresenter_editor_link_invalid">Cole o link completo de Copiar link com token, no Editor remoto (rede).</string>
     <string name="spresenter_manual_title">Configuração manual</string>
     <string name="spresenter_api_address">Endereço da API do computador</string>
@@ -86,13 +86,21 @@
     <string name="spresenter_api_key_hint">spk_… · vazio mantém a chave deste PC</string>
     <string name="spresenter_api_save">Salvar e buscar saídas</string>
     <string name="spresenter_api_remove">Remover conexão da API</string>
+    <string name="spresenter_remove_pc">Remover</string>
+    <string name="spresenter_remove_pc_description">Remover o catálogo de %1$s</string>
+    <string name="spresenter_api_limit">Você já cadastrou %1$d PCs. Remova um computador antes de adicionar outro.</string>
+    <string name="html_search_range_title">Buscar em outra faixa de IP</string>
+    <string name="html_search_range_help">Informe a faixa local, por exemplo 192.168.2. Deixe vazio para usar só a rede atual. A busca encontra endereços HTML padrão; para listar todas as saídas de um PC, cadastre seu link do Editor remoto.</string>
+    <string name="html_search_range_hint">192.168.2</string>
+    <string name="html_search_range_save">Salvar faixa e buscar</string>
+    <string name="html_search_range_invalid">Informe os três primeiros grupos de um IP local, por exemplo 192.168.2.</string>
     <string name="spresenter_api_bad_address">Informe o IP ou a URL da API deste PC, sem parâmetros.</string>
     <string name="spresenter_api_key_required">Informe a chave spk_ deste computador.</string>
     <string name="spresenter_api_session">A chave ficará somente nesta sessão: o aparelho não conseguiu protegê-la para salvar.</string>
-    <string name="spresenter_api_found">Saídas HTML do PC atualizadas: %1$d. Selecione uma fonte. Nova busca em 30 s.</string>
+    <string name="spresenter_api_found">Fontes HTML listadas: %1$d. Selecione uma fonte. Nova busca em 30 s.</string>
     <string name="spresenter_api_unauthorized">API: chave inválida ou revogada. Confira a conexão nas configurações.</string>
     <string name="spresenter_api_forbidden">API: ative o acesso e confira a permissão advanced:read da chave.</string>
-    <string name="spresenter_api_unavailable">API indisponível neste endereço ou nesta versão do S-Present.</string>
+    <string name="spresenter_api_unavailable">API indisponível neste endereço ou nesta versão do Spresenter.</string>
     <string name="spresenter_api_invalid">A API não forneceu uma lista de saídas compatível.</string>
     <string name="spresenter_api_network">Não foi possível consultar a API do PC. Confira o endereço e a rede.</string>
     <string name="spresenter_api_cancelled">Consulta da API cancelada.</string>
@@ -120,4 +128,7 @@
     <string name="support_sending">Enviando relatório…</string>
     <string name="support_sent">Relatório recebido pelo servidor</string>
     <string name="support_send_failed">Envio não confirmado. Copie o relatório ou tente novamente.</string>
+    <string name="local_control_title">Central de Retornos</string>
+    <string name="support_notify_local">Registrar para a central local</string>
+    <string name="support_local_notified">Ocorrência registrada para a central local</string>
 </resources>

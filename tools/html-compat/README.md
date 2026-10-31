@@ -1,6 +1,6 @@
 # Preparar uma captura para motores HTML antigos
 
-Esta ferramenta é usada na compilação, não no aparelho. Prepara JavaScript de uma captura como ES5 e CSS para Chrome 44. O aplicativo usa o perfil somente em Chrome 44–86, após verificar os bytes que o servidor da fonte entrega. A 1.4.7 estende o perfil anterior (Chrome 52–86) para o motor Chrome 44 fotografado na BTV B9/API 23.
+Esta ferramenta é usada na compilação, não no aparelho. Prepara JavaScript de uma captura como ES5 e CSS para Chrome 44. O APK 1.5.2 inclui novamente os arquivos deste perfil, ausentes no pacote 1.5.1. O empacotamento para TV confere sua presença e integridade. O aplicativo usa o perfil somente em Chrome 44–86, após verificar os bytes que o servidor da fonte entrega. A 1.4.7 estende o perfil anterior (Chrome 52–86) para o motor Chrome 44 fotografado na BTV B9/API 23.
 
 ## Entrada e execução
 
@@ -46,3 +46,5 @@ A fixture de integração usa HTTP/WebSocket em loopback e JSDOM, remove algumas
 JSDOM não mede pixels nem reproduz mídia. Não é Chrome 44/52 nem o firmware das boxes. Uma execução inicial expirou sem erro JavaScript antes da carga da tela; a repetição passou. Isso não comprova estabilidade de inicialização. Nenhum resultado de navegador nativo é reivindicado. O teste físico continua obrigatório; veja [VALIDACAO_1.4.7.md](../../docs/historico/VALIDACAO_1.4.7.md).
 
 Referências: [Babel preset-env](https://babeljs.io/docs/babel-preset-env/), [core-js](https://core-js.io/docs/), [WebViewClient](https://developer.android.com/reference/android/webkit/WebViewClient).
+
+Com `CHROME_BIN` apontando para um Chromium instalado e Playwright disponível, `check-live.cjs` também mede o tema em uma área de 1920 × 1080 e verifica que a área da letra mantém sua largura e continua atualizando. Isso mede um navegador atual, não o WebView físico da box.

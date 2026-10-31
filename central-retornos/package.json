@@ -1,0 +1,9 @@
+{
+  "name": "s-retorno-central",
+  "version": "0.1.2",
+  "private": true,
+  "scripts": {
+    "test": "node --test tests/*.test.cjs",
+    "package": "python3 scripts/package.py"
+  }
+}

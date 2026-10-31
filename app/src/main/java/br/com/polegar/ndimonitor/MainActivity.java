@@ -81,6 +81,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     private int spresenterPairingGeneration;
     private HtmlMonitor htmlMonitor;
     private LanHtmlDiscovery htmlDiscovery;
+    private LanNetworkMonitor lanNetworkMonitor;
     private final HtmlSourceCatalog htmlSourceCatalog = new HtmlSourceCatalog();
     private List<HtmlSource> displayedHtmlSources = Collections.emptyList();
     private Runnable nextHtmlScan;
@@ -115,6 +116,9 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     private int safeInsetLeft;
     private int safeInsetRight;
     private Object backCallback;
+    private LocalControl localControl;
+    private final ReceiverStats receiverStats = new ReceiverStats();
+    private double sourceFps;
     private final Handler controlsHandler = new Handler(Looper.getMainLooper());
     private final Runnable hideControls = () -> {
         if (sourcePanel.getVisibility() != View.VISIBLE) {
@@ -143,10 +147,14 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         scanButton = findViewById(R.id.scan_button);
         htmlDiscovery = new LanHtmlDiscovery(this);
         htmlSourceCatalog.remember(preferences.getString(KEY_HTML_URL, ""), SystemClock.elapsedRealtime());
+        try { applyLocalCatalog(new org.json.JSONObject(preferences.getString("local_html_catalog", "{}")), false); }
+        catch (Exception invalid) { /* Ignore a missing or obsolete saved catalog. */ }
         htmlMonitor = new HtmlMonitor(this, findViewById(R.id.html_container), new HtmlMonitor.Listener() {
             @Override public void onStatus(int message) {
                 if (!destroyed && htmlMode) {
                     statusText.setText(message);
+                    if (localControl != null && message == R.string.html_renderer_unavailable)
+                        localControl.store.event("html_renderer_failure");
                 }
             }
 
@@ -154,6 +162,11 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         });
         htmlMonitor.setDisplayLayout(preferences.getBoolean(KEY_HTML_STAGE_LAYOUT, true),
                 preferences.getBoolean(KEY_HTML_COMPATIBILITY, Build.VERSION.SDK_INT <= 25));
+        localControl = new LocalControl(this, new LocalControl.Host() {
+            @Override public org.json.JSONObject status() throws Exception { return localStatus(); }
+            @Override public org.json.JSONObject sources() throws Exception { return localSources(); }
+            @Override public org.json.JSONObject command(org.json.JSONObject command) throws Exception { return localCommand(command); }
+        });
         sourceAdapter = new ArrayAdapter<>(this, R.layout.source_item, new ArrayList<>());
         sourceList.setAdapter(sourceAdapter);
         sourceList.setOnItemClickListener((parent, view, position, id) -> {
@@ -220,16 +233,24 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         if (!htmlOnly && Build.VERSION.SDK_INT >= 24 && savedHtml && !validHtml && validNdi) savedHtml = false;
         else if (!savedHtml && !validNdi && validHtml) savedHtml = true;
         setSourceMode(savedHtml, true);
+        lanNetworkMonitor = new LanNetworkMonitor(this, () -> {
+            if (htmlMode && activityVisible && !destroyed) {
+                if (discoveryRequested) scanSources();
+                else scanHtmlSources(true);
+            }
+        });
     }
 
     @Override
     protected void onStart() {
         super.onStart();
         activityVisible = true;
+        if (localControl != null) localControl.foreground();
         updateMulticastLock();
         htmlMonitor.resume();
         if (!htmlMode && ndiAvailable && !currentNdiSource.isEmpty()) startNdiPlayback();
         scanSources();
+        if (lanNetworkMonitor != null) lanNetworkMonitor.start();
         StartupJournal.get(this).finishStartup();
     }
 
@@ -244,6 +265,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     @Override
     protected void onStop() {
         activityVisible = false;
+        if (lanNetworkMonitor != null) lanNetworkMonitor.stop();
+        if (localControl != null) localControl.background();
         stopSpresenterPairing();
         htmlMonitor.pause();
         stopNdiPlayback();
@@ -404,6 +427,10 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     }
 
     private void scanHtmlSources() {
+        scanHtmlSources(false);
+    }
+
+    private void scanHtmlSources(boolean publicOnly) {
         stopDiscoveryPolling();
         int generation = htmlScanGeneration;
         htmlScanProgress = 0;
@@ -412,7 +439,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         htmlApiCount = -1;
         showHtmlSources();
         sourceStatusText.setText(R.string.searching_html);
-        htmlDiscovery.start(preferences.getString(KEY_HTML_URL, ""), new LanHtmlDiscovery.Listener() {
+        LanHtmlDiscovery.Listener listener = new LanHtmlDiscovery.Listener() {
             private boolean current() {
                 return htmlMode && !destroyed && activityVisible && generation == htmlScanGeneration;
             }
@@ -449,17 +476,20 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
                 htmlSourceCatalog.finishScan(SystemClock.elapsedRealtime());
                 showHtmlSources();
                 if (htmlApiError != 0) sourceStatusText.setText(htmlApiError);
-                else if (htmlApiCount >= 0) sourceStatusText.setText(getString(R.string.spresenter_api_found, htmlApiCount));
+                else if (htmlApiCount >= 0) sourceStatusText.setText(getString(R.string.spresenter_api_found, displayedHtmlSources.size()));
                 else sourceStatusText.setText(htmlScanFound == 0 ? R.string.html_none_found :
                             htmlScanLimited ? R.string.html_found_limited : R.string.html_found);
-                scheduleNextHtmlScan(generation);
+                if (!publicOnly) scheduleNextHtmlScan(generation);
             }
             @Override public void onUnavailable() {
                 if (!current()) return;
                 sourceStatusText.setText(R.string.html_no_lan);
-                scheduleNextHtmlScan(generation);
+                if (!publicOnly) scheduleNextHtmlScan(generation);
             }
-        });
+        };
+        String saved = preferences.getString(KEY_HTML_URL, "");
+        if (publicOnly) htmlDiscovery.startPublic(saved, listener);
+        else htmlDiscovery.start(saved, listener);
     }
 
     private void scheduleNextHtmlScan(int generation) {
@@ -546,6 +576,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         });
         content.findViewById(R.id.third_party_notices_button).setOnClickListener(v ->
                 showThirdPartyNotices());
+        content.findViewById(R.id.local_control_button).setOnClickListener(v -> localControl.show());
         View apiButton = content.findViewById(R.id.spresenter_api_button);
         apiButton.setVisibility(htmlMode ? View.VISIBLE : View.GONE);
         apiButton.setOnClickListener(v -> showSpresenterConnection());
@@ -611,20 +642,47 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             try { origin = SpresenterConnection.normalizeOrigin(address.getText().toString()); }
             catch (IllegalArgumentException invalid) { address.setError(getString(R.string.spresenter_api_bad_address)); return; }
             String key = token.getText().toString().trim();
-            SpresenterConnection previous = api.load();
+            SpresenterConnection previous = api.load(origin);
             if (key.isEmpty() && previous != null && previous.origin.equals(origin)) key = previous.token;
             SpresenterConnection connection;
             try { connection = new SpresenterConnection(origin, key); }
             catch (IllegalArgumentException invalid) { token.setError(getString(R.string.spresenter_api_key_required)); return; }
             saveSpresenterConnection(connection);
         });
-        View remove = form.findViewById(R.id.spresenter_api_remove);
-        remove.setVisibility(api.origin().isEmpty() ? View.GONE : View.VISIBLE);
-        remove.setOnClickListener(v -> {
-            String oldOrigin = api.origin();
-            api.clear();
-            htmlSourceCatalog.replaceFromCatalog(oldOrigin, Collections.emptyList(), SystemClock.elapsedRealtime());
-            startCatalogSearch();
+        android.widget.LinearLayout pcs = form.findViewById(R.id.spresenter_pc_list);
+        for (String origin : api.origins()) {
+            android.widget.LinearLayout row = new android.widget.LinearLayout(this);
+            row.setGravity(android.view.Gravity.CENTER_VERTICAL);
+            TextView name = new TextView(this);
+            name.setText(origin);
+            row.addView(name, new android.widget.LinearLayout.LayoutParams(0, -2, 1));
+            android.widget.Button remove = new android.widget.Button(this);
+            remove.setText(R.string.spresenter_remove_pc);
+            remove.setAllCaps(false);
+            remove.setContentDescription(getString(R.string.spresenter_remove_pc_description, origin));
+            if (origin.equals(api.origin())) remove.setId(R.id.spresenter_api_remove);
+            remove.setOnClickListener(v -> {
+                api.remove(origin);
+                htmlSourceCatalog.forgetDirectCatalog(origin, SystemClock.elapsedRealtime());
+                startCatalogSearch();
+            });
+            row.addView(remove);
+            pcs.addView(row);
+        }
+        pcs.setVisibility(api.origins().isEmpty() ? View.GONE : View.VISIBLE);
+        EditText extraPrefix = form.findViewById(R.id.html_search_prefix);
+        extraPrefix.setText(preferences.getString(HtmlSearchSettings.EXTRA_PREFIX, ""));
+        form.findViewById(R.id.html_search_range_toggle).setOnClickListener(v -> {
+            View range = form.findViewById(R.id.html_search_range_form);
+            range.setVisibility(range.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
+        });
+        form.findViewById(R.id.html_search_range_save).setOnClickListener(v -> {
+            try {
+                String prefix = HtmlSearchSettings.normalize(extraPrefix.getText().toString());
+                if (prefix.isEmpty()) preferences.edit().remove(HtmlSearchSettings.EXTRA_PREFIX).apply();
+                else preferences.edit().putString(HtmlSearchSettings.EXTRA_PREFIX, prefix).apply();
+                startCatalogSearch();
+            } catch (IllegalArgumentException invalid) { extraPrefix.setError(getString(R.string.html_search_range_invalid)); }
         });
         spresenterDialog.setOnDismissListener(dialog -> {
             if (spresenterDialog != dialog) return;
@@ -640,10 +698,12 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
 
     private void saveSpresenterConnection(SpresenterConnection connection) {
         SpresenterApiSettings api = new SpresenterApiSettings(this);
-        String oldOrigin = api.origin();
-        boolean durable = api.save(connection);
-        if (!oldOrigin.isEmpty() && !oldOrigin.equals(connection.origin)) {
-            htmlSourceCatalog.replaceFromCatalog(oldOrigin, Collections.emptyList(), SystemClock.elapsedRealtime());
+        boolean durable;
+        try { durable = api.save(connection); }
+        catch (IllegalArgumentException full) {
+            android.widget.Toast.makeText(this, getString(R.string.spresenter_api_limit, SpresenterApiSettings.MAX_CONNECTIONS),
+                    android.widget.Toast.LENGTH_LONG).show();
+            return;
         }
         if (!durable) android.widget.Toast.makeText(this, R.string.spresenter_api_session,
                 android.widget.Toast.LENGTH_LONG).show();
@@ -782,7 +842,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             if (!discoveryRequested && (htmlMode || ndiAvailable)) {
                 sourceStatusText.setText(R.string.discovery_idle);
             }
-            scanSources();
+            if (htmlMode && !discoveryRequested) scanHtmlSources(true);
+            else scanSources();
             if (!displayedSources.isEmpty()) sourceList.requestFocus();
             else if (htmlMode) findViewById(R.id.manual_html_button).requestFocus();
         }
@@ -929,6 +990,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
 
     private void startNdiPlayback() {
         String source = currentNdiSource;
+        receiverStats.reset();
         int generation = ++playbackGeneration;
         ndiPlaybackRequested = true;
         CAPTURE_WORKER.execute(() -> {
@@ -949,7 +1011,11 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     @SuppressWarnings("unused")
     public void onNativeStatus(String message) {
         runOnUiThread(() -> {
-            if (!destroyed && activityVisible && !htmlMode) statusText.setText(message);
+            if (!destroyed && activityVisible && !htmlMode) {
+                statusText.setText(message);
+                if (localControl != null && message != null && message.startsWith("Nao foi possivel criar"))
+                    localControl.store.event("ndi_initialization_failure");
+            }
         });
     }
 
@@ -957,11 +1023,121 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     public void onNativeVideoFormat(int width, int height, double fps) {
         runOnUiThread(() -> {
             if (destroyed || !activityVisible || htmlMode) return;
+            sourceFps = fps;
             videoWidth = width;
             videoHeight = height;
             fitVideoSurface(width, height);
             statusText.setText(String.format(Locale.getDefault(), "%d x %d  •  %.2f fps", width, height, fps));
         });
+    }
+
+
+    @SuppressWarnings("unused")
+    public void onNativePerformance(String source, long captured, long dropped, int queued) {
+        runOnUiThread(() -> {
+            if (!destroyed && activityVisible && !htmlMode && currentNdiSource.equals(source))
+                receiverStats.accept(captured, dropped, queued, SystemClock.elapsedRealtime());
+        });
+    }
+
+    private org.json.JSONObject localStatus() throws Exception {
+        String selected = htmlMode ? preferences.getString(KEY_HTML_URL, "") : currentNdiSource;
+        String label = selected;
+        if (htmlMode) {
+            try { java.net.URI uri = new java.net.URI(selected); label = uri.getHost() + uri.getPath(); }
+            catch (Exception invalid) { label = "HTML"; }
+            for (HtmlSource source : htmlSourceCatalog.snapshot()) if (source.url.equals(selected)) label = source.title;
+        }
+        org.json.JSONObject playback = htmlMode ? new org.json.JSONObject().put("state", htmlMonitor.state())
+                : receiverStats.json(SystemClock.elapsedRealtime()).put("width", videoWidth)
+                        .put("height", videoHeight).put("source_fps", sourceFps);
+        return new org.json.JSONObject().put("mode", htmlMode ? "html" : "ndi")
+                .put("source", label == null ? "" : label).put("playback", playback);
+    }
+
+    private org.json.JSONObject localSources() throws Exception {
+        org.json.JSONArray sources = new org.json.JSONArray();
+        for (HtmlSource source : htmlSourceCatalog.snapshot()) {
+            if (sources.length() >= 80) break;
+            sources.put(new org.json.JSONObject().put("mode", "html").put("name", source.title).put("url", source.url));
+        }
+        for (String name : displayedSources) {
+            if (sources.length() >= 96) break;
+            sources.put(new org.json.JSONObject().put("mode", "ndi").put("name", name));
+        }
+        return new org.json.JSONObject().put("sources", sources);
+    }
+
+    private void applyLocalCatalog(org.json.JSONObject command, boolean save) throws Exception {
+        String origin;
+        try { origin = SpresenterConnection.normalizeOrigin(command.getString("origin")); }
+        catch (Exception invalid) { throw new LanControlServer.Failure(400); }
+        org.json.JSONArray sources = command.getJSONArray("sources");
+        if (sources.length() > 48) throw new LanControlServer.Failure(400);
+        List<HtmlSource> list = new ArrayList<>();
+        for (int i = 0; i < sources.length(); i++) {
+            org.json.JSONObject source = sources.getJSONObject(i);
+            String url = source.getString("url");
+            java.net.URI uri = java.net.URI.create(url);
+            if (!url.startsWith(origin + "/output/") || uri.getRawQuery() != null || uri.getRawFragment() != null
+                    || !HtmlSourceUrl.isOutputPath(uri.getRawPath())) throw new LanControlServer.Failure(400);
+            list.add(new HtmlSource(url, LocalControlStore.cleanName(source.optString("name")), origin));
+        }
+        htmlSourceCatalog.replacePinnedCatalog(origin, list, SystemClock.elapsedRealtime());
+        if (save) {
+            preferences.edit().putString("local_html_catalog", new org.json.JSONObject().put("origin", origin)
+                    .put("sources", sources).toString()).apply();
+            if (htmlMode) showHtmlSources();
+        }
+    }
+
+    private org.json.JSONObject localCommand(org.json.JSONObject command) throws Exception {
+        String action = command.optString("action");
+        switch (action) {
+            case "catalog":
+                applyLocalCatalog(command, true);
+                return new org.json.JSONObject().put("applied", true).put("outcome", "catalog_updated");
+            case "set_source": {
+                String mode = command.optString("mode");
+                if ("html".equals(mode)) {
+                    String url;
+                    try { url = HtmlSourceUrl.normalize(command.getString("url")); }
+                    catch (Exception invalid) { throw new LanControlServer.Failure(400); }
+                    if (!htmlMode) {
+                        preferences.edit().putString(KEY_HTML_URL, url).apply();
+                        setSourceMode(true, false);
+                    } else selectHtmlSource(url);
+                } else if ("ndi".equals(mode)) {
+                    String name = command.optString("name");
+                    if (name.trim().isEmpty() || name.length() > 256 || name.matches("(?s).*[\\p{Cntrl}].*"))
+                        throw new LanControlServer.Failure(400);
+                    if (!NdiReceiver.isNdiAvailable()) throw new LanControlServer.Failure(409);
+                    if (htmlMode) {
+                        preferences.edit().putString(KEY_LAST_SOURCE, name).apply();
+                        setSourceMode(false, false);
+                    } else connectToSource(name);
+                } else throw new LanControlServer.Failure(400);
+                break;
+            }
+            case "reload_html":
+                if (!htmlMode) throw new LanControlServer.Failure(409);
+                htmlMonitor.reload(); break;
+            case "reconnect_ndi":
+                if (htmlMode || currentNdiSource.isEmpty()) throw new LanControlServer.Failure(409);
+                stopNdiPlayback(); startNdiPlayback(); break;
+            case "clear_html_cache":
+                if (!htmlMode) throw new LanControlServer.Failure(409);
+                htmlMonitor.clearResourceCache(); break;
+            case "refresh_sources":
+                discoveryRequested = true; scanSources();
+                return new org.json.JSONObject().put("applied", true).put("outcome", "search_started");
+            case "identify":
+                android.widget.Toast.makeText(this, "S-Retorno — " + localControl.store.name(), android.widget.Toast.LENGTH_LONG).show();
+                break;
+            default: throw new LanControlServer.Failure(400);
+        }
+        localControl.store.event("maintenance_" + action);
+        return new org.json.JSONObject().put("applied", true).put("outcome", "command_applied");
     }
 
     private void fitVideoSurface(int width, int height) {
@@ -1054,6 +1230,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     @Override
     protected void onDestroy() {
         destroyed = true;
+        if (lanNetworkMonitor != null) lanNetworkMonitor.stop();
+        if (localControl != null) localControl.close();
         stopSpresenterPairing();
         stopNdiPlayback();
         htmlMonitor.destroy();

@@ -16,6 +16,18 @@ final class HtmlSourceCatalog {
     }
     private final Map<String, Entry> sources = new LinkedHashMap<>();
     private String remembered = "";
+    private final Map<String, java.util.Set<String>> pinnedCatalogs = new LinkedHashMap<>();
+
+    void forgetDirectCatalog(String origin, long now) {
+        if (!pinnedCatalogs.containsKey(origin)) replaceFromCatalog(origin, new ArrayList<>(), now);
+    }
+
+    void replacePinnedCatalog(String origin, List<HtmlSource> current, long now) {
+        replaceFromCatalog(origin, current, now);
+        java.util.Set<String> urls = new java.util.HashSet<>();
+        for (HtmlSource source : current) urls.add(source.url);
+        pinnedCatalogs.put(origin, urls);
+    }
 
     void remember(String address, long now) {
         if (!HtmlSourceUrl.isWebAddress(address)) return;
@@ -54,7 +66,9 @@ final class HtmlSourceCatalog {
         Iterator<Entry> iterator = sources.values().iterator();
         while (iterator.hasNext()) {
             Entry entry = iterator.next();
-            if (!entry.source.url.equals(remembered) && now - entry.lastSeen >= ABSENCE_GRACE_MS) {
+            boolean pinned = false;
+            for (java.util.Set<String> urls : pinnedCatalogs.values()) if (urls.contains(entry.source.url)) pinned = true;
+            if (!pinned && !entry.source.url.equals(remembered) && now - entry.lastSeen >= ABSENCE_GRACE_MS) {
                 iterator.remove();
             }
         }

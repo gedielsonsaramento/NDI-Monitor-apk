@@ -31,7 +31,6 @@ final class SupportRuntime {
     private ScheduledFuture<?> next;
     private int failures;
     private boolean reviewPreviousExit;
-    private final boolean previousInterrupted;
     private final boolean previousJavaRecorded;
 
     SupportRuntime(Context context, String endpoint, String version, boolean interrupted) {
@@ -54,8 +53,11 @@ final class SupportRuntime {
         this.worker = worker;
         this.exitReader = exitReader;
         boolean[] previous = store.takePreviousSession();
-        previousInterrupted = previous[0] || interrupted;
         previousJavaRecorded = previous[1];
+        for (JSONObject pending : store.pending()) {
+            if ("session_interrupted".equals(pending.optString("kind")))
+                store.acknowledge(pending.optString("event_id"));
+        }
         reviewPreviousExit = store.enabled();
     }
 
@@ -139,20 +141,16 @@ final class SupportRuntime {
         SupportExitHistory.Exit exit = exitReader.latest();
         boolean fresh = exit != null && exit.timestampMs >= store.consentSinceMs()
                 && exit.timestampMs > store.lastExitMs();
-        boolean known = false;
         if (fresh) {
             store.markExitSeen(exit.timestampMs);
-            known = exit.normal || !exit.kind.isEmpty();
             if (!exit.kind.isEmpty() && !(previousJavaRecorded && "java_crash".equals(exit.kind))) {
                 JSONObject event = SupportPayload.create(exit.kind, store.automaticId(), version, null,
                         new JSONObject().put("source", "android_exit_reason"), null);
                 store.enqueue(event, false);
             }
         }
-        if (previousInterrupted && !previousJavaRecorded && !known) {
-            store.enqueue(SupportPayload.create("session_interrupted", store.automaticId(), version, null,
-                    new JSONObject().put("source", "incomplete_session"), null), false);
-        }
+        // Daily TV/box power-off may leave an incomplete marker. Only confirmed exit reasons
+        // or our Java crash handler may create automatic failure reports.
     }
 
     void recordJavaCrash(Throwable error) {

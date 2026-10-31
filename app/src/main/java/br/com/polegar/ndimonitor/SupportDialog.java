@@ -66,6 +66,18 @@ final class SupportDialog {
         automatic.setChecked(runtime.automaticEnabled());
         automatic.setEnabled(runtime.configured());
         content.addView(automatic, new LinearLayout.LayoutParams(-1, -2));
+        LocalControlStore local = MonitorApplication.local(owner);
+        if (local.enabled() && !local.token().isEmpty()) {
+            Button notifyLocal = new Button(owner);
+            notifyLocal.setText(R.string.support_notify_local);
+            notifyLocal.setAllCaps(false);
+            content.addView(notifyLocal, new LinearLayout.LayoutParams(-1, -2));
+            notifyLocal.setOnClickListener(view -> {
+                int selected = category.getSelectedItemPosition();
+                local.event("manual_" + SupportPayload.CATEGORIES[Math.max(0, Math.min(selected, SupportPayload.CATEGORIES.length - 1))]);
+                Toast.makeText(owner, R.string.support_local_notified, Toast.LENGTH_SHORT).show();
+            });
+        }
         text(content, R.string.support_data_scope);
         automatic.setOnCheckedChangeListener((view, checked) -> runtime.setAutomatic(checked));
 

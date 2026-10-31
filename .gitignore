@@ -2,6 +2,7 @@
 .gradle/
 .idea/
 .cxx/
+/local-native/
 local.properties
 build/
 *.iml

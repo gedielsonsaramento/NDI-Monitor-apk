@@ -44,8 +44,23 @@
             android:layout_height="wrap_content" android:minHeight="48dp"
             android:text="@string/spresenter_api_save" android:textAllCaps="false" />
         </LinearLayout>
-        <Button android:id="@+id/spresenter_api_remove" android:layout_width="match_parent"
+        <LinearLayout android:id="@+id/spresenter_pc_list" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:orientation="vertical"
+            android:layout_marginTop="12dp" android:visibility="gone" />
+        <Button android:id="@+id/html_search_range_toggle" android:layout_width="match_parent"
             android:layout_height="wrap_content" android:minHeight="48dp"
-            android:text="@string/spresenter_api_remove" android:textAllCaps="false" />
+            android:text="@string/html_search_range_title" android:textAllCaps="false" />
+        <LinearLayout android:id="@+id/html_search_range_form" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:orientation="vertical" android:visibility="gone">
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="@string/html_search_range_help" />
+            <EditText android:id="@+id/html_search_prefix" android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:minHeight="48dp" android:singleLine="true"
+                android:inputType="textUri|textNoSuggestions" android:maxLength="11"
+                android:hint="@string/html_search_range_hint" />
+            <Button android:id="@+id/html_search_range_save" android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:minHeight="48dp"
+                android:text="@string/html_search_range_save" android:textAllCaps="false" />
+        </LinearLayout>
     </LinearLayout>
 </ScrollView>

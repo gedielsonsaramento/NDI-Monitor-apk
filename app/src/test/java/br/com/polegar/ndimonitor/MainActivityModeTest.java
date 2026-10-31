@@ -27,6 +27,7 @@ public class MainActivityModeTest {
     public static class FakeHtmlDiscovery {
         static LanHtmlDiscovery.Listener listener;
         static int starts;
+        static int publicStarts;
         @Implementation protected void __constructor__(Context context) { }
         @Implementation protected void start(String address, LanHtmlDiscovery.Listener callback) {
             listener = callback;
@@ -34,6 +35,11 @@ public class MainActivityModeTest {
             callback.onStarted(253, false);
         }
         @Implementation protected void stop() { }
+        @Implementation protected void startPublic(String address, LanHtmlDiscovery.Listener callback) {
+            listener = callback;
+            ++publicStarts;
+            callback.onStarted(253, false);
+        }
     }
     private void drainWorkers() throws Exception {
         for (String name : new String[]{"CAPTURE_WORKER", "DISCOVERY_WORKER"}) {
@@ -51,6 +57,7 @@ public class MainActivityModeTest {
         org.robolectric.util.ReflectionHelpers.setStaticField(NdiReceiver.class, "pendingSurface", null);
         FakeHtmlDiscovery.listener = null;
         FakeHtmlDiscovery.starts = 0;
+        FakeHtmlDiscovery.publicStarts = 0;
         NoNativeReceiver.available = false;
         NoNativeReceiver.finds.set(0);
         NoNativeReceiver.releases.set(0);
@@ -340,7 +347,7 @@ public class MainActivityModeTest {
         }
     }
 
-    @Test public void savedHtmlRestoresAndRetriesSameUrlWithoutSearchingEvenWithMenuOpen() throws Exception {
+    @Test public void savedHtmlRestoresAndOpeningMenuSearchesPublicSourcesWithoutReusingTokens() throws Exception {
         String url = "http://pc.local:5050/output/palco?view=stage";
         android.content.SharedPreferences prefs = RuntimeEnvironment.getApplication()
                 .getSharedPreferences(MainActivity.PREFERENCES, Context.MODE_PRIVATE);
@@ -351,6 +358,7 @@ public class MainActivityModeTest {
             android.webkit.WebView web = (android.webkit.WebView) ((HtmlStageViewport) frame.getChildAt(0)).getChildAt(0);
             assertEquals(url, org.robolectric.Shadows.shadowOf(web).getLastLoadedUrl());
             controller.get().onBackPressed();
+            assertEquals(1, FakeHtmlDiscovery.publicStarts);
             assertEquals(1, ((ListView) controller.get().findViewById(R.id.source_list)).getAdapter().getCount());
             org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idleFor(java.time.Duration.ofSeconds(75));
             drainWorkers();

@@ -1,3 +1,37 @@
+# 1.5.2 + Central 0.1.2 — Interface e busca HTML (31/10/2026)
+
+- Integra o fonte completo da 1.5.1, incluindo a Central e o tratamento de desligamento diário.
+- Retira diagnósticos, relatórios e detalhes técnicos da interface da box; os registros internos continuam disponíveis para o painel.
+- Mantém até oito PCs no catálogo HTML, com migração da configuração anterior e chave protegida por origem.
+- Busca os catálogos dos PCs cadastrados, inclusive em outras faixas quando a rede permite o acesso.
+- Acrescenta busca opcional em outra faixa IPv4 local, sem enviar credenciais na varredura pública.
+- Preserva a fonte em reprodução ao cadastrar, atualizar e remover PCs e conserva os catálogos fixados pela Central.
+- Corrige o contador de fontes para considerar toda a lista HTML.
+- Ao mudar a rede ou abrir a lista HTML, procura novos endereços sem remover os PCs anteriores, sem trocar a fonte e sem enviar tokens na busca pública.
+- Corrige a ponte da Central conforme o envelope do SDK, com feedback de tentativa, progresso e erro dentro da janela de pareamento.
+- Inclui novamente os arquivos do perfil de compatibilidade HTML, ausentes no APK 1.5.1; o empacotamento verifica presença e hashes.
+- Corrige o nome visível para **Spresenter** no app, no plugin e na configuração pelo navegador.
+- Compila a atualização com o mesmo pacote e certificado da 1.5.1 e preserva suas bibliotecas nativas.
+- [Validação desta revisão](historico/VALIDACAO_1.5.2.md).
+
+# 1.5.1 + Central 0.1.1 — Desligamento diário da igreja (30/10/2026)
+
+- Ausência de comunicação com uma box desligada permanece neutra: não vira relatório nem falha ativa.
+- Marcadores de sessão incompleta não produzem falhas automáticas; a atualização também descarta interrupções não confirmadas pendentes ou antigas.
+- Ausência de fonte HTML/NDI é um estado de espera; falhas confirmadas e relatos manuais continuam disponíveis.
+- Gráficos reiniciam ao detectar uma nova execução ou reconexão após intervalo. Identidade, vínculo e fonte salvos são preservados.
+- Corrigida a normalização dos nomes para conservar letras e acentos.
+- [Política para a rotina dos cultos](../central-retornos/README.md#desligamento-após-os-cultos).
+
+# 1.5.0 — Central de Retornos local (30/10/2026)
+
+- App com pareamento explícito e API local autenticada, disponível somente no primeiro plano.
+- Plugin Central de Retornos 0.1.0 para fonte, estado, gráficos, relatos e manutenção confirmada.
+- Catálogo HTML configurado no PC e distribuído sem a chave de API às boxes; última configuração conservada no app.
+- Captura, descarte e fila NDI instrumentados no JNI; `libndi.so` preservado.
+- Relatos e falhas locais limitados e separados do suporte remoto, que continua desativado.
+- [Instalação e limites](../central-retornos/README.md) · [Validação](historico/VALIDACAO_1.5.0.md).
+
 # 1.4.12 — Relatar problemas e preparar suporte com métricas (30/10/2026)
 
 - Acrescenta **Relatar problema** nas configurações e na tela de recuperação, com categoria, medidas de memória/CPU/rede do próprio app e cópia manual do relatório.

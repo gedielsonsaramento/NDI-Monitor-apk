@@ -101,15 +101,29 @@ public class SupportRuntimeTest {
         assertEquals("heartbeat", new JSONObject(factory.connections.get(2).body.toString("UTF-8")).getString("kind"));
     }
 
-    @Test public void oldAndroidInterruptionIsExplicitlyUnknownRatherThanClaimedNativeCrash() throws Exception {
+    @Test public void oldAndroidPowerOffDoesNotGenerateAnAutomaticFailureReport() throws Exception {
         SupportStore store = new SupportStore(context, SupportTestSupport.ENDPOINT);
         store.setEnabled(true, 0); store.markForeground();
         SupportTestSupport.Factory factory = new SupportTestSupport.Factory();
         SupportTestSupport.Scheduler clock = new SupportTestSupport.Scheduler();
         runtime(store, factory, clock, () -> null).onForeground(); firstTick(clock);
         JSONObject event = new JSONObject(factory.connections.get(0).body.toString("UTF-8"));
-        assertEquals("session_interrupted", event.getString("kind"));
-        assertEquals("incomplete_session", event.getJSONObject("failure").getString("source"));
+        assertEquals(1, factory.connections.size());
+        assertEquals("heartbeat", event.getString("kind"));
+        assertTrue(store.pending().isEmpty());
+    }
+
+    @Test public void upgradeDiscardsAnOldUnconfirmedInterruptionBeforeSending() throws Exception {
+        SupportStore store = new SupportStore(context, SupportTestSupport.ENDPOINT);
+        store.setEnabled(true, 0);
+        store.enqueue(SupportPayload.create("session_interrupted", store.automaticId(), "1.5.0", null,
+                new JSONObject().put("source", "incomplete_session"), null), false);
+        SupportTestSupport.Factory factory = new SupportTestSupport.Factory();
+        SupportTestSupport.Scheduler clock = new SupportTestSupport.Scheduler();
+        runtime(store, factory, clock, () -> null).onForeground(); firstTick(clock);
+        assertEquals(1, factory.connections.size());
+        assertEquals("heartbeat", new JSONObject(factory.connections.get(0).body.toString("UTF-8")).getString("kind"));
+        assertTrue(store.pending().isEmpty());
     }
 
     @Test public void consentDoesNotReportHistoricalFailuresFromBeforeItWasEnabled() throws Exception {
